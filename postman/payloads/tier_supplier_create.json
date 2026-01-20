@@ -1,0 +1,13 @@
+{
+    "name": "Fournisseur ABC Supplies",
+    "type": "Supplier",
+    "email": "contact@abc-supplies.fr",
+    "phone": "+33 1 23 45 67 89",
+    "address": "45 Rue du Commerce, 69002 Lyon, France",
+    "taxId": "FR98765432109",
+    "paymentTerms": "30 jours fin de mois",
+    "bankDetails": {
+        "iban": "FR76 1234 5678 9012 3456 7890 123",
+        "bic": "BNPAFRPPXXX"
+    }
+}

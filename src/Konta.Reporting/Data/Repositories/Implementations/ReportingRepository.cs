@@ -31,7 +31,7 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
                 @Period as Period,
                 COALESCE(SUM(data->>'revenue')::decimal, 0) as TotalRevenue,
                 COALESCE(SUM(data->>'expenses')::decimal, 0) as TotalExpenses
-            FROM ReportingSnapshots
+            FROM reporting.ReportingSnapshots
             WHERE TenantId = @TenantId AND ReferenceDate >= DATE_TRUNC('month', CURRENT_DATE)
         ";
         
@@ -55,7 +55,7 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
                 (Data->>'balance')::decimal as Balance,
                 (Data->>'inflow')::decimal as Inflow,
                 (Data->>'outflow')::decimal as Outflow
-            FROM ReportingSnapshots
+            FROM reporting.ReportingSnapshots
             WHERE TenantId = @TenantId AND SnapshotType = 'DailyCash'
             ORDER BY ReferenceDate DESC
             LIMIT @Limit";
@@ -76,7 +76,7 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
                 key as Name, 
                 value::decimal as Value,
                 '€' as Unit
-            FROM ReportingSnapshots, jsonb_each_text(Data->'breakdown')
+            FROM reporting.ReportingSnapshots, jsonb_each_text(Data->'breakdown')
             WHERE TenantId = @TenantId AND SnapshotType = 'RevenueBreakdown'
             LIMIT 5";
 

@@ -21,7 +21,7 @@ public class InvoiceRepository : BaseRepository<InvoiceRepository>, IInvoiceRepo
     /// </summary>
     public async Task<BusinessInvoice?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM BusinessInvoices WHERE Id = @Id";
+        const string sql = "SELECT * FROM finance_core.BusinessInvoices WHERE Id = @Id";
         
         _logger.LogDebug("Recherche facture par ID : {Id}", id);
         
@@ -34,7 +34,7 @@ public class InvoiceRepository : BaseRepository<InvoiceRepository>, IInvoiceRepo
     /// </summary>
     public async Task<IEnumerable<BusinessInvoice>> GetByTenantIdAsync(Guid tenantId, bool? isPurchase = null, InvoiceStatus? status = null)
     {
-        var sql = "SELECT * FROM BusinessInvoices WHERE TenantId = @TenantId";
+        var sql = "SELECT * FROM finance_core.BusinessInvoices WHERE TenantId = @TenantId";
         if (isPurchase.HasValue) sql += " AND IsPurchase = @IsPurchase";
         if (status.HasValue) sql += " AND Status = @Status";
         sql += " ORDER BY InvoiceDate DESC";
@@ -51,7 +51,7 @@ public class InvoiceRepository : BaseRepository<InvoiceRepository>, IInvoiceRepo
     public async Task<Guid> CreateAsync(BusinessInvoice invoice)
     {
         const string sql = @"
-            INSERT INTO BusinessInvoices (Id, TenantId, TierId, Reference, AmountHt, AmountTtc, VatAmount, InvoiceDate, DueDate, Status, IsPurchase, CreatedAt)
+            INSERT INTO finance_core.BusinessInvoices (Id, TenantId, TierId, Reference, AmountHt, AmountTtc, VatAmount, InvoiceDate, DueDate, Status, IsPurchase, CreatedAt)
             VALUES (@Id, @TenantId, @TierId, @Reference, @AmountHt, @AmountTtc, @VatAmount, @InvoiceDate, @DueDate, @Status, @IsPurchase, @CreatedAt)
             RETURNING Id";
             
@@ -66,7 +66,7 @@ public class InvoiceRepository : BaseRepository<InvoiceRepository>, IInvoiceRepo
     /// </summary>
     public async Task<bool> UpdateStatusAsync(Guid id, InvoiceStatus status)
     {
-        const string sql = "UPDATE BusinessInvoices SET Status = @Status, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+        const string sql = "UPDATE finance_core.BusinessInvoices SET Status = @Status, UpdatedAt = @UpdatedAt WHERE Id = @Id";
         
         _logger.LogInformation("Changement de statut pour la facture {Id} -> {Status}", id, status);
         

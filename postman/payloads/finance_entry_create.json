@@ -1,0 +1,26 @@
+{
+    "journalId": "00000000-0000-0000-0000-000000000000",
+    "date": "2026-01-20T00:00:00Z",
+    "description": "Vente de marchandises - Facture #2026-001",
+    "reference": "FAC-2026-001",
+    "lines": [
+        {
+            "accountId": "00000000-0000-0000-0000-000000000001",
+            "description": "Client - Vente marchandises",
+            "debit": 1200.00,
+            "credit": 0
+        },
+        {
+            "accountId": "00000000-0000-0000-0000-000000000002",
+            "description": "Ventes de marchandises",
+            "debit": 0,
+            "credit": 1000.00
+        },
+        {
+            "accountId": "00000000-0000-0000-0000-000000000003",
+            "description": "TVA collectée 20%",
+            "debit": 0,
+            "credit": 200.00
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Client XYZ Corporation",
+    "type": "Customer",
+    "email": "finance@xyz-corp.com",
+    "phone": "+33 4 56 78 90 12",
+    "address": "78 Boulevard Haussmann, 75008 Paris, France",
+    "taxId": "FR11223344556",
+    "paymentTerms": "45 jours",
+    "creditLimit": 50000.00
+}

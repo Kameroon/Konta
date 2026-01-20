@@ -21,7 +21,7 @@ public class TreasuryRepository : BaseRepository<TreasuryRepository>, ITreasuryR
     /// </summary>
     public async Task<TreasuryAccount?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM TreasuryAccounts WHERE Id = @Id";
+        const string sql = "SELECT * FROM finance_core.TreasuryAccounts WHERE Id = @Id";
         
         _logger.LogDebug("Recherche compte trésorerie : {Id}", id);
         
@@ -34,7 +34,7 @@ public class TreasuryRepository : BaseRepository<TreasuryRepository>, ITreasuryR
     /// </summary>
     public async Task<IEnumerable<TreasuryAccount>> GetByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM TreasuryAccounts WHERE TenantId = @TenantId ORDER BY Name ASC";
+        const string sql = "SELECT * FROM finance_core.TreasuryAccounts WHERE TenantId = @TenantId ORDER BY Name ASC";
         
         _logger.LogDebug("Listing des comptes trésorerie pour le tenant : {TenantId}", tenantId);
         
@@ -47,7 +47,7 @@ public class TreasuryRepository : BaseRepository<TreasuryRepository>, ITreasuryR
     /// </summary>
     public async Task<bool> UpdateBalanceAsync(Guid id, decimal newBalance)
     {
-        const string sql = "UPDATE TreasuryAccounts SET CurrentBalance = @Balance, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+        const string sql = "UPDATE finance_core.TreasuryAccounts SET CurrentBalance = @Balance, UpdatedAt = @UpdatedAt WHERE Id = @Id";
         
         _logger.LogInformation("Mise à jour du solde compte {Id} : nouveau solde = {Balance}", id, newBalance);
         

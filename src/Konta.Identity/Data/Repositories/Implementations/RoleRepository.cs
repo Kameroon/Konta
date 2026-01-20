@@ -26,7 +26,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
     {
         _logger.LogInformation("Accès DB : Création du rôle : {RoleName}", role.Name);
         const string sql = @"
-            INSERT INTO Roles (Id, TenantId, Name, Description, IsDefault, CreatedAt) 
+            INSERT INTO identity.Roles (Id, TenantId, Name, Description, IsDefault, CreatedAt) 
             VALUES (@Id, @TenantId, @Name, @Description, @IsDefault, @CreatedAt)
             RETURNING Id";
         using var connection = CreateConnection(sql, role);
@@ -37,7 +37,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
     public async Task<Role?> GetByNameAsync(Guid tenantId, string roleName)
     {
         _logger.LogDebug("Accès DB : Recherche de rôle par nom : {RoleName}", roleName);
-        const string sql = "SELECT * FROM Roles WHERE TenantId = @TenantId AND Name = @Name";
+        const string sql = "SELECT * FROM identity.Roles WHERE TenantId = @TenantId AND Name = @Name";
         using var connection = CreateConnection(sql, new { TenantId = tenantId, Name = roleName });
         return await connection.QuerySingleOrDefaultAsync<Role>(sql, new { TenantId = tenantId, Name = roleName });
     }
@@ -48,7 +48,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
         _logger.LogDebug("Accès DB : Récupération des rôles pour l'utilisateur : {UserId}", userId);
         const string sql = @"
             SELECT r.* 
-            FROM Roles r
+            FROM identity.Roles r
             JOIN UserRoles ur ON r.Id = ur.RoleId
             WHERE ur.UserId = @UserId";
         using var connection = CreateConnection(sql, new { UserId = userId });
@@ -59,7 +59,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
     public async Task AddPermissionToRoleAsync(Guid roleId, Guid permissionId)
     {
         _logger.LogDebug("Accès DB : Ajout permission {PermissionId} au rôle {RoleId}", permissionId, roleId);
-        const string sql = "INSERT INTO RolePermissions (RoleId, PermissionId) VALUES (@RoleId, @PermissionId)";
+        const string sql = "INSERT INTO identity.RolePermissions (RoleId, PermissionId) VALUES (@RoleId, @PermissionId)";
         using var connection = CreateConnection(sql, new { RoleId = roleId, PermissionId = permissionId });
         await connection.ExecuteAsync(sql, new { RoleId = roleId, PermissionId = permissionId });
     }

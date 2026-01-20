@@ -24,7 +24,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<Models.Tenant?> GetByIdAsync(Guid id)
     {
         _logger.LogDebug("Accès DB : Récupération du tenant par ID {Id}", id); // Log de débogage
-        const string sql = "SELECT * FROM Tenants WHERE Id = @Id";
+        const string sql = "SELECT * FROM identity.Tenants WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id }); 
         return await connection.QuerySingleOrDefaultAsync<Models.Tenant>(sql, new { Id = id }); 
     }
@@ -33,7 +33,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<Models.Tenant?> GetByIdentifierAsync(string identifier)
     {
         _logger.LogDebug("Accès DB : Récupération du tenant par identifiant {Identifier}", identifier); // Log de débogage
-        const string sql = "SELECT * FROM Tenants WHERE Identifier = @Identifier";
+        const string sql = "SELECT * FROM identity.Tenants WHERE Identifier = @Identifier";
         using var connection = CreateConnection(sql, new { Identifier = identifier });
         return await connection.QuerySingleOrDefaultAsync<Models.Tenant>(sql, new { Identifier = identifier });
     }
@@ -42,7 +42,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<IEnumerable<Models.Tenant>> GetAllAsync()
     {
         _logger.LogDebug("Accès DB : Récupération de tous les tenants"); // Log de débogage
-        const string sql = "SELECT * FROM Tenants ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM identity.Tenants ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql);
         return await connection.QueryAsync<Models.Tenant>(sql);
     }
@@ -52,7 +52,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Insertion du nouveau tenant {Name}", tenant.Name); // Log d'information
         const string sql = @"
-            INSERT INTO Tenants (Id, Name, Identifier, Industry, Address, TaxId, CreatedAt)
+            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, CreatedAt)
             VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @CreatedAt)
             RETURNING Id"; // Requête SQL brute avec retour de l'ID
         
@@ -65,7 +65,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Mise à jour du tenant {Id}", tenant.Id); // Log d'information
         const string sql = @"
-            UPDATE Tenants 
+            UPDATE identity.Tenants 
             SET Name = @Name, 
                 Identifier = @Identifier, 
                 Industry = @Industry, 
@@ -84,7 +84,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<bool> DeleteAsync(Guid id)
     {
         _logger.LogWarning("Accès DB : Suppression (physique) du tenant {Id}", id); // Log d'avertissement
-        const string sql = "DELETE FROM Tenants WHERE Id = @Id";
+        const string sql = "DELETE FROM identity.Tenants WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         var rows = await connection.ExecuteAsync(sql, new { Id = id });
         return rows > 0; // Retourne vrai si la suppression a réussi

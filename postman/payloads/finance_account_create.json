@@ -1,0 +1,7 @@
+{
+    "code": "512000",
+    "name": "Banque BNP Paribas",
+    "type": "Asset",
+    "balance": 50000.00,
+    "description": "Compte bancaire principal"
+}

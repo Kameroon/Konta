@@ -15,14 +15,14 @@ public class StripeCustomerRepository : BaseRepository<StripeCustomerRepository>
 
     public async Task<StripeCustomer?> GetByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM StripeCustomers WHERE TenantId = @TenantId AND IsActive = true";
+        const string sql = "SELECT * FROM billing.StripeCustomers WHERE TenantId = @TenantId AND IsActive = true";
         using var connection = CreateConnection(sql, new { TenantId = tenantId });
         return await connection.QueryFirstOrDefaultAsync<StripeCustomer>(sql, new { TenantId = tenantId });
     }
 
     public async Task<StripeCustomer?> GetByStripeIdAsync(string stripeCustomerId)
     {
-        const string sql = "SELECT * FROM StripeCustomers WHERE StripeCustomerId = @StripeCustomerId AND IsActive = true";
+        const string sql = "SELECT * FROM billing.StripeCustomers WHERE StripeCustomerId = @StripeCustomerId AND IsActive = true";
         using var connection = CreateConnection(sql, new { StripeCustomerId = stripeCustomerId });
         return await connection.QueryFirstOrDefaultAsync<StripeCustomer>(sql, new { StripeCustomerId = stripeCustomerId });
     }
@@ -30,7 +30,7 @@ public class StripeCustomerRepository : BaseRepository<StripeCustomerRepository>
     public async Task<Guid> CreateAsync(StripeCustomer customer)
     {
         const string sql = @"
-            INSERT INTO StripeCustomers (Id, TenantId, StripeCustomerId, Email, CreatedAt, UpdatedAt, IsActive)
+            INSERT INTO billing.StripeCustomers (Id, TenantId, StripeCustomerId, Email, CreatedAt, UpdatedAt, IsActive)
             VALUES (@Id, @TenantId, @StripeCustomerId, @Email, @CreatedAt, @UpdatedAt, @IsActive)
             RETURNING Id";
         

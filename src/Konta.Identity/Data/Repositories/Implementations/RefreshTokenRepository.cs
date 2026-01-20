@@ -22,7 +22,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshTokenRepository>, IR
     {
         _logger.LogDebug("Sauvegarde du Refresh Token pour l'utilisateur ID : {UserId}", token.UserId);
         const string sql = @"
-            INSERT INTO RefreshTokens (Id, UserId, Token, ExpiresAt, IsRevoked, CreatedAt) 
+            INSERT INTO identity.RefreshTokens (Id, UserId, Token, ExpiresAt, IsRevoked, CreatedAt) 
             VALUES (@Id, @UserId, @Token, @ExpiresAt, @IsRevoked, @CreatedAt)";
         using var connection = CreateConnection(sql, token);
         await connection.ExecuteAsync(sql, token);
@@ -31,7 +31,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshTokenRepository>, IR
     /// <inheritdoc />
     public async Task<RefreshToken?> GetByTokenAsync(string token)
     {
-        const string sql = "SELECT * FROM RefreshTokens WHERE Token = @Token";
+        const string sql = "SELECT * FROM identity.RefreshTokens WHERE Token = @Token";
         using var connection = CreateConnection(sql, new { Token = token });
         return await connection.QuerySingleOrDefaultAsync<RefreshToken>(sql, new { Token = token });
     }
@@ -41,7 +41,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshTokenRepository>, IR
     {
         _logger.LogDebug("Révocation du token : {Token}...", token[..10]);
         const string sql = @"
-            UPDATE RefreshTokens 
+            UPDATE identity.RefreshTokens 
             SET IsRevoked = TRUE, ReplacedByToken = @ReplacedByToken, UpdatedAt = NOW() 
             WHERE Token = @Token";
         using var connection = CreateConnection(sql, new { Token = token, ReplacedByToken = replacedByToken });

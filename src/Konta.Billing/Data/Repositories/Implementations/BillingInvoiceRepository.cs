@@ -15,14 +15,14 @@ public class BillingInvoiceRepository : BaseRepository<BillingInvoiceRepository>
 
     public async Task<IEnumerable<BillingInvoice>> GetByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM BillingInvoices WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM billing.BillingInvoices WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql, new { TenantId = tenantId });
         return await connection.QueryAsync<BillingInvoice>(sql, new { TenantId = tenantId });
     }
 
     public async Task<BillingInvoice?> GetByStripeIdAsync(string stripeInvoiceId)
     {
-        const string sql = "SELECT * FROM BillingInvoices WHERE StripeInvoiceId = @StripeInvoiceId";
+        const string sql = "SELECT * FROM billing.BillingInvoices WHERE StripeInvoiceId = @StripeInvoiceId";
         using var connection = CreateConnection(sql, new { StripeInvoiceId = stripeInvoiceId });
         return await connection.QueryFirstOrDefaultAsync<BillingInvoice>(sql, new { StripeInvoiceId = stripeInvoiceId });
     }
@@ -30,7 +30,7 @@ public class BillingInvoiceRepository : BaseRepository<BillingInvoiceRepository>
     public async Task<Guid> CreateAsync(BillingInvoice invoice)
     {
         const string sql = @"
-            INSERT INTO BillingInvoices (Id, TenantId, StripeInvoiceId, InvoiceNumber, Amount, Currency, Status, PdfUrl, CreatedAt, UpdatedAt, IsActive)
+            INSERT INTO billing.BillingInvoices (Id, TenantId, StripeInvoiceId, InvoiceNumber, Amount, Currency, Status, PdfUrl, CreatedAt, UpdatedAt, IsActive)
             VALUES (@Id, @TenantId, @StripeInvoiceId, @InvoiceNumber, @Amount, @Currency, @Status, @PdfUrl, @CreatedAt, @UpdatedAt, @IsActive)
             RETURNING Id";
         
@@ -41,7 +41,7 @@ public class BillingInvoiceRepository : BaseRepository<BillingInvoiceRepository>
     public async Task UpdateStatusAsync(string stripeInvoiceId, string status, DateTime? paidAt = null)
     {
         const string sql = @"
-            UPDATE BillingInvoices 
+            UPDATE billing.BillingInvoices 
             SET Status = @Status, PaidAt = @PaidAt, UpdatedAt = @UpdatedAt 
             WHERE StripeInvoiceId = @StripeInvoiceId";
         

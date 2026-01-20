@@ -1,0 +1,9 @@
+{
+    "category": "Marketing",
+    "amount": 25000.00,
+    "period": "2026-Q1",
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-03-31T23:59:59Z",
+    "description": "Budget marketing pour le premier trimestre 2026",
+    "alertThreshold": 80.0
+}

@@ -21,7 +21,7 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     /// </summary>
     public async Task<Tier?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM Tiers WHERE Id = @Id";
+        const string sql = "SELECT * FROM finance_core.Tiers WHERE Id = @Id";
         
         _logger.LogDebug("Recherche du tiers : {Id}", id);
         
@@ -34,7 +34,7 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     /// </summary>
     public async Task<IEnumerable<Tier>> GetByTenantIdAsync(Guid tenantId, TierType? type = null)
     {
-        var sql = "SELECT * FROM Tiers WHERE TenantId = @TenantId";
+        var sql = "SELECT * FROM finance_core.Tiers WHERE TenantId = @TenantId";
         if (type.HasValue) sql += " AND Type = @Type";
         sql += " ORDER BY Name ASC";
 
@@ -50,7 +50,7 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     public async Task<Guid> CreateAsync(Tier tier)
     {
         const string sql = @"
-            INSERT INTO Tiers (Id, TenantId, Name, Type, Email, TaxId, Address, CreatedAt)
+            INSERT INTO finance_core.Tiers (Id, TenantId, Name, Type, Email, TaxId, Address, CreatedAt)
             VALUES (@Id, @TenantId, @Name, @Type, @Email, @TaxId, @Address, @CreatedAt)
             RETURNING Id";
             
@@ -66,7 +66,7 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     public async Task<bool> UpdateAsync(Tier tier)
     {
         const string sql = @"
-            UPDATE Tiers 
+            UPDATE finance_core.Tiers 
             SET Name = @Name, Type = @Type, Email = @Email, TaxId = @TaxId, Address = @Address, UpdatedAt = @UpdatedAt
             WHERE Id = @Id";
             

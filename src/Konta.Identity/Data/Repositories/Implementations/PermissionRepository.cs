@@ -26,7 +26,7 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
         _logger.LogDebug("Accès DB : Récupération des permissions pour l'utilisateur ID : {UserId}", userId);
         const string sql = @"
             SELECT DISTINCT p.SystemName 
-            FROM Permissions p
+            FROM identity.Permissions p
             JOIN RolePermissions rp ON p.Id = rp.PermissionId
             JOIN UserRoles ur ON rp.RoleId = ur.RoleId
             WHERE ur.UserId = @UserId";
@@ -39,7 +39,7 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
     public async Task<Permission?> GetBySystemNameAsync(string systemName)
     {
         _logger.LogDebug("Accès DB : Recherche de permission par nom système : {SystemName}", systemName);
-        const string sql = "SELECT * FROM Permissions WHERE SystemName = @SystemName";
+        const string sql = "SELECT * FROM identity.Permissions WHERE SystemName = @SystemName";
         using var connection = CreateConnection(sql, new { SystemName = systemName });
         return await connection.QuerySingleOrDefaultAsync<Permission>(sql, new { SystemName = systemName });
     }

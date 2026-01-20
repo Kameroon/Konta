@@ -1,0 +1,11 @@
+{
+    "name": "Comptable",
+    "description": "Rôle pour les comptables avec accès aux écritures et rapports",
+    "permissions": [
+        "finance.accounts.read",
+        "finance.accounts.write",
+        "finance.entries.read",
+        "finance.entries.write",
+        "reporting.reports.read"
+    ]
+}

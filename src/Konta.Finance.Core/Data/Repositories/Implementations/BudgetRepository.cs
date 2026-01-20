@@ -21,7 +21,7 @@ public class BudgetRepository : BaseRepository<BudgetRepository>, IBudgetReposit
     /// </summary>
     public async Task<Budget?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM Budgets WHERE Id = @Id";
+        const string sql = "SELECT * FROM finance_core.Budgets WHERE Id = @Id";
         
         _logger.LogDebug("Recherche du budget : {Id}", id);
         
@@ -35,7 +35,7 @@ public class BudgetRepository : BaseRepository<BudgetRepository>, IBudgetReposit
     public async Task<IEnumerable<Budget>> GetCurrentBudgetsAsync(Guid tenantId, DateTime date)
     {
         const string sql = @"
-            SELECT * FROM Budgets 
+            SELECT * FROM finance_core.Budgets 
             WHERE TenantId = @TenantId AND StartDate <= @Date AND EndDate >= @Date 
             ORDER BY Category ASC";
             
@@ -51,7 +51,7 @@ public class BudgetRepository : BaseRepository<BudgetRepository>, IBudgetReposit
     public async Task<Guid> CreateAsync(Budget budget)
     {
         const string sql = @"
-            INSERT INTO Budgets (Id, TenantId, Category, AllocatedAmount, SpentAmount, StartDate, EndDate, AlertThresholdPercentage, CreatedAt)
+            INSERT INTO finance_core.Budgets (Id, TenantId, Category, AllocatedAmount, SpentAmount, StartDate, EndDate, AlertThresholdPercentage, CreatedAt)
             VALUES (@Id, @TenantId, @Category, @AllocatedAmount, @SpentAmount, @StartDate, @EndDate, @AlertThresholdPercentage, @CreatedAt)
             RETURNING Id";
             
@@ -66,7 +66,7 @@ public class BudgetRepository : BaseRepository<BudgetRepository>, IBudgetReposit
     /// </summary>
     public async Task<bool> UpdateSpentAmountAsync(Guid id, decimal amount)
     {
-        const string sql = "UPDATE Budgets SET SpentAmount = SpentAmount + @Amount, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+        const string sql = "UPDATE finance_core.Budgets SET SpentAmount = SpentAmount + @Amount, UpdatedAt = @UpdatedAt WHERE Id = @Id";
         
         _logger.LogInformation("Mise à jour de la consommation budgétaire pour {Id} : +{Amount}", id, amount);
         

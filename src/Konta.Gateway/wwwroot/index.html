@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konta API Gateway</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .service-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: transform 0.3s, background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .service-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .service-port {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .cta {
+            margin-top: 3rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Konta API Gateway</h1>
+        <p class="subtitle">Point d'entrée unique pour tous les microservices</p>
+        
+        <div class="services">
+            <div class="service-card">
+                <div class="service-name">🔐 Identity</div>
+                <div class="service-port">Port 5001</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">🏢 Tenant</div>
+                <div class="service-port">Port 5002</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">💳 Billing</div>
+                <div class="service-port">Port 5003</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">💰 Finance</div>
+                <div class="service-port">Port 5004</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">📊 Finance Core</div>
+                <div class="service-port">Port 5006</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">🔍 OCR</div>
+                <div class="service-port">Port 5005</div>
+            </div>
+            <div class="service-card">
+                <div class="service-name">📈 Reporting</div>
+                <div class="service-port">Port 5007</div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <a href="/swagger" class="btn">📚 Explorer l'API (Swagger)</a>
+        </div>
+
+        <div class="status">
+            <span class="status-indicator"></span>
+            Gateway opérationnelle | Observabilité active | Résilience activée
+        </div>
+    </div>
+</body>
+</html>

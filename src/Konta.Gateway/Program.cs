@@ -12,6 +12,9 @@ builder.Services.AddGatewayServices(builder.Configuration);
 var app = builder.Build();
 
 // 3. Pipeline HTTP
+app.UseDefaultFiles(); // Active index.html comme page par défaut
+app.UseStaticFiles(); // Support des fichiers statiques (index.html)
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

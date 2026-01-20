@@ -30,6 +30,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseTenantContext();
 
+// Redirection automatique vers Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
+
 // Map Endpoints
 app.MapFinanceEndpoints();
 

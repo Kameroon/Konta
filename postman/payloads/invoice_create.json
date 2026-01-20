@@ -1,0 +1,20 @@
+{
+    "tierId": "00000000-0000-0000-0000-000000000000",
+    "invoiceNumber": "FAC-2026-001",
+    "invoiceDate": "2026-01-20T00:00:00Z",
+    "dueDate": "2026-02-20T00:00:00Z",
+    "totalAmountHt": 10000.00,
+    "totalAmountTtc": 12000.00,
+    "vatAmount": 2000.00,
+    "currency": "EUR",
+    "status": "Pending",
+    "items": [
+        {
+            "description": "Prestation de conseil - 10 jours",
+            "quantity": 10,
+            "unitPrice": 1000.00,
+            "vatRate": 20.0,
+            "totalHt": 10000.00
+        }
+    ]
+}

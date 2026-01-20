@@ -24,7 +24,7 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         _logger.LogDebug("Accès DB : Recherche utilisateur par email: {Email}", email);
-        const string sql = "SELECT * FROM Users WHERE Email = @Email";
+        const string sql = "SELECT * FROM identity.Users WHERE Email = @Email";
         using var connection = CreateConnection(sql, new { Email = email });
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
     }
@@ -33,7 +33,7 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
     public async Task<User?> GetByIdAsync(Guid id)
     {
         _logger.LogDebug("Accès DB : Recherche utilisateur par ID: {Id}", id);
-        const string sql = "SELECT * FROM Users WHERE Id = @Id";
+        const string sql = "SELECT * FROM identity.Users WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
     }
@@ -43,7 +43,7 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
     {
         _logger.LogInformation("Accès DB : Création utilisateur: {Email}", user.Email);
         const string sql = @"
-            INSERT INTO Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role, IsActive, CreatedAt) 
+            INSERT INTO identity.Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role, IsActive, CreatedAt) 
             VALUES (@Id, @TenantId, @Email, @PasswordHash, @FirstName, @LastName, @Role, @IsActive, @CreatedAt)
             RETURNING Id";
         

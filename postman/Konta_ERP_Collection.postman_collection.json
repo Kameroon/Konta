@@ -1,0 +1,570 @@
+{
+    "info": {
+        "name": "Konta ERP - Complete API Collection",
+        "description": "Collection complète pour tester tous les microservices Konta ERP via la Gateway",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "gateway_url",
+            "value": "https://localhost:5000",
+            "type": "string"
+        },
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "tenant_id",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "🔐 Identity & Authentication",
+            "item": [
+                {
+                    "name": "Register Tenant",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"companyName\": \"Example Corp\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/identity/api/auth/register",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "identity",
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set('access_token', jsonData.accessToken);",
+                                    "    pm.collectionVariables.set('tenant_id', jsonData.tenantId);",
+                                    "    console.log('Token saved:', jsonData.accessToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/identity/api/auth/login",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "identity",
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/identity/api/auth/me",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "identity",
+                                "api",
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/identity/api/roles",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "identity",
+                                "api",
+                                "roles"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🏢 Tenant Management",
+            "item": [
+                {
+                    "name": "Get All Tenants",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/tenant/api/tenants",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "tenant",
+                                "api",
+                                "tenants"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Tenant by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/tenant/api/tenants/{{tenant_id}}",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "tenant",
+                                "api",
+                                "tenants",
+                                "{{tenant_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Tenant",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Company Name\",\n  \"identifier\": \"updated-company\",\n  \"industry\": \"Technology\",\n  \"address\": \"123 Tech Street\",\n  \"taxId\": \"FR12345678901\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/tenant/api/tenants/{{tenant_id}}",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "tenant",
+                                "api",
+                                "tenants",
+                                "{{tenant_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💳 Billing",
+            "item": [
+                {
+                    "name": "Get Stripe Customer",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/billing/api/stripe/customer",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "billing",
+                                "api",
+                                "stripe",
+                                "customer"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Billing Invoices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/billing/api/invoices",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "billing",
+                                "api",
+                                "invoices"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💰 Finance",
+            "item": [
+                {
+                    "name": "Get All Accounts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance/api/accounts",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance",
+                                "api",
+                                "accounts"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Account",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"512000\",\n  \"name\": \"Banque\",\n  \"type\": \"Asset\",\n  \"balance\": 0\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance/api/accounts",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance",
+                                "api",
+                                "accounts"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Journals",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance/api/journals",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance",
+                                "api",
+                                "journals"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Journal Entry",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"journalId\": \"<journal-id>\",\n  \"date\": \"2026-01-20\",\n  \"description\": \"Vente de marchandises\",\n  \"lines\": [\n    {\n      \"accountId\": \"<account-id-debit>\",\n      \"debit\": 1000,\n      \"credit\": 0\n    },\n    {\n      \"accountId\": \"<account-id-credit>\",\n      \"debit\": 0,\n      \"credit\": 1000\n    }\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance/api/entries",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance",
+                                "api",
+                                "entries"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📊 Finance Core",
+            "item": [
+                {
+                    "name": "Get All Tiers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance-core/api/tiers",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance-core",
+                                "api",
+                                "tiers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Tier",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Fournisseur ABC\",\n  \"type\": \"Supplier\",\n  \"email\": \"contact@abc.com\",\n  \"phone\": \"+33123456789\",\n  \"taxId\": \"FR98765432109\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance-core/api/tiers",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance-core",
+                                "api",
+                                "tiers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Budgets",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance-core/api/budgets",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance-core",
+                                "api",
+                                "budgets"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Treasury Accounts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/finance-core/api/treasury",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "finance-core",
+                                "api",
+                                "treasury"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🔍 OCR",
+            "item": [
+                {
+                    "name": "Upload Document for Extraction",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "documentType",
+                                    "value": "Invoice",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/ocr/api/extract",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "ocr",
+                                "api",
+                                "extract"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Extraction Job Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/ocr/api/jobs/<job-id>",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "ocr",
+                                "api",
+                                "jobs",
+                                "<job-id>"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📈 Reporting",
+            "item": [
+                {
+                    "name": "Get Dashboard KPIs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/reporting/api/dashboard",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "reporting",
+                                "api",
+                                "dashboard"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Generate Financial Report",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reportType\": \"BalanceSheet\",\n  \"startDate\": \"2026-01-01\",\n  \"endDate\": \"2026-01-31\",\n  \"format\": \"PDF\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{gateway_url}}/gateway/reporting/api/reports",
+                            "host": [
+                                "{{gateway_url}}"
+                            ],
+                            "path": [
+                                "gateway",
+                                "reporting",
+                                "api",
+                                "reports"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

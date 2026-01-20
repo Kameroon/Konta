@@ -16,7 +16,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
 
     public async Task<JournalEntry?> GetByIdAsync(Guid id)
     {
-        const string sqlEntry = "SELECT * FROM JournalEntries WHERE Id = @Id";
+        const string sqlEntry = "SELECT * FROM finance.JournalEntries WHERE Id = @Id";
         const string sqlLines = "SELECT * FROM EntryLines WHERE EntryId = @Id";
 
         using var connection = CreateConnection(sqlEntry, new { Id = id });
@@ -32,7 +32,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
 
     public async Task<IEnumerable<JournalEntry>> GetByJournalIdAsync(Guid journalId, DateTime? startDate, DateTime? endDate)
     {
-        var sql = "SELECT * FROM JournalEntries WHERE JournalId = @JournalId";
+        var sql = "SELECT * FROM finance.JournalEntries WHERE JournalId = @JournalId";
         if (startDate.HasValue) sql += " AND EntryDate >= @StartDate";
         if (endDate.HasValue) sql += " AND EntryDate <= @EndDate";
         sql += " ORDER BY EntryDate DESC";
@@ -51,7 +51,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
         try
         {
             const string sqlEntry = @"
-                INSERT INTO JournalEntries (Id, TenantId, JournalId, EntryDate, Reference, Description, CreatedAt)
+                INSERT INTO finance.JournalEntries (Id, TenantId, JournalId, EntryDate, Reference, Description, CreatedAt)
                 VALUES (@Id, @TenantId, @JournalId, @EntryDate, @Reference, @Description, @CreatedAt)";
             
             await connection.ExecuteAsync(sqlEntry, entry, transaction);
@@ -85,7 +85,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
         try
         {
             await connection.ExecuteAsync("DELETE FROM EntryLines WHERE EntryId = @Id", new { Id = id }, transaction);
-            var rows = await connection.ExecuteAsync("DELETE FROM JournalEntries WHERE Id = @Id", new { Id = id }, transaction);
+            var rows = await connection.ExecuteAsync("DELETE FROM finance.JournalEntries WHERE Id = @Id", new { Id = id }, transaction);
             
             transaction.Commit();
             return rows > 0;

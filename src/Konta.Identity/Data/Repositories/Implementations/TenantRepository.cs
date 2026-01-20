@@ -25,7 +25,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<Tenant?> GetByIdAsync(Guid id)
     {
         _logger.LogDebug("Accès DB : Récupération du tenant par ID : {Id}", id);
-        const string sql = "SELECT * FROM Tenants WHERE Id = @Id";
+        const string sql = "SELECT * FROM identity.Tenants WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         return await connection.QuerySingleOrDefaultAsync<Tenant>(sql, new { Id = id });
     }
@@ -34,7 +34,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<Tenant?> GetByNameAsync(string name)
     {
         _logger.LogDebug("Accès DB : Récupération du tenant par nom : {Name}", name);
-        const string sql = "SELECT * FROM Tenants WHERE Name = @Name";
+        const string sql = "SELECT * FROM identity.Tenants WHERE Name = @Name";
         using var connection = CreateConnection(sql, new { Name = name });
         return await connection.QuerySingleOrDefaultAsync<Tenant>(sql, new { Name = name });
     }
@@ -43,7 +43,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<IEnumerable<Tenant>> GetAllAsync()
     {
         _logger.LogDebug("Accès DB : Récupération de tous les tenants");
-        const string sql = "SELECT * FROM Tenants ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM identity.Tenants ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql);
         return await connection.QueryAsync<Tenant>(sql);
     }
@@ -53,7 +53,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Création du tenant : {Name}", tenant.Name);
         const string sql = @"
-            INSERT INTO Tenants (Id, Name, Plan, CreatedAt) 
+            INSERT INTO identity.Tenants (Id, Name, Plan, CreatedAt) 
             VALUES (@Id, @Name, @Plan, @CreatedAt)
             RETURNING Id";
         
@@ -66,7 +66,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Mise à jour du tenant ID : {Id}", tenant.Id);
         const string sql = @"
-            UPDATE Tenants 
+            UPDATE identity.Tenants 
             SET Name = @Name, 
                 Plan = @Plan, 
                 UpdatedAt = @UpdatedAt 
@@ -81,7 +81,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     public async Task<bool> DeleteAsync(Guid id)
     {
         _logger.LogWarning("Accès DB : Suppression du tenant ID : {Id}", id);
-        const string sql = "DELETE FROM Tenants WHERE Id = @Id";
+        const string sql = "DELETE FROM identity.Tenants WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         var affectedRows = await connection.ExecuteAsync(sql, new { Id = id });
         return affectedRows > 0;

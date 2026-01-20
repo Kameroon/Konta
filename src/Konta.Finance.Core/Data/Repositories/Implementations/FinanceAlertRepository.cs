@@ -21,7 +21,7 @@ public class FinanceAlertRepository : BaseRepository<FinanceAlertRepository>, IF
     /// </summary>
     public async Task<IEnumerable<FinanceAlert>> GetUnreadByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM FinanceAlerts WHERE TenantId = @TenantId AND IsRead = FALSE ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM finance_core.FinanceAlerts WHERE TenantId = @TenantId AND IsRead = FALSE ORDER BY CreatedAt DESC";
         
         // Log de debug pour tracer la requête
         _logger.LogDebug("Récupération des alertes non lues pour : {TenantId}", tenantId);
@@ -36,7 +36,7 @@ public class FinanceAlertRepository : BaseRepository<FinanceAlertRepository>, IF
     public async Task<Guid> CreateAsync(FinanceAlert alert)
     {
         const string sql = @"
-            INSERT INTO FinanceAlerts (Id, TenantId, Title, Message, Severity, IsRead, RelatedEntityId, CreatedAt)
+            INSERT INTO finance_core.FinanceAlerts (Id, TenantId, Title, Message, Severity, IsRead, RelatedEntityId, CreatedAt)
             VALUES (@Id, @TenantId, @Title, @Message, @Severity, @IsRead, @RelatedEntityId, @CreatedAt)
             RETURNING Id";
             
@@ -51,7 +51,7 @@ public class FinanceAlertRepository : BaseRepository<FinanceAlertRepository>, IF
     /// </summary>
     public async Task<bool> MarkAsReadAsync(Guid id)
     {
-        const string sql = "UPDATE FinanceAlerts SET IsRead = TRUE, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+        const string sql = "UPDATE finance_core.FinanceAlerts SET IsRead = TRUE, UpdatedAt = @UpdatedAt WHERE Id = @Id";
         
         _logger.LogDebug("Marquage de l'alerte comme lue : {Id}", id);
         

@@ -15,21 +15,21 @@ public class AccountRepository : BaseRepository<AccountRepository>, IAccountRepo
 
     public async Task<Account?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM Accounts WHERE Id = @Id";
+        const string sql = "SELECT * FROM finance.Accounts WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         return await connection.QuerySingleOrDefaultAsync<Account>(sql, new { Id = id });
     }
 
     public async Task<Account?> GetByCodeAsync(Guid tenantId, string code)
     {
-        const string sql = "SELECT * FROM Accounts WHERE TenantId = @TenantId AND Code = @Code";
+        const string sql = "SELECT * FROM finance.Accounts WHERE TenantId = @TenantId AND Code = @Code";
         using var connection = CreateConnection(sql, new { TenantId = tenantId, Code = code });
         return await connection.QuerySingleOrDefaultAsync<Account>(sql, new { TenantId = tenantId, Code = code });
     }
 
     public async Task<IEnumerable<Account>> GetAllByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM Accounts WHERE TenantId = @TenantId ORDER BY Code ASC";
+        const string sql = "SELECT * FROM finance.Accounts WHERE TenantId = @TenantId ORDER BY Code ASC";
         using var connection = CreateConnection(sql, new { TenantId = tenantId });
         return await connection.QueryAsync<Account>(sql, new { TenantId = tenantId });
     }
@@ -37,7 +37,7 @@ public class AccountRepository : BaseRepository<AccountRepository>, IAccountRepo
     public async Task<Guid> CreateAsync(Account account)
     {
         const string sql = @"
-            INSERT INTO Accounts (Id, TenantId, Code, Name, Type, ParentId, FullPath, CreatedAt)
+            INSERT INTO finance.Accounts (Id, TenantId, Code, Name, Type, ParentId, FullPath, CreatedAt)
             VALUES (@Id, @TenantId, @Code, @Name, @Type, @ParentId, @FullPath, @CreatedAt)
             RETURNING Id";
         using var connection = CreateConnection(sql, account);
@@ -47,7 +47,7 @@ public class AccountRepository : BaseRepository<AccountRepository>, IAccountRepo
     public async Task<bool> UpdateAsync(Account account)
     {
         const string sql = @"
-            UPDATE Accounts 
+            UPDATE finance.Accounts 
             SET Code = @Code, Name = @Name, Type = @Type, ParentId = @ParentId, 
                 FullPath = @FullPath, UpdatedAt = @UpdatedAt
             WHERE Id = @Id";
@@ -58,7 +58,7 @@ public class AccountRepository : BaseRepository<AccountRepository>, IAccountRepo
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-        const string sql = "DELETE FROM Accounts WHERE Id = @Id";
+        const string sql = "DELETE FROM finance.Accounts WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         var rows = await connection.ExecuteAsync(sql, new { Id = id });
         return rows > 0;

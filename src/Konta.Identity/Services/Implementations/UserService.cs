@@ -1,0 +1,64 @@
+using Konta.Identity.Data.Repositories.Interfaces;
+using Konta.Identity.Models;
+using Konta.Identity.Services.Interfaces;
+using Konta.Shared.Services.Postgres;
+using Microsoft.Extensions.Logging;
+using Npgsql;
+
+namespace Konta.Identity.Services.Implementations;
+
+/// <summary>
+/// Implémentation du service responsable de la gestion des utilisateurs.
+/// </summary>
+public class UserService : IUserService
+{
+    private readonly IUserRepository _userRepository;
+    private readonly PostgresErrorService _errorService;
+    private readonly ILogger<UserService> _logger;
+
+    public UserService(
+        IUserRepository userRepository, 
+        PostgresErrorService errorService,
+        ILogger<UserService> logger)
+    {
+        _userRepository = userRepository;
+        _errorService = errorService;
+        _logger = logger;
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid> CreateUserAsync(User user)
+    {
+        _logger.LogInformation("Début de la création de l'utilisateur : {Email}", user.Email);
+
+        try
+        {
+            // Création de l'utilisateur en base
+            // La validation d'unicité est gérée par la base de données via les contraintes
+            var userId = await _userRepository.CreateAsync(user);
+            
+            _logger.LogInformation("Utilisateur créé avec succès. ID : {UserId}", userId);
+            return userId;
+        }
+        catch (PostgresException ex)
+        {
+            var diagnosis = _errorService.Diagnose(ex);
+            _logger.LogWarning("Erreur lors de la création de l'utilisateur {Email} : {Diagnosis}", user.Email, diagnosis.Message);
+            throw new InvalidOperationException(diagnosis.Message);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        _logger.LogDebug("Recherche de l'utilisateur par email : {Email}", email);
+        return await _userRepository.GetByEmailAsync(email);
+    }
+
+    /// <inheritdoc />
+    public async Task<User?> GetUserByIdAsync(Guid id)
+    {
+        _logger.LogDebug("Recherche de l'utilisateur par ID : {Id}", id);
+        return await _userRepository.GetByIdAsync(id);
+    }
+}

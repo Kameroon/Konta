@@ -67,7 +67,7 @@ public class TenantService : ITenantService
         {
             var diagnosis = _errorService.Diagnose(ex);
             _logger.LogWarning("Erreur lors de la création du tenant {Identifier} : {Diagnosis}", request.Identifier, diagnosis.Message);
-            throw new InvalidOperationException(diagnosis.Message);
+            throw; // Re-throw pour que PostgresExceptionHandler la capture
         }
     }
 

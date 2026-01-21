@@ -4,6 +4,9 @@ using Konta.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration de Serilog pour les logs centralisés
+builder.AddSerilogLogging("Konta.Identity");
+
 // 1. Register Services
 builder.Services
     .AddSharedServices(options =>

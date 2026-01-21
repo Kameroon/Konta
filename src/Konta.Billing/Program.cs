@@ -4,6 +4,9 @@ using Konta.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration de Serilog pour les logs centralisés
+builder.AddSerilogLogging("Konta.Billing");
+
 // 1. Enregistrement des Services
 builder.Services
     .AddSharedServices(options =>
@@ -16,6 +19,9 @@ builder.Services
     .AddAuthenticationConfig(builder.Configuration)
     .AddObservability("Konta.Billing", builder.Configuration)
     .AddResilience();
+
+// Enregistrement de HttpClient pour les appels inter-microservices
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

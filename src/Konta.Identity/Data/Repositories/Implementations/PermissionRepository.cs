@@ -21,6 +21,15 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
     }
 
     /// <inheritdoc />
+    public async Task<Permission?> GetByIdAsync(Guid permissionId)
+    {
+        _logger.LogDebug("Accès DB : Recherche de permission par ID : {PermissionId}", permissionId);
+        const string sql = "SELECT * FROM identity.Permissions WHERE Id = @PermissionId";
+        using var connection = CreateConnection(sql, new { PermissionId = permissionId });
+        return await connection.QuerySingleOrDefaultAsync<Permission>(sql, new { PermissionId = permissionId });
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<string>> GetPermissionsByUserIdAsync(Guid userId)
     {
         _logger.LogDebug("Accès DB : Récupération des permissions pour l'utilisateur ID : {UserId}", userId);

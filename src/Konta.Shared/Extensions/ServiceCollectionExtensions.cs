@@ -44,6 +44,10 @@ public static class ServiceCollectionExtensions
         }
 
         services.AddSingleton<PostgresErrorService>();
+        
+        // Enregistrement du handler d'exceptions PostgreSQL
+        services.AddExceptionHandler<PostgresExceptionHandler>();
+        
         return services;
     }
 

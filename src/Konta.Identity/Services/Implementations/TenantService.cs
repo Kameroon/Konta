@@ -104,7 +104,7 @@ public class TenantService : ITenantService
     {
         var diagnosis = _errorService.Diagnose(ex);
         _logger.LogWarning("Erreur lors de l'inscription du tenant {TenantName} : {Diagnosis}", request.TenantName, diagnosis.Message);
-        throw new InvalidOperationException(diagnosis.Message);
+        throw; // Re-throw pour que PostgresExceptionHandler la capture
     }
 }
 

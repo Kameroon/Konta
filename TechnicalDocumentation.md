@@ -1,7 +1,7 @@
 # L'Encyclopédie Suprême de l'Architecture Konta ERP (Édition Architecte Master)
 
-**Dernière mise à jour**: 20 Janvier 2026
-**Version**: 42.0 (The Infinite Technical Bible - Ocelot API Gateway Added)
+**Dernière mise à jour**: 21 Janvier 2026
+**Version**: 43.0 (Enhanced Error Handling, Centralized Logging & Resilience)
 
 ---
 
@@ -35,14 +35,47 @@ La passerelle **Ocelot** agit comme le gardien et l'aiguilleur unique de l'écos
 Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient aucune logique métier mais impose les standards d'infrastructure à tous les microservices.
 
 ### 3.1 Cartographie Détaillée des Fichiers du Shared Kernel
+
+#### **Gestion des Données et Connexions**
 - **`/Data/IDbConnectionFactory.cs`** : Interface contractuelle définissant comment les connexions PostgreSQL sont créées. Cruciale pour l'injection de dépendances et le support de pools de connexions.
 - **`/Data/Repositories/BaseRepository.cs`** : La classe mère absolue dont héritent tous les dépôts de la plateforme. Elle encapsule la complexité de l'ouverture de connexion et le hook de diagnostic `CreateConnection(sql, parameters)`.
 - **`/Data/Helpers/SqlDebugHelper.cs`** : Le transpileur SQL de Konta. Il convertit dynamiquement les requêtes paramétrées Dapper en SQL PostgreSQL pur exécutable.
     - **Algorithme de Precision** : Trie les paramètres par longueur décroissante pour garantir que `@UserId` ne soit pas endommagé par le remplacement de `@User`.
-- **`/Services/Postgres/PostgresErrorService.cs`** : Service de diagnostic sémantique d'erreurs SQL. Il analyse les codes `SqlState` (ex: `23505`) et fournit un message métier en Français basé sur le dictionnaire de contraintes configuré.
+
+#### **Gestion d'Erreurs PostgreSQL (Système Actif)**
+- **`/Services/Postgres/PostgresErrorService.cs`** : Service de diagnostic sémantique d'erreurs SQL. Il analyse les codes `SqlState` (ex: `23505` pour violation d'unicité) et fournit un message métier en Français basé sur le dictionnaire de contraintes configuré.
+- **`/Middleware/PostgresExceptionHandler.cs`** : **[NOUVEAU - Activé]** Handler d'exceptions spécialisé qui intercepte automatiquement les `PostgresException` et les transforme en réponses `PostgresErrorResult` structurées. 
+    - **Activation** : Enregistré automatiquement via `AddSharedServices()` dans `ServiceCollectionExtensions`.
+    - **Workflow** : 
+      1. Capture de `PostgresException`
+      2. Diagnostic via `PostgresErrorService`
+      3. Construction de `PostgresErrorResult` avec détails (code, contrainte, table, message traduit)
+      4. Retour HTTP 400 avec JSON structuré
+    - **Bénéfice** : Élimine le code mort et centralise la gestion d'erreurs PostgreSQL.
+
+#### **Gestion d'Erreurs Globales**
 - **`/Middleware/GlobalExceptionHandler.cs`** : Implémentant `IExceptionHandler`, ce middleware intercepte tout crash non capturé pour renvoyer une réponse JSON propre au format `ApiResponse`.
+
+#### **Modèles et Réponses**
 - **`/Models/BaseEntity.cs`** : Modèle de donnée racine imposant `Id`, `TenantId`, `CreatedAt`, `UpdatedAt` et `IsActive`.
 - **`/Responses/ApiResponse.cs`** : Contrat de communication universel `{ success, message, data, errors }`.
+- **`/Responses/PostgresErrorResult.cs`** : **[ACTIVÉ]** Réponse API spécialisée pour les erreurs PostgreSQL, héritant d'`ApiResponse` et ajoutant la propriété `DatabaseError` contenant les détails techniques (code, contrainte, table, message traduit).
+
+#### **Logging Centralisé avec Serilog & Seq**
+- **`/Extensions/SerilogExtensions.cs`** : **[NOUVEAU]** Extension centralisée pour configurer Serilog sur tous les microservices.
+    - **Configuration** : Méthode `AddSerilogLogging(serviceName)` appelée dans chaque `Program.cs`.
+    - **Sinks Configurés** :
+      - **Console** : Logs temps réel avec format `[HH:mm:ss LEVEL] [ServiceName] Message`
+      - **File** : Rotation quotidienne dans `logs/[service]-YYYYMMDD.txt`, rétention 30 jours
+      - **Seq** : Envoi vers http://localhost:5341 pour visualisation centralisée
+    - **Enrichissement** : Ajout automatique de `ServiceName`, `MachineName`, `EnvironmentName`
+    - **Bénéfice** : Tous les microservices logguent de manière uniforme et centralisée.
+
+#### **Résilience et Patterns**
+- **`/Resilience/ResilienceConstants.cs`** : Constantes pour les patterns Retry et Circuit Breaker (Polly).
+    - **Retry** : 3 tentatives avec backoff exponentiel (2s, 4s, 8s)
+    - **Circuit Breaker** : Ouverture après 50% d'échecs sur 30s, durée d'ouverture 15s
+    - **Documentation** : Commentaires détaillés en français sur chaque paramètre.
 
 ---
 
@@ -56,6 +89,14 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
     2. Le rôle Administrateur par défaut.
     3. Les permissions système initiales pour ce rôle.
     4. L'utilisateur administrateur racine lié au rôle.
+- **`RoleService.cs`** : **[COMPLÉTÉ]** Gestion des rôles et assignation de permissions avec sécurité multi-tenant.
+    - **`AssignPermissionAsync(roleId, request)`** : Assigne une permission à un rôle avec validations :
+      1. **Vérification d'existence du rôle** : Récupère le rôle via `GetByIdAsync()`, lève une exception si inexistant
+      2. **Sécurité multi-tenant** : Vérifie que `role.TenantId` correspond au tenant de l'utilisateur courant (note pour implémentation future avec `ITenantContext`)
+      3. **Validation de la permission** : Vérifie que `permissionId` existe via `IPermissionRepository.GetByIdAsync()`
+      4. **Assignation** : Crée la relation `RolePermission` via `AddPermissionToRoleAsync()`
+      5. **Logging enrichi** : Log avec noms lisibles (permission.SystemName, role.Name, role.TenantId)
+    - **Bénéfice** : Empêche l'assignation de permissions à des rôles inexistants ou appartenant à d'autres tenants.
 
 ### 3.2 Spécification de la Base de Données (Identity Table Analysis)
 | Table | Colonne | Type SQL | Rôle et Contrainte |
@@ -86,6 +127,23 @@ Le microservice Tenant est désormais purement focalisé sur la structure de l'e
 Le service `Konta.Billing` centralise toute la monétisation de la plateforme.
 - **SDK Stripe** : Utilisation de `Stripe.net` pour la gestion des Checkout Sessions et du Billing Portal.
 - **Idempotence des Webhooks** : Utilisation de la table `WebhookEvents` pour garantir qu'un événement Stripe (ex: `invoice.paid`) n'est traité qu'une seule fois.
+- **`WebhookHandler.cs`** : **[COMPLÉTÉ]** Gestionnaire d'événements Stripe avec activation/désactivation automatique des accès tenant.
+    - **Workflow de Traitement** :
+      1. Vérification de la signature Stripe via `EventUtility.ConstructEvent()`
+      2. Vérification d'idempotence via `WebhookEvents` (évite les doublons)
+      3. Routage vers les handlers spécifiques (`HandleInvoicePaidAsync`, `HandleSubscriptionDeletedAsync`)
+      4. Enregistrement de l'événement traité
+    - **`HandleInvoicePaidAsync(invoice)`** : Gère le paiement réussi
+      1. Mise à jour du statut de la facture locale (`status = "paid"`)
+      2. Récupération du `TenantId` via `StripeCustomerId`
+      3. **Appel HTTP POST** vers `Konta.Tenant/api/tenant/activate-access` avec `{ TenantId, Reason, InvoiceId, Amount }`
+      4. Logging détaillé du succès/échec
+    - **`HandleSubscriptionDeletedAsync(subscription)`** : Gère la suppression d'abonnement
+      1. Récupération du `TenantId` via `StripeCustomerId`
+      2. **Appel HTTP POST** vers `Konta.Tenant/api/tenant/deactivate-access` avec `{ TenantId, Reason, SubscriptionId, CanceledAt }`
+      3. Logging d'avertissement (événement critique)
+    - **Communication Inter-Microservices** : Utilise `IHttpClientFactory` pour les appels HTTP synchrones
+    - **Note Architecture** : Prévu pour migration vers Event-Driven (RabbitMQ/Kafka) pour découplage total
 
 ### 5.2 Flux de Facturation PDF
 Génération automatique de factures PDF via **QuestPDF** lors de la réception d'un événement `invoice.paid`. Les factures sont stockées sous forme d'URL ou transmises par email.
@@ -210,6 +268,12 @@ En cas d'erreur de base de données suspectée :
 | **BCrypt.Net** | 4.0.3 | Assure un hashage de mot de passe inviolable contre les attaques. |
 | **JwtBearer** | 10.0.2 | Standard de session microservice moderne. |
 | **Swashbuckle** | 10.1.0 | Documentation d'API interactive avec support JWT. |
+| **Serilog.AspNetCore** | 10.0.0 | Framework de logging structuré et performant. |
+| **Serilog.Sinks.Seq** | 9.0.0 | Envoi des logs vers Seq pour visualisation centralisée. |
+| **Polly** | 8.x | Patterns de résilience (Retry, Circuit Breaker). |
+| **Stripe.net** | Latest | SDK officiel Stripe pour la gestion des paiements. |
+| **QuestPDF** | Latest | Génération de PDF professionnels (factures). |
+| **Ocelot** | Latest | API Gateway pour le routage et l'authentification centralisée. |
 
 ---
 
@@ -253,6 +317,53 @@ En cas d'erreur de base de données suspectée :
 - Implémentation complète d'une fonctionnalité métier.
 
 ---
+
+## 17. Outils de Développement et Monitoring
+
+### 17.1 Seq : Visualisation Centralisée des Logs
+**Seq** est l'outil de visualisation des logs pour tous les microservices Konta.
+- **URL** : http://localhost:5341
+- **Installation** : `docker run -d --name seq -e ACCEPT_EULA=Y -p 5341:80 datalust/seq:latest`
+- **Configuration** : Tous les microservices envoient automatiquement leurs logs vers Seq via Serilog
+- **Fonctionnalités** :
+  - **Filtrage puissant** : `ServiceName = "Konta.Identity" and @Level = "Error"`
+  - **Recherche full-text** : `@Message like "%PostgreSQL%"`
+  - **Dashboards personnalisés** : Création de graphiques et KPIs
+  - **Alertes** : Configuration d'alertes par email/webhook
+  - **Export** : JSON, CSV pour archivage
+- **Logs Disponibles** :
+  - **Console** : Temps réel dans le terminal
+  - **Fichiers** : `logs/[service]-YYYYMMDD.txt` (rotation quotidienne, 30 jours)
+  - **Seq** : Interface web avec recherche et filtres avancés
+
+### 17.2 Swagger UI : Documentation API Interactive
+Chaque microservice expose une interface Swagger sur `/swagger` :
+- **Konta.Identity** : https://localhost:5001/swagger
+- **Konta.Tenant** : https://localhost:5002/swagger
+- **Konta.Billing** : https://localhost:5003/swagger
+- **Konta.Finance** : https://localhost:5004/swagger
+- **Authentification JWT** : Bouton "Authorize" pour tester les endpoints protégés
+- **Format** : `Bearer <votre_token>`
+
+### 17.3 pgAdmin : Administration PostgreSQL
+- **URL** : http://localhost:5050 (si configuré via Docker)
+- **Utilisation** : Exploration des schémas, exécution de requêtes, analyse de performance
+- **Schémas Konta** :
+  - `identity` : Users, Roles, Permissions, Tenants
+  - `tenant` : Tenants, Subscriptions, TenantUsage
+  - `billing` : StripeCustomers, BillingInvoices, WebhookEvents
+  - `finance` : Accounts, Journals, JournalEntries, EntryLines
+  - `finance_core` : Budgets, TreasuryAccounts, BusinessInvoices, Tiers
+  - `ocr` : ExtractionJobs, ExtractedInvoices, ExtractedRibs
+  - `reporting` : ReportingSnapshots
+
+### 17.4 Ocelot Gateway : Point d'Entrée Unique
+- **URL** : https://localhost:5000
+- **Interface** : `index.html` avec liens vers tous les microservices
+- **Configuration** : `Configuration/Ocelot/ocelot.json`
+- **Routage** : `/gateway/{service}/*` → Port interne du microservice
+
+---
  
  ## 12. Configuration de la Documentation API (Swagger & Security)
  La documentation OpenAPI (Swagger) est configurée pour supporter l'authentification JWT directement dans l'interface.
@@ -268,6 +379,24 @@ En cas d'erreur de base de données suspectée :
 ## 18. FAQ Technique (Foire Aux Questions)
 **Q : Pourquoi ne pas avoir utilisé EF Core ?**
 R : Pour privilégier la performance brute et avoir un contrôle total sur le SQL généré.
+
+**Q : Comment consulter les logs de tous les microservices ?**
+R : Ouvrez Seq sur http://localhost:5341. Tous les microservices y envoient automatiquement leurs logs via Serilog. Vous pouvez filtrer par service, niveau, période, ou rechercher dans les messages.
+
+**Q : Comment fonctionne la gestion d'erreurs PostgreSQL ?**
+R : Le `PostgresExceptionHandler` intercepte automatiquement toutes les `PostgresException`, les diagnostique via `PostgresErrorService`, et retourne une réponse `PostgresErrorResult` structurée avec le code d'erreur, la contrainte violée, la table concernée et un message traduit en français.
+
+**Q : Que se passe-t-il si un microservice tombe pendant un appel HTTP ?**
+R : Polly gère automatiquement les échecs avec :
+- **Retry** : 3 tentatives avec backoff exponentiel (2s, 4s, 8s)
+- **Circuit Breaker** : Ouverture après 50% d'échecs sur 30s, durée d'ouverture 15s
+Cela évite de surcharger un service défaillant.
+
+**Q : Comment migrer vers une architecture event-driven ?**
+R : Remplacer les appels HTTP dans `WebhookHandler` par la publication d'événements sur RabbitMQ/Kafka. Les microservices consommeront ces événements de manière asynchrone et découplée.
+
+**Q : Où sont stockés les logs fichiers ?**
+R : Dans le dossier `logs/` de chaque microservice, avec rotation quotidienne : `logs/konta.identity-20260121.txt`. Rétention de 30 jours.
 
 ---
 

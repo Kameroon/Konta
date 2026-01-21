@@ -1,7 +1,11 @@
 using Ocelot.Middleware;
 using Konta.Gateway.Extensions;
+using Konta.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuration de Serilog pour les logs centralisés
+builder.AddSerilogLogging("Konta.Gateway");
 
 // 1. Configuration
 builder.Configuration.AddOcelotConfig(builder.Environment);

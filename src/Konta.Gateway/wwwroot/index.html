@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Konta API Gateway</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -15,27 +22,32 @@
             justify-content: center;
             color: white;
         }
+
         .container {
             text-align: center;
             padding: 2rem;
             max-width: 800px;
         }
+
         h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
+
         .subtitle {
             font-size: 1.2rem;
             margin-bottom: 3rem;
             opacity: 0.9;
         }
+
         .services {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-top: 2rem;
         }
+
         .service-card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -44,22 +56,27 @@
             transition: transform 0.3s, background 0.3s;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .service-card:hover {
             transform: translateY(-5px);
             background: rgba(255, 255, 255, 0.2);
         }
+
         .service-name {
             font-weight: bold;
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
         }
+
         .service-port {
             font-size: 0.9rem;
             opacity: 0.8;
         }
+
         .cta {
             margin-top: 3rem;
         }
+
         .btn {
             display: inline-block;
             padding: 1rem 2rem;
@@ -69,12 +86,14 @@
             border-radius: 50px;
             font-weight: bold;
             transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
+
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
+
         .status {
             margin-top: 2rem;
             padding: 1rem;
@@ -82,6 +101,7 @@
             border-radius: 10px;
             font-size: 0.9rem;
         }
+
         .status-indicator {
             display: inline-block;
             width: 10px;
@@ -91,17 +111,26 @@
             margin-right: 0.5rem;
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🚀 Konta API Gateway</h1>
         <p class="subtitle">Point d'entrée unique pour tous les microservices</p>
-        
+
         <div class="services">
             <div class="service-card">
                 <div class="service-name">🔐 Identity</div>
@@ -143,4 +172,5 @@
         </div>
     </div>
 </body>
+
 </html>

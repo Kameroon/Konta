@@ -34,6 +34,15 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
     }
 
     /// <inheritdoc />
+    public async Task<Role?> GetByIdAsync(Guid roleId)
+    {
+        _logger.LogDebug("Accès DB : Recherche de rôle par ID : {RoleId}", roleId);
+        const string sql = "SELECT * FROM identity.Roles WHERE Id = @RoleId";
+        using var connection = CreateConnection(sql, new { RoleId = roleId });
+        return await connection.QuerySingleOrDefaultAsync<Role>(sql, new { RoleId = roleId });
+    }
+
+    /// <inheritdoc />
     public async Task<Role?> GetByNameAsync(Guid tenantId, string roleName)
     {
         _logger.LogDebug("Accès DB : Recherche de rôle par nom : {RoleName}", roleName);

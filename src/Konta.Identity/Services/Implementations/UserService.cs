@@ -44,7 +44,7 @@ public class UserService : IUserService
         {
             var diagnosis = _errorService.Diagnose(ex);
             _logger.LogWarning("Erreur lors de la création de l'utilisateur {Email} : {Diagnosis}", user.Email, diagnosis.Message);
-            throw new InvalidOperationException(diagnosis.Message);
+            throw; // Re-throw pour que PostgresExceptionHandler la capture
         }
     }
 

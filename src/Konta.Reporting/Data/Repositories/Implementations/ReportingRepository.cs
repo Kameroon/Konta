@@ -17,7 +17,7 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
     }
 
     /// <summary>
-    /// Simule une agrégation performante (Normalement effectuée via cross-DB ou snapshots).
+    /// Résumé financier agrégé (Normalement effectué via cross-DB ou snapshots).
     /// </summary>
     public async Task<FinancialSummary> GetFinancialSummaryAsync(Guid tenantId, string period)
     {
@@ -29,8 +29,8 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
             SELECT 
                 @TenantId as TenantId,
                 @Period as Period,
-                COALESCE(SUM(data->>'revenue')::decimal, 0) as TotalRevenue,
-                COALESCE(SUM(data->>'expenses')::decimal, 0) as TotalExpenses
+                COALESCE(SUM((data->>'revenue')::decimal), 0) as TotalRevenue,
+                COALESCE(SUM((data->>'expenses')::decimal), 0) as TotalExpenses
             FROM reporting.ReportingSnapshots
             WHERE TenantId = @TenantId AND ReferenceDate >= DATE_TRUNC('month', CURRENT_DATE)
         ";
@@ -48,7 +48,7 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
     {
         _logger.LogDebug("Calcul de la tendance de trésorerie sur {Days} jours pour {TenantId}", days, tenantId);
 
-        // Simulation de données agrégées
+        // Récupération des données agrégées
         const string sql = @"
             SELECT 
                 ReferenceDate as Date,

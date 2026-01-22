@@ -80,8 +80,8 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(Guid id)
     {
-        _logger.LogWarning("Accès DB : Suppression du tenant ID : {Id}", id);
-        const string sql = "DELETE FROM identity.Tenants WHERE Id = @Id";
+        _logger.LogWarning("Accès DB : Suppression logique du tenant ID : {Id}", id);
+        const string sql = "UPDATE identity.Tenants SET IsActive = FALSE, UpdatedAt = NOW() WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         var affectedRows = await connection.ExecuteAsync(sql, new { Id = id });
         return affectedRows > 0;

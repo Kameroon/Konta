@@ -34,4 +34,9 @@ public record TenantResponse
     /// Indique si le compte de l'entreprise est actif.
     /// </summary>
     public bool IsActive { get; init; }
+
+    /// <summary>
+    /// Plan d'abonnement actuel.
+    /// </summary>
+    public string Plan { get; init; } = string.Empty;
 }

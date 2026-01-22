@@ -37,7 +37,7 @@ public static class TenantEndpoints
         {
             var success = await tenantService.UpdateTenantAsync(id, request);
             return success 
-                ? Results.Ok(ApiResponse<object>.Ok(null, "Tenant mis à jour avec succès"))
+                ? Results.Ok(ApiResponse.Ok("Tenant mis à jour avec succès"))
                 : Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"));
         })
         .WithName("UpdateTenant")
@@ -49,7 +49,7 @@ public static class TenantEndpoints
         {
             var success = await tenantService.DeleteTenantAsync(id);
             return success 
-                ? Results.Ok(ApiResponse<object>.Ok(null, "Tenant supprimé avec succès"))
+                ? Results.Ok(ApiResponse.Ok("Tenant supprimé avec succès"))
                 : Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"));
         })
         .WithName("DeleteTenant")

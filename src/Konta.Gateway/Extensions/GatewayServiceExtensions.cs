@@ -17,6 +17,21 @@ public static class GatewayServiceExtensions
         // Authentification JWT
         services.AddAuthenticationConfig(configuration);
 
+        // CORS pour le frontend
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy.WithOrigins(
+                    "http://localhost:5173",
+                    "https://localhost:5173"
+                )
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+            });
+        });
+
         // Ocelot
         services.AddOcelot(configuration);
 

@@ -1,7 +1,7 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/api/ocr/{everything}",
+            "DownstreamPathTemplate": "/api/ocr/upload",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
@@ -9,13 +9,45 @@
                     "Port": 5005
                 }
             ],
-            "UpstreamPathTemplate": "/gateway/ocr/{everything}",
+            "UpstreamPathTemplate": "/api/ocr/upload",
             "UpstreamHttpMethod": [
-                "Get",
-                "Post",
-                "Put",
-                "Delete",
-                "Patch"
+                "Post"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/ocr/jobs/{id}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5005
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/jobs/{id}",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/ocr/results/{jobId}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5005
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/results/{jobId}",
+            "UpstreamHttpMethod": [
+                "Get"
             ],
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",

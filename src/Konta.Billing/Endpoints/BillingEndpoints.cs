@@ -1,6 +1,8 @@
 using Konta.Billing.DTOs;
 using Konta.Billing.Services.Interfaces;
 using Konta.Billing.Services.Implementations;
+using Konta.Billing.Data.Repositories.Interfaces;
+using Konta.Billing.Models;
 using Konta.Shared.Responses;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +10,29 @@ namespace Konta.Billing.Endpoints;
 
 public static class BillingEndpoints
 {
+    /// <summary>
+    /// Enregistre les points de terminaison HTTP pour le microservice de facturation.
+    /// </summary>
     public static void MapBillingEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/billing").WithTags("Facturation & Paiement");
 
-        // POST : Créer une session de paiement
+        /// <summary>
+        /// GET /api/billing/plans
+        /// Récupère la liste de tous les plans d'abonnement actifs (Public).
+        /// </summary>
+        group.MapGet("/plans", async (ISubscriptionPlanRepository planRepository) =>
+        {
+            var plans = await planRepository.GetAllActiveAsync();
+            return Results.Ok(ApiResponse<IEnumerable<SubscriptionPlan>>.Ok(plans, "Plans récupérés."));
+        })
+        .AllowAnonymous()
+        .WithName("GetPlans");
+
+        /// <summary>
+        /// POST /api/billing/checkout
+        /// Initialise une session de paiement Stripe pour un plan donné.
+        /// </summary>
         group.MapPost("/checkout", async (CheckoutRequest request, IStripeService stripeService, HttpContext context) =>
         {
             // Note: Le tenantId devrait normalement être extrait du JWT claim
@@ -24,7 +44,10 @@ public static class BillingEndpoints
         .RequireAuthorization()
         .WithName("CreateCheckout");
 
-        // GET : Accéder au portail client Stripe
+        /// <summary>
+        /// GET /api/billing/portal
+        /// Génère une URL pour le portail de gestion d'abonnement Stripe (Self-service).
+        /// </summary>
         group.MapGet("/portal", async (IStripeService stripeService) =>
         {
             var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // Placeholder
@@ -33,7 +56,10 @@ public static class BillingEndpoints
         })
         .RequireAuthorization();
 
-        // POST : Webhook Stripe (Endpoint public mais signé)
+        /// <summary>
+        /// POST /webhooks/stripe
+        /// Point de terminaison public pour recevoir les notifications asynchrones de Stripe.
+        /// </summary>
         app.MapPost("/webhooks/stripe", async (HttpRequest request, WebhookHandler handler) =>
         {
             var json = await new StreamReader(request.Body).ReadToEndAsync();

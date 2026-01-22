@@ -1,7 +1,7 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/api/billing/{everything}",
+            "DownstreamPathTemplate": "/api/billing/plans",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
@@ -9,18 +9,60 @@
                     "Port": 5003
                 }
             ],
-            "UpstreamPathTemplate": "/gateway/billing/{everything}",
+            "UpstreamPathTemplate": "/api/billing/plans",
             "UpstreamHttpMethod": [
-                "Get",
-                "Post",
-                "Put",
-                "Delete",
-                "Patch"
+                "Get"
+            ]
+        },
+        {
+            "DownstreamPathTemplate": "/api/billing/checkout",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5003
+                }
+            ],
+            "UpstreamPathTemplate": "/api/billing/checkout",
+            "UpstreamHttpMethod": [
+                "Post"
             ],
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
                 "AllowedScopes": []
             }
+        },
+        {
+            "DownstreamPathTemplate": "/api/billing/portal",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5003
+                }
+            ],
+            "UpstreamPathTemplate": "/api/billing/portal",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/webhooks/stripe",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5003
+                }
+            ],
+            "UpstreamPathTemplate": "/api/billing/webhooks/stripe",
+            "UpstreamHttpMethod": [
+                "Post"
+            ]
         }
     ]
 }

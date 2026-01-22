@@ -34,8 +34,9 @@ public class TenantMiddleware
         // Vérifier si l'utilisateur est authentifié (a un JWT valide)
         if (context.User.Identity?.IsAuthenticated == true)
         {
-            // Extraire la valeur du claim "TenantId" depuis le JWT
-            var tenantIdClaim = context.User.FindFirst("TenantId")?.Value;
+            // Extraire la valeur du claim "TenantId" ou "tenant_id" depuis le JWT
+            var tenantIdClaim = context.User.FindFirst("TenantId")?.Value 
+                                ?? context.User.FindFirst("tenant_id")?.Value;
             
             // Tenter de convertir la chaîne en Guid (format UUID)
             if (Guid.TryParse(tenantIdClaim, out var tenantId))

@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Reporting", "src\Kont
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Gateway", "src\Konta.Gateway\Konta.Gateway.csproj", "{77DA40D2-29F2-4FC0-8665-1A30883C439F}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Konta.Web", "src\Konta.Web\Konta.Web.esproj", "{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,6 +148,12 @@ Global
 		{77DA40D2-29F2-4FC0-8665-1A30883C439F}.Release|x64.Build.0 = Release|Any CPU
 		{77DA40D2-29F2-4FC0-8665-1A30883C439F}.Release|x86.ActiveCfg = Release|Any CPU
 		{77DA40D2-29F2-4FC0-8665-1A30883C439F}.Release|x86.Build.0 = Release|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Release|x64.ActiveCfg = Release|Any CPU
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,5 +168,9 @@ Global
 		{C20CCC2D-C0BA-4C9A-A371-D3734C1FF1A9} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{3FF693D3-4CEA-41F6-85C6-2AB1231BEE4A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{77DA40D2-29F2-4FC0-8665-1A30883C439F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{550EDAC6-19DF-45FA-BBF5-BED91ADB2A11} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {08F8CA5A-464E-44EC-BB50-F26EF6D83BE0}
 	EndGlobalSection
 EndGlobal

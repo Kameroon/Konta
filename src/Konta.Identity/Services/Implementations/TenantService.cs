@@ -50,7 +50,8 @@ public class TenantService : ITenantService
             _logger.LogDebug("Création du tenant : {TenantName}", request.TenantName);
             var tenant = new Tenant
             {
-                Name = request.TenantName
+                Name = request.TenantName,
+                Plan = request.Plan
             };
             var tenantId = await _tenantRepository.CreateAsync(tenant);
 

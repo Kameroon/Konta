@@ -58,7 +58,8 @@ public class RoleService : IRoleService
         }
 
         // Note : Dans un contexte authentifié, on devrait vérifier que role.TenantId correspond au tenant de l'utilisateur courant
-        // Exemple : if (role.TenantId != currentUserTenantId) throw new UnauthorizedAccessException();
+        // Note : switch (role.Name) { ... }
+
         // Pour l'instant, on fait confiance au fait que l'endpoint vérifie déjà l'appartenance
 
         // ✅ VALIDATION : Vérifier que la permission existe

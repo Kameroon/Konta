@@ -52,8 +52,8 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Insertion du nouveau tenant {Name}", tenant.Name); // Log d'information
         const string sql = @"
-            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, CreatedAt)
-            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @CreatedAt)
+            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, Plan, CreatedAt)
+            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @Plan, @CreatedAt)
             RETURNING Id"; // Requête SQL brute avec retour de l'ID
         
         using var connection = CreateConnection(sql, tenant);
@@ -71,6 +71,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
                 Industry = @Industry, 
                 Address = @Address, 
                 TaxId = @TaxId, 
+                Plan = @Plan,
                 UpdatedAt = @UpdatedAt,
                 IsActive = @IsActive
             WHERE Id = @Id"; // Mise à jour complète de l'entité
@@ -83,10 +84,10 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(Guid id)
     {
-        _logger.LogWarning("Accès DB : Suppression (physique) du tenant {Id}", id); // Log d'avertissement
-        const string sql = "DELETE FROM identity.Tenants WHERE Id = @Id";
+        _logger.LogWarning("Accès DB : Suppression logique du tenant {Id}", id); // Log d'avertissement
+        const string sql = "UPDATE identity.Tenants SET IsActive = FALSE, UpdatedAt = NOW() WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         var rows = await connection.ExecuteAsync(sql, new { Id = id });
-        return rows > 0; // Retourne vrai si la suppression a réussi
+        return rows > 0; // Retourne vrai si la mise à jour a réussi
     }
 }

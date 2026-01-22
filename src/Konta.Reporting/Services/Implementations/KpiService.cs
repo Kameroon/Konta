@@ -63,26 +63,32 @@ public class KpiService : IKpiService
         
         var summary = await GetDashboardSummaryAsync(tenantId);
         
-        // Construction des indicateurs visuels
+        // Construction des indicateurs visuels alignés avec le frontend
         return new List<DashboardKpi>
         {
             new DashboardKpi { 
-                Name = "Chiffre d'Affaires", 
+                Label = "Chiffre d'Affaires", 
                 Value = summary.TotalRevenue, 
-                TrendPercentage = 5.2m, 
-                Status = "Ok" 
+                PreviousValue = summary.TotalRevenue * 0.92m, // Mock : +8%
+                Trend = "up",
+                Format = "currency",
+                Color = "#10b981" // Green-500
             },
             new DashboardKpi { 
-                Name = "Marge Brute", 
+                Label = "Marge Brute", 
                 Value = summary.GrossMargin, 
-                TrendPercentage = -1.5m, 
-                Status = summary.GrossMargin > 0 ? "Ok" : "Critical" 
+                PreviousValue = summary.GrossMargin * 1.05m, // Mock : -5%
+                Trend = "down",
+                Format = "currency",
+                Color = "#3b82f6" // Blue-500
             },
             new DashboardKpi { 
-                Name = "Rentabilité", 
+                Label = "Rentabilité", 
                 Value = summary.ProfitabilityPercentage, 
-                Unit = "%", 
-                Status = summary.ProfitabilityPercentage > 15 ? "Ok" : "Warning" 
+                PreviousValue = 22.5m, 
+                Trend = summary.ProfitabilityPercentage > 22.5m ? "up" : "down",
+                Format = "percentage",
+                Color = "#8b5cf6" // Violet-500
             }
         };
     }

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Konta.Reporting.Services.Interfaces;
+using Konta.Shared.Responses;
+using Konta.Shared.Data;
 
 namespace Konta.Reporting.Endpoints;
 
@@ -17,32 +19,36 @@ public static class ReportingEndpoints
         // --- DASHBOARDS ---
         
         // Obtenir le résumé financier du tableau de bord (Caché)
-        group.MapGet("/dashboard/summary", async (Guid tenantId, IKpiService service) =>
+        group.MapGet("/dashboard/summary", async (ITenantContext tenantContext, IKpiService service) =>
         {
-            var summary = await service.GetDashboardSummaryAsync(tenantId);
-            return Results.Ok(summary);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var summary = await service.GetDashboardSummaryAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse<object>.Ok(summary));
         }).RequireAuthorization();
 
         // Obtenir la liste des KPIs principaux
-        group.MapGet("/kpi/main", async (Guid tenantId, IKpiService service) =>
+        group.MapGet("/kpi/main", async (ITenantContext tenantContext, IKpiService service) =>
         {
-            var kpis = await service.GetMainKpisAsync(tenantId);
-            return Results.Ok(kpis);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var kpis = await service.GetMainKpisAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse<object>.Ok(kpis));
         }).RequireAuthorization();
 
         // --- EXPORTS ---
         
         // Générer et télécharger le PDF de synthèse
-        group.MapGet("/export/pdf", async (Guid tenantId, IExportService service) =>
+        group.MapGet("/export/pdf", async (ITenantContext tenantContext, IExportService service) =>
         {
-            var pdf = await service.GenerateFinancialPdfAsync(tenantId);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var pdf = await service.GenerateFinancialPdfAsync(tenantContext.TenantId.Value);
             return Results.File(pdf, "application/pdf", $"Rapport_{DateTime.Now:yyyyMMdd}.pdf");
         }).RequireAuthorization();
 
         // Générer et télécharger l'export Excel de trésorerie
-        group.MapGet("/export/excel", async (Guid tenantId, IExportService service) =>
+        group.MapGet("/export/excel", async (ITenantContext tenantContext, IExportService service) =>
             {
-                var excel = await service.GenerateCashFlowExcelAsync(tenantId);
+                if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+                var excel = await service.GenerateCashFlowExcelAsync(tenantContext.TenantId.Value);
                 return Results.File(excel, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Tresorerie_{DateTime.Now:yyyyMMdd}.xlsx");
             }).RequireAuthorization();
     }

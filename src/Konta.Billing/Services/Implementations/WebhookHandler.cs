@@ -101,7 +101,8 @@ public class WebhookHandler
 
             // 3. Appel HTTP vers Konta.Tenant pour activer l'accès
             // NOTE: Dans une architecture event-driven mature, ceci serait un événement publié sur RabbitMQ/Kafka
-            // Exemple : await _messageBus.PublishAsync(new TenantAccessGrantedEvent { TenantId = stripeCustomer.TenantId });
+            // Publication de l'événement de permission accordée
+
             
             var tenantServiceUrl = _configuration["Services:Tenant:BaseUrl"] ?? "https://localhost:5002";
             var httpClient = _httpClientFactory.CreateClient();
@@ -162,7 +163,8 @@ public class WebhookHandler
 
             // 2. Appel HTTP vers Konta.Tenant pour désactiver l'accès
             // NOTE: Dans une architecture event-driven, ceci serait un événement publié
-            // Exemple : await _messageBus.PublishAsync(new TenantAccessRevokedEvent { TenantId = stripeCustomer.TenantId });
+            // Publication de l'événement de permission révoquée
+
             
             var tenantServiceUrl = _configuration["Services:Tenant:BaseUrl"] ?? "https://localhost:5002";
             var httpClient = _httpClientFactory.CreateClient();

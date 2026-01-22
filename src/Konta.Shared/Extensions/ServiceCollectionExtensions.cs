@@ -14,6 +14,8 @@ using Polly;
 using Polly.Retry;
 using Polly.CircuitBreaker;
 using System.Text;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
 
 namespace Konta.Shared.Extensions;
 
@@ -48,6 +50,13 @@ public static class ServiceCollectionExtensions
         // Enregistrement du handler d'exceptions PostgreSQL
         services.AddExceptionHandler<PostgresExceptionHandler>();
         
+        // Configuration JSON (Enums en chaînes de caractères par défaut)
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.SerializerOptions.PropertyNameCaseInsensitive = true;
+        });
+
         return services;
     }
 

@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeCustomerRepository, StripeCustomerRepository>();
         services.AddScoped<IBillingInvoiceRepository, BillingInvoiceRepository>();
         services.AddScoped<IWebhookEventRepository, WebhookEventRepository>();
+        services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 
         return services;
     }

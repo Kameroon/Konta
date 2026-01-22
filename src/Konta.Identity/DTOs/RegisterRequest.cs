@@ -37,4 +37,10 @@ public record RegisterRequest
     /// </summary>
     [Required(ErrorMessage = "Le nom de famille est obligatoire.")]
     public string LastName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Plan d'abonnement sélectionné (ex: discovery, basic, advanced, premium, expertise).
+    /// </summary>
+    [Required(ErrorMessage = "Le choix d'un forfait est obligatoire.")]
+    public string Plan { get; init; } = "discovery";
 }

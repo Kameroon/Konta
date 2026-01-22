@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.784122">
+  <PropertyGroup>
+    <StartupCommand>npm run dev</StartupCommand>
+    <JavaScriptTestRoot>src\</JavaScriptTestRoot>
+    <JavaScriptTestFramework>Jest</JavaScriptTestFramework>
+    <!-- Allows the build step to generate subsequent bundle for deployment -->
+    <BuildCommand>npm run build</BuildCommand>
+    <!-- Allows the build step to generate subsequent bundle for deployment -->
+    <SetupCommand>npm install</SetupCommand>
+    <!-- Build Output Path -->
+    <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
+  </PropertyGroup>
+</Project>

@@ -16,7 +16,8 @@ public static class RoleEndpoints
 
         group.MapPost("/", async (CreateRoleRequest request, IRoleService roleService, HttpContext httpContext) =>
         {
-            var tenantIdClaim = httpContext.User.FindFirst("tenant_id")?.Value;
+            var tenantIdClaim = httpContext.User.FindFirst("TenantId")?.Value 
+                                ?? httpContext.User.FindFirst("tenant_id")?.Value;
             if (string.IsNullOrEmpty(tenantIdClaim)) return Results.Unauthorized();
 
             // Délégation de toute la logique au Service

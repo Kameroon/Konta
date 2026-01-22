@@ -36,8 +36,8 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
         const string sql = @"
             SELECT DISTINCT p.SystemName 
             FROM identity.Permissions p
-            JOIN RolePermissions rp ON p.Id = rp.PermissionId
-            JOIN UserRoles ur ON rp.RoleId = ur.RoleId
+            JOIN identity.RolePermissions rp ON p.Id = rp.PermissionId
+            JOIN identity.UserRoles ur ON rp.RoleId = ur.RoleId
             WHERE ur.UserId = @UserId";
         
         using var connection = CreateConnection(sql, new { UserId = userId });

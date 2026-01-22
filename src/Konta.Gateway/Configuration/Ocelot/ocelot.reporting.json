@@ -1,7 +1,7 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/api/reporting/{everything}",
+            "DownstreamPathTemplate": "/api/reporting/dashboard/summary",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
@@ -9,13 +9,63 @@
                     "Port": 5007
                 }
             ],
-            "UpstreamPathTemplate": "/gateway/reporting/{everything}",
+            "UpstreamPathTemplate": "/api/reporting/dashboard/summary",
             "UpstreamHttpMethod": [
-                "Get",
-                "Post",
-                "Put",
-                "Delete",
-                "Patch"
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/reporting/kpi/main",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5007
+                }
+            ],
+            "UpstreamPathTemplate": "/api/reporting/kpi/main",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/reporting/export/pdf",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5007
+                }
+            ],
+            "UpstreamPathTemplate": "/api/reporting/export/pdf",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/reporting/export/excel",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5007
+                }
+            ],
+            "UpstreamPathTemplate": "/api/reporting/export/excel",
+            "UpstreamHttpMethod": [
+                "Get"
             ],
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",

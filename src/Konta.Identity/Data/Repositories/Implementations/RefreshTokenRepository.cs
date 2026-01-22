@@ -37,7 +37,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshTokenRepository>, IR
     }
 
     /// <inheritdoc />
-    public async Task RevokeAsync(string token, string replacedByToken = null)
+    public async Task RevokeAsync(string token, string? replacedByToken = null)
     {
         _logger.LogDebug("Révocation du token : {Token}...", token[..10]);
         const string sql = @"

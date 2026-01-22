@@ -6,12 +6,22 @@ namespace Konta.Identity.DTOs;
 public record TokenResponse
 {
     /// <summary>
-    /// Jeton d'accès (JWT) à utiliser pour les requêtes authentifiées.
+    /// Jeton d'accès (JWT).
     /// </summary>
     public string Token { get; init; } = string.Empty;
 
     /// <summary>
-    /// Date et heure d'expiration du jeton d'accès.
+    /// Jeton de rafraîchissement.
+    /// </summary>
+    public string RefreshToken { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Date d'expiration du jeton d'accès.
     /// </summary>
     public DateTime Expiration { get; init; }
+
+    /// <summary>
+    /// Informations sur l'utilisateur connecté.
+    /// </summary>
+    public UserInfoResponse User { get; init; } = new();
 }

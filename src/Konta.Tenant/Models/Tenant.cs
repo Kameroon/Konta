@@ -31,4 +31,9 @@ public class Tenant : BaseEntity
     /// Identifiant fiscal unique de l'entreprise.
     /// </summary>
     public string? TaxId { get; set; }
+
+    /// <summary>
+    /// Plan d'abonnement actuel.
+    /// </summary>
+    public string Plan { get; set; } = "Free";
 }

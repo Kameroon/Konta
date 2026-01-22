@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Routing;
 using Konta.Finance.Core.Models;
 using Konta.Finance.Core.Data.Repositories.Interfaces;
 using Konta.Finance.Core.Services.Interfaces;
+using Konta.Shared.Data;
+using Konta.Shared.Responses;
 
 namespace Konta.Finance.Core.Endpoints;
 
@@ -22,14 +24,15 @@ public static class FinanceCoreEndpoints
         group.MapPost("/tiers", async (Tier tier, ITierRepository repo) =>
         {
             var id = await repo.CreateAsync(tier);
-            return Results.Created($"/api/finance-core/tiers/{id}", new { Id = id });
+            return Results.Created($"/api/finance-core/tiers/{id}", ApiResponse<object>.Ok(new { Id = id }));
         }).RequireAuthorization();
 
         // Récupérer les tiers d'une entreprise
-        group.MapGet("/tiers", async (Guid tenantId, TierType? type, ITierRepository repo) => 
+        group.MapGet("/tiers", async (ITenantContext tenantContext, TierType? type, ITierRepository repo) => 
         {
-            var tiers = await repo.GetByTenantIdAsync(tenantId, type);
-            return Results.Ok(tiers);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var tiers = await repo.GetByTenantIdAsync(tenantContext.TenantId.Value, type);
+            return Results.Ok(ApiResponse<object>.Ok(tiers));
         }).RequireAuthorization();
 
         // --- GESTION BUDGÉTAIRE ---
@@ -38,14 +41,15 @@ public static class FinanceCoreEndpoints
         group.MapPost("/budgets", async (Budget budget, IBudgetRepository repo) =>
         {
             var id = await repo.CreateAsync(budget);
-            return Results.Created($"/api/finance-core/budgets/{id}", new { Id = id });
+            return Results.Created($"/api/finance-core/budgets/{id}", ApiResponse<object>.Ok(new { Id = id }));
         }).RequireAuthorization();
 
         // Consulter les budgets actifs et leur état de consommation
-        group.MapGet("/budgets", async (Guid tenantId, IBudgetRepository repo) =>
+        group.MapGet("/budgets", async (ITenantContext tenantContext, IBudgetRepository repo) =>
         {
-            var budgets = await repo.GetCurrentBudgetsAsync(tenantId, DateTime.UtcNow);
-            return Results.Ok(budgets);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var budgets = await repo.GetCurrentBudgetsAsync(tenantContext.TenantId.Value, DateTime.UtcNow);
+            return Results.Ok(ApiResponse<object>.Ok(budgets));
         }).RequireAuthorization();
 
         // --- FACTURATION OPÉRATIONNELLE ---
@@ -65,7 +69,7 @@ public static class FinanceCoreEndpoints
                 await budgetService.TrackSpendingAsync(invoice.TenantId, "Général", invoice.AmountHt, id);
             }
 
-            return Results.Created($"/api/finance-core/invoices/{id}", new { Id = id });
+            return Results.Created($"/api/finance-core/invoices/{id}", ApiResponse<object>.Ok(new { Id = id }));
         }).RequireAuthorization();
 
         // --- OPÉRATIONS DE TRÉSORERIE ---
@@ -74,16 +78,17 @@ public static class FinanceCoreEndpoints
         group.MapPost("/treasury/movement", async (Guid accountId, decimal amount, bool isIncome, ITreasuryService service) =>
         {
             await service.RegisterMovementAsync(accountId, amount, isIncome);
-            return Results.Ok(new { Message = "Mouvement de trésorerie validé et enregistré." });
+            return Results.Ok(ApiResponse.Ok("Mouvement de trésorerie validé et enregistré."));
         }).RequireAuthorization();
 
         // --- ALERTES ET SURVEILLANCE ---
         
         // Récupérer les alertes financières non lues
-        group.MapGet("/alerts", async (Guid tenantId, IFinanceAlertRepository repo) =>
+        group.MapGet("/alerts", async (ITenantContext tenantContext, IFinanceAlertRepository repo) =>
         {
-            var alerts = await repo.GetUnreadByTenantIdAsync(tenantId);
-            return Results.Ok(alerts);
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var alerts = await repo.GetUnreadByTenantIdAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse<object>.Ok(alerts));
         }).RequireAuthorization();
 
         // Marquer une alerte comme traitée

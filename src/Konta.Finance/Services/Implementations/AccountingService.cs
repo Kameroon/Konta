@@ -75,7 +75,8 @@ public class AccountingService : IAccountingService
     {
         _logger.LogInformation("Initialisation du plan comptable PCG pour le tenant {Id}", tenantId);
 
-        // Exemple simplifié de plan comptable (PCG France)
+        // Utilisation du plan comptable (PCG France)
+
         var defaults = new List<Account>
         {
             new Account { TenantId = tenantId, Code = "101000", Name = "Capital", Type = AccountType.Equity },

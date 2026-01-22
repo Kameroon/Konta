@@ -58,7 +58,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
         const string sql = @"
             SELECT r.* 
             FROM identity.Roles r
-            JOIN UserRoles ur ON r.Id = ur.RoleId
+            JOIN identity.UserRoles ur ON r.Id = ur.RoleId
             WHERE ur.UserId = @UserId";
         using var connection = CreateConnection(sql, new { UserId = userId });
         return await connection.QueryAsync<Role>(sql, new { UserId = userId });
@@ -77,7 +77,7 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
     public async Task AssignRoleToUserAsync(Guid userId, Guid roleId)
     {
         _logger.LogDebug("Accès DB : Assignation rôle {RoleId} à l'utilisateur {UserId}", roleId, userId);
-        const string sql = "INSERT INTO UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)";
+        const string sql = "INSERT INTO identity.UserRoles (UserId, RoleId) VALUES (@UserId, @RoleId)";
         using var connection = CreateConnection(sql, new { UserId = userId, RoleId = roleId });
         await connection.ExecuteAsync(sql, new { UserId = userId, RoleId = roleId });
     }

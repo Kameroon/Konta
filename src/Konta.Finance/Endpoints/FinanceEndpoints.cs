@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Routing;
 using Konta.Finance.Models;
 using Konta.Finance.Services.Interfaces;
 using Konta.Finance.Data.Repositories.Interfaces;
+using Konta.Shared.Data;
+using Konta.Shared.Responses;
 
 namespace Konta.Finance.Endpoints;
 
@@ -14,15 +16,18 @@ public static class FinanceEndpoints
         var group = app.MapGroup("/api/finance").WithTags("Finance");
 
         // --- Accounts ---
-        group.MapGet("/accounts", async (Guid tenantId, IAccountRepository repo) =>
+        group.MapGet("/accounts", async (ITenantContext tenantContext, IAccountRepository repo) =>
         {
-            return Results.Ok(await repo.GetAllByTenantIdAsync(tenantId));
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var accounts = await repo.GetAllByTenantIdAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse<object>.Ok(accounts));
         }).RequireAuthorization();
 
-        group.MapPost("/accounts/initialize", async (Guid tenantId, IAccountingService service) =>
+        group.MapPost("/accounts/initialize", async (ITenantContext tenantContext, IAccountingService service) =>
         {
-            await service.InitializeDefaultAccountsAsync(tenantId);
-            return Results.Ok(new { Message = "Plan comptable initialisé." });
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            await service.InitializeDefaultAccountsAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse.Ok("Plan comptable initialisé."));
         }).RequireAuthorization();
 
         // --- Entries ---

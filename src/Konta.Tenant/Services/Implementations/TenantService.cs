@@ -60,7 +60,8 @@ public class TenantService : ITenantService
                 Identifier = tenant.Identifier,
                 Industry = tenant.Industry ?? "",
                 CreatedAt = tenant.CreatedAt,
-                IsActive = true
+                IsActive = true,
+                Plan = tenant.Plan
             };
         }
         catch (PostgresException ex)
@@ -89,7 +90,8 @@ public class TenantService : ITenantService
             Identifier = tenant.Identifier,
             Industry = tenant.Industry ?? "",
             CreatedAt = tenant.CreatedAt,
-            IsActive = tenant.IsActive
+            IsActive = tenant.IsActive,
+            Plan = tenant.Plan
         };
     }
 
@@ -108,7 +110,8 @@ public class TenantService : ITenantService
             Identifier = t.Identifier,
             Industry = t.Industry ?? "",
             CreatedAt = t.CreatedAt,
-            IsActive = t.IsActive
+            IsActive = t.IsActive,
+            Plan = t.Plan
         });
     }
 }

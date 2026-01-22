@@ -42,10 +42,18 @@ public class AuthService : IAuthService
         // 1. Récupération de l'utilisateur via le service dédié
         var user = await _userService.GetUserByEmailAsync(request.Email);
         
-        // 2. Vérification des identifiants
-        if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user == null)
         {
-            _logger.LogWarning("Échec de connexion (Identifiants invalides) pour : {Email}", request.Email);
+            _logger.LogWarning("Échec de connexion : Utilisateur introuvable pour l'email '{Email}'", request.Email);
+            throw new UnauthorizedAccessException("Identifiants invalides");
+        }
+
+        // 2. Vérification des identifiants
+        bool isPasswordValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
+        
+        if (!isPasswordValid)
+        {
+            _logger.LogWarning("Échec de connexion : Mot de passe incorrect pour l'email '{Email}'. Hash en base : {HashPrefix}...", request.Email, user.PasswordHash.Substring(0, Math.Min(10, user.PasswordHash.Length)));
             throw new UnauthorizedAccessException("Identifiants invalides");
         }
 
@@ -69,7 +77,21 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.CreateAsync(refreshToken);
         
         _logger.LogInformation("Connexion réussie pour : {Email}", request.Email);
-        return new TokenResponse { Token = accessToken, Expiration = DateTime.UtcNow.AddMinutes(60) };
+        return new TokenResponse 
+        { 
+            Token = accessToken, 
+            RefreshToken = refreshToken.Token,
+            Expiration = DateTime.UtcNow.AddMinutes(60),
+            User = new UserInfoResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
+                TenantId = user.TenantId
+            }
+        };
     }
 
     /// <inheritdoc />
@@ -119,6 +141,20 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.CreateAsync(newRefreshToken);
 
         _logger.LogInformation("Tokens rafraîchis avec succès pour : {Email}", user.Email);
-        return new TokenResponse { Token = newAccessToken, Expiration = DateTime.UtcNow.AddMinutes(60) };
+        return new TokenResponse 
+        { 
+            Token = newAccessToken, 
+            RefreshToken = newRefreshToken.Token,
+            Expiration = DateTime.UtcNow.AddMinutes(60),
+            User = new UserInfoResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
+                TenantId = user.TenantId
+            }
+        };
     }
 }

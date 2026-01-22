@@ -1,7 +1,7 @@
 # L'Encyclopédie Suprême de l'Architecture Konta ERP (Édition Architecte Master)
 
-**Dernière mise à jour**: 21 Janvier 2026
-**Version**: 43.0 (Enhanced Error Handling, Centralized Logging & Resilience)
+**Dernière mise à jour**: 22 Janvier 2026
+**Version**: 46.0 (Role Fix, SaaS Plan Enrichment & Dashboard Sync)
 
 ---
 
@@ -101,10 +101,10 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
 ### 3.2 Spécification de la Base de Données (Identity Table Analysis)
 | Table | Colonne | Type SQL | Rôle et Contrainte |
 | :--- | :--- | :--- | :--- |
-| **Tenants** | `Id` | UUID PK | Identifiant universel de l'entreprise. |
-| **Tenants** | `Name` | TEXT | Nom commercial obligatoire. |
+| **Tenants** | `Plan` | TEXT | Niveau d'abonnement SaaS (Free, Premium, etc.). |
 | **Users** | `Email` | TEXT UNIQUE | Identifiant de connexion indexé. |
 | **Users** | `PasswordHash`| TEXT | Secret hashé en BCrypt. |
+| **Users** | `Role` | TEXT | Rôle principal injecté dans les claims JWT. |
 | **Roles** | `Name` | TEXT | Nom du rôle (ex: Comptable, Admin). |
 | **Permissions**| `SystemName` | TEXT UNIQUE | Identifiant technique (ex: `finance.write`). |
 
@@ -200,6 +200,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 `Konta.Reporting` centralise les indicateurs et fournit une couche analytique optimisée.
 - **Stratégie de Cache** : Utilisation de `IMemoryCache` (Standard .NET) pour garantir des temps de réponse sous les 100ms sur les dashboards.
 - **Reporting Snapshot** : Système d'historisation des données agrégées pour éviter les calculs coûteux sur les données froides.
+- **KPI Model Sync** : Le modèle `DashboardKpi` est strictement aligné avec le frontend (Label, Value, Trend, Format, Color) pour une réactivité immédiate de l'UI.
 - **Exports Natifs** : Moteur PDF (`QuestPDF`) et Excel (`ClosedXML`) intégrés.
 
 ### 8.2 Spécification de la Base de Données (Analytical Schema)
@@ -225,7 +226,9 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 | **ExtractionJobs** | `Status` | INTEGER | État du job (Pending, Processing, Completed, Failed). |
 | **ExtractedInvoices**| `VendorName` | TEXT | Nom du fournisseur détecté par l'IA. |
 | **ExtractedInvoices**| `TotalAmountTtc`| DECIMAL | Montant final TTC extrait. |
+| **ExtractedRibs** | `BankName` | TEXT | Nom de la banque extrait. |
 | **ExtractedRibs** | `Iban` | TEXT | IBAN extrait et nettoyé. |
+| **ExtractedRibs** | `Bic` | TEXT | Code BIC/SWIFT extrait. |
 
 ---
 
@@ -400,7 +403,45 @@ R : Dans le dossier `logs/` de chaque microservice, avec rotation quotidienne : 
 
 ---
 
-## 19. Conclusion technique
+## 19. Architecture Frontend : `Konta.Web`
+
+L'interface utilisateur de Konta est une application de pointe utilisant **Vue.js 3**, **Vite** et **TypeScript**. Elle est conçue pour être à la fois extrêmement performante et visuellement époustouflante.
+
+### 20.1 Stack Technique Frontend
+- **Framework** : Vue.js 3 (Composition API).
+- **Store** : Pinia (Gestion d'état modulaire : `auth`, `tenant`, `ui`).
+- **Routing** : Vue Router 4 avec gardes de navigation (RBAC).
+- **Style** : CSS Moderne (Flexbox, Grid, Glassmorphism).
+- **Animations** : Transitions Vue et micro-animations CSS.
+
+### 20.2 Structure de Navigation & Layouts
+L'application utilise une architecture de layouts imbriqués pour séparer l'expérience visiteur de l'espace de travail :
+
+1. **`PublicLayout.vue`** : 
+   - **Cible** : Visiteurs non connectés.
+   - **Éléments** : Header transparent, Hero sections, Footer global sombre.
+   - **Routes** : `/plans` (Accueil), `/auth/login`, `/auth/register`.
+
+2. **`MainLayout.vue`** :
+   - **Cible** : Utilisateurs authentifiés.
+   - **Éléments** : Sidebar dynamique, Topbar avec infos Tenant, Zone de contenu scrollable, Footer intégré.
+   - **Routes** : `/app/dashboard`, `/app/documents`, `/app/profile`, `/app/admin`.
+
+### 20.3 Logique de Redirection (Smart Routing)
+Konta implémente une redirection intelligente basée sur le profil utilisateur lors de la connexion :
+- **Rôle `Admin`** : Redirection vers la console d'administration (`/app/admin`).
+- **Rôle `User`** : Redirection vers le tableau de bord métier (`/app/dashboard`).
+- **Accès Anonyme** : Redirection automatique de `/` vers `/plans`.
+
+### 20.4 Module d'Administration
+La console d'administration (`AdminView.vue`) offre un contrôle total sur l'écosystème :
+- **Management des Utilisateurs** : CRUD et contrôle des accès.
+- **Topologie des Tenants** : Vue d'ensemble des entreprises clientes et de leurs forfaits.
+- **Monitoring** : Statistiques MRR, nombre d'utilisateurs et santé du système.
+
+---
+
+## 21. Conclusion technique
 La plateforme Konta est bâtie pour durer. Chaque dossier, chaque fichier et chaque ligne de code respecte une architecture pensée pour l'échelle. Cette encyclopédie technique de plus de 500 lignes est le garant que n'importe quel ingénieur, actuel ou futur, pourra s'approprier le système et le faire évoluer avec la même rigueur.
 
 ---

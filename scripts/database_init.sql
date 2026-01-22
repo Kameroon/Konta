@@ -12,6 +12,10 @@ CREATE SCHEMA IF NOT EXISTS identity;
 CREATE TABLE IF NOT EXISTS identity.Tenants (
     Id UUID PRIMARY KEY,
     Name TEXT NOT NULL,
+    Identifier TEXT,
+    Industry TEXT,
+    Address TEXT,
+    TaxId TEXT,
     Plan TEXT NOT NULL DEFAULT 'Free',
     CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE,
@@ -101,6 +105,16 @@ COMMENT ON TABLE identity.RolePermissions IS 'Association n-n entre les rôles e
 COMMENT ON COLUMN identity.RolePermissions.RoleId IS 'Référence au rôle';
 COMMENT ON COLUMN identity.RolePermissions.PermissionId IS 'Référence à la permission associée';
 
+CREATE TABLE IF NOT EXISTS identity.UserRoles (
+    UserId UUID NOT NULL REFERENCES identity.Users(Id),
+    RoleId UUID NOT NULL REFERENCES identity.Roles(Id),
+    PRIMARY KEY (UserId, RoleId)
+);
+
+COMMENT ON TABLE identity.UserRoles IS 'Association n-n entre les utilisateurs et les rôles';
+COMMENT ON COLUMN identity.UserRoles.UserId IS 'Référence à l''utilisateur';
+COMMENT ON COLUMN identity.UserRoles.RoleId IS 'Référence au rôle';
+
 CREATE TABLE IF NOT EXISTS identity.RefreshTokens (
     Id UUID PRIMARY KEY,
     UserId UUID NOT NULL REFERENCES identity.Users(Id),
@@ -189,6 +203,27 @@ COMMENT ON COLUMN billing.WebhookEvents.StripeEventId IS 'ID natif de l''event c
 COMMENT ON COLUMN billing.WebhookEvents.EventType IS 'Type d''événement (ex: invoice.paid)';
 COMMENT ON COLUMN billing.WebhookEvents.Data IS 'Corps complet de l''événement au format JSON';
 COMMENT ON COLUMN billing.WebhookEvents.ProcessedAt IS 'Date de prise en compte par le système';
+
+CREATE TABLE IF NOT EXISTS billing.SubscriptionPlans (
+    Id UUID PRIMARY KEY,
+    Code TEXT NOT NULL UNIQUE,
+    Name TEXT NOT NULL,
+    Description TEXT,
+    Price DECIMAL(18,2) NOT NULL,
+    Currency TEXT NOT NULL DEFAULT 'EUR',
+    Interval TEXT NOT NULL DEFAULT 'month',
+    MaxUsers INTEGER,
+    StorageGb INTEGER,
+    HasPrioritySupport BOOLEAN NOT NULL DEFAULT FALSE,
+    HasApiAccess BOOLEAN NOT NULL DEFAULT FALSE,
+    Modules JSONB, -- Liste des modules inclus
+    Features JSONB, -- Liste des caractéristiques (points à puces)
+    CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP WITH TIME ZONE,
+    IsActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+COMMENT ON TABLE billing.SubscriptionPlans IS 'Catalogue des offres d''abonnement SaaS';
 
 -- ----------------------------------------------------------
 -- 3. SCHEMA FINANCE (Comptabilité Générale)
@@ -488,6 +523,20 @@ COMMENT ON COLUMN ocr.ExtractedInvoices.CreatedAt IS 'Date de création des donn
 COMMENT ON COLUMN ocr.ExtractedInvoices.UpdatedAt IS 'Correction manuelle éventuelle';
 COMMENT ON COLUMN ocr.ExtractedInvoices.IsActive IS 'Visibilité des données extraites';
 
+CREATE TABLE IF NOT EXISTS ocr.ExtractedRibs (
+    Id UUID PRIMARY KEY,
+    JobId UUID NOT NULL REFERENCES ocr.ExtractionJobs(Id),
+    BankName TEXT,
+    Iban TEXT,
+    Bic TEXT,
+    AccountHolder TEXT,
+    CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP WITH TIME ZONE,
+    IsActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+COMMENT ON TABLE ocr.ExtractedRibs IS 'Données bancaires extraites des documents (RIB)';
+
 -- ----------------------------------------------------------
 -- 6. SCHEMA REPORTING (Analytics)
 -- ----------------------------------------------------------
@@ -525,9 +574,9 @@ VALUES ('d290f1ee-6c54-4b01-90e6-d701748f0851', 'Konta Corp Test', 'Premium');
 -- 2. Utilisateurs pour le premier Tenant (Konta Corp Test)
 -- Password: "Password123!" hashé (exemple)
 INSERT INTO identity.Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role) VALUES 
-('7c9e6679-7425-40de-944b-e07fc1f90ae7', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'admin@kontacorp.com', '$2a$11$qR5Lp6E...fakehash...', 'Jean', 'Admin', 'Admin'),
-('b5e9c8a2-1234-4a5b-bcde-f0123456789a', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'comptable@kontacorp.com', '$2a$11$qR5Lp6E...fakehash...', 'Sophie', 'Comptable', 'Accountant'),
-('c6f0d9b3-5678-4b6c-defa-e1234567890b', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'auditeur@kontacorp.com', '$2a$11$qR5Lp6E...fakehash...', 'Marc', 'Auditeur', 'Auditor');
+('7c9e6679-7425-40de-944b-e07fc1f90ae7', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'admin@kontacorp.com', '$2a$11$OvHGeoGRS694M.8YPOrKUuFaHQHh9ixo7VjZeYCSk4IGmqF9Vif/6', 'Jean', 'Admin', 'Admin'),
+('b5e9c8a2-1234-4a5b-bcde-f0123456789a', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'comptable@kontacorp.com', '$2a$11$OvHGeoGRS694M.8YPOrKUuFaHQHh9ixo7VjZeYCSk4IGmqF9Vif/6', 'Sophie', 'Comptable', 'Accountant'),
+('c6f0d9b3-5678-4b6c-defa-e1234567890b', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'auditeur@kontacorp.com', '$2a$11$OvHGeoGRS694M.8YPOrKUuFaHQHh9ixo7VjZeYCSk4IGmqF9Vif/6', 'Marc', 'Auditeur', 'Auditor');
 
 -- 3. Un Second Tenant (EcoService SARL) pour tests multi-tenant
 INSERT INTO identity.Tenants (Id, Name, Plan) 
@@ -535,9 +584,28 @@ VALUES ('e301f2ff-7d65-5c12-a1f7-e812859a1962', 'EcoService SARL', 'Free');
 
 -- 4. Administrateur pour le second Tenant
 INSERT INTO identity.Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role)
-VALUES ('f412e0c4-90ab-4c12-890d-f2345678901c', 'e301f2ff-7d65-5c12-a1f7-e812859a1962', 'contact@ecoservice.fr', '$2a$11$qR5Lp6E...fakehash...', 'Paul', 'Eco', 'Admin');
+VALUES ('f412e0c4-90ab-4c12-890d-f2345678901c', 'e301f2ff-7d65-5c12-a1f7-e812859a1962', 'contact@ecoservice.fr', '$2a$11$OvHGeoGRS694M.8YPOrKUuFaHQHh9ixo7VjZeYCSk4IGmqF9Vif/6', 'Paul', 'Eco', 'Admin');
 
--- 5. Plan Comptable de base (quelques comptes)
+-- 5. Rôles par défaut (UUIDs fixes pour le test)
+INSERT INTO identity.Roles (Id, TenantId, Name, Description, IsDefault) VALUES
+('a1e9c8a2-1234-4a5b-bcde-f0123456789a', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'Admin', 'Administrateur complet', FALSE),
+('b1e9c8a2-1234-4a5b-bcde-f0123456789a', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'Accountant', 'Comptable', FALSE),
+('c1e9c8a2-1234-4a5b-bcde-f0123456789a', 'd290f1ee-6c54-4b01-90e6-d701748f0851', 'Auditor', 'Auditeur', FALSE);
+
+-- 6. Permissions de base
+INSERT INTO identity.Permissions (Id, SystemName, Name, Description) VALUES
+(gen_random_uuid(), 'identity.users.view', 'Voir utilisateurs', 'Droit de voir les membres de l''entreprise'),
+(gen_random_uuid(), 'identity.users.manage', 'Gérer utilisateurs', 'Droit d''ajouter/modifier des membres'),
+(gen_random_uuid(), 'finance.accounts.view', 'Voir comptes', 'Droit de consulter le plan comptable'),
+(gen_random_uuid(), 'finance.entries.create', 'Saisir écritures', 'Droit de saisir des écritures comptables');
+
+-- 7. Attribution des rôles aux utilisateurs
+INSERT INTO identity.UserRoles (UserId, RoleId) VALUES
+('7c9e6679-7425-40de-944b-e07fc1f90ae7', 'a1e9c8a2-1234-4a5b-bcde-f0123456789a'), -- Admin -> Admin
+('b5e9c8a2-1234-4a5b-bcde-f0123456789a', 'b1e9c8a2-1234-4a5b-bcde-f0123456789a'), -- Sophie -> Accountant
+('c6f0d9b3-5678-4b6c-defa-e1234567890b', 'c1e9c8a2-1234-4a5b-bcde-f0123456789a'); -- Marc -> Auditor
+
+-- 8. Plan Comptable de base (quelques comptes)
 INSERT INTO finance.Accounts (Id, TenantId, Code, Name, Type) VALUES
 (gen_random_uuid(), 'd290f1ee-6c54-4b01-90e6-d701748f0851', '512000', 'Banque Société Générale', 1),
 (gen_random_uuid(), 'd290f1ee-6c54-4b01-90e6-d701748f0851', '411000', 'Clients', 1),
@@ -613,7 +681,25 @@ CREATE POLICY tenant_isolation_policy ON finance_core.FinanceAlerts USING (Tenan
 ALTER TABLE ocr.ExtractionJobs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON ocr.ExtractionJobs USING (TenantId = current_tenant_id());
 
+ALTER TABLE identity.UserRoles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation_policy ON identity.UserRoles USING (EXISTS (SELECT 1 FROM identity.Users WHERE Id = identity.UserRoles.UserId AND TenantId = current_tenant_id()));
+
 ALTER TABLE reporting.ReportingSnapshots ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON reporting.ReportingSnapshots USING (TenantId = current_tenant_id());
+
+ALTER TABLE billing.SubscriptionPlans ENABLE ROW LEVEL SECURITY;
+CREATE POLICY public_read_policy ON billing.SubscriptionPlans FOR SELECT USING (true); -- Publicly viewable
+
+-- ----------------------------------------------------------
+-- SEEDS POUR LES PLANS D'ABONNEMENT
+-- ----------------------------------------------------------
+DELETE FROM billing.SubscriptionPlans WHERE Code IN ('discovery', 'basic', 'advanced', 'premium', 'expertise');
+
+INSERT INTO billing.SubscriptionPlans (Id, Code, Name, Description, Price, Currency, MaxUsers, StorageGb, HasPrioritySupport, HasApiAccess, Features) VALUES
+(gen_random_uuid(), 'discovery', 'Découverte', 'Idéal pour tester la plateforme', 0.00, 'EUR', 1, 1, FALSE, FALSE, '["1 utilisateur inclus", "Modules limités", "1 Go de stockage"]'),
+(gen_random_uuid(), 'basic', 'Basique', 'Pour les petites entreprises', 19.00, 'EUR', 3, 10, FALSE, FALSE, '["3 utilisateurs inclus", "Modules standards", "10 Go de stockage", "Support Email"]'),
+(gen_random_uuid(), 'advanced', 'Avancée', 'Pour une gestion poussée', 49.00, 'EUR', 6, 50, TRUE, TRUE, '["6 utilisateurs inclus", "Tous les modules", "50 Go de stockage", "Support Email + Chat", "Accès API"]'),
+(gen_random_uuid(), 'premium', 'Premium', 'Tout illimité pour les PME', 99.00, 'EUR', 10, 500, TRUE, TRUE, '["10 utilisateurs inclus", "Tous les modules", "Stockage illimité", "Support SLA", "Accès API"]'),
+(gen_random_uuid(), 'expertise', 'Expertise', 'Sur mesure pour les grands comptes', 0.00, 'EUR', 0, 0, TRUE, TRUE, '["Utilisateurs sur devis", "Modules sur mesure", "Stockage sur devis", "Accès API complet"]');
 
 COMMENT ON FUNCTION current_tenant_id() IS 'Récupère le TenantId injecté dans la session PostgreSQL pour la RLS';

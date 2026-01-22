@@ -11,5 +11,16 @@ public class PasswordHasher : IPasswordHasher
     public string Hash(string password) => BCrypt.Net.BCrypt.HashPassword(password);
 
     /// <inheritdoc />
-    public bool Verify(string password, string hash) => BCrypt.Net.BCrypt.Verify(password, hash);
+    public bool Verify(string password, string hash)
+    {
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(password, hash);
+        }
+        catch (Exception)
+        {
+            // Retourne false si le hash est malformé au lieu de crasher le service
+            return false;
+        }
+    }
 }

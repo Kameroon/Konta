@@ -42,7 +42,7 @@ public class TokenService : ITokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.GivenName, user.FirstName),
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
-            new("tenant_id", tenantId),
+            new("TenantId", tenantId),
             new("role", user.Role), // Keep legacy role for simple checks
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };

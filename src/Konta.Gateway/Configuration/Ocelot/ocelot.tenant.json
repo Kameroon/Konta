@@ -1,7 +1,7 @@
 {
     "Routes": [
         {
-            "DownstreamPathTemplate": "/api/tenant/{everything}",
+            "DownstreamPathTemplate": "/api/tenants/{everything}",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
@@ -9,7 +9,7 @@
                     "Port": 5002
                 }
             ],
-            "UpstreamPathTemplate": "/gateway/tenant/{everything}",
+            "UpstreamPathTemplate": "/api/tenants/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",

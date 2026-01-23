@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUiStore } from '@/stores/ui.store';
@@ -13,12 +13,13 @@ const tenantStore = useTenantStore();
 const router = useRouter();
 const toast = useToast();
 
-onMounted(async () => {
-    if (authStore.user?.tenantId && !tenantStore.currentTenant) {
-        console.log('[MainLayout] Initialisation des données du tenant...');
-        await tenantStore.fetchTenantInfo(authStore.user.tenantId);
+// Réaction aux changements d'utilisateur (pour le rafraîchissement à chaud si besoin)
+watch(() => authStore.user?.tenantId, async (newTenantId: string | undefined) => {
+    if (newTenantId && (!tenantStore.currentTenant || tenantStore.currentTenant.id !== newTenantId)) {
+        console.log('[MainLayout] Changement de tenant détecté, chargement...');
+        await tenantStore.fetchTenantInfo(newTenantId);
     }
-});
+}, { immediate: true });
 
 const handleLogout = () => {
     console.log('[MainLayout] Tentative de déconnexion...');
@@ -81,6 +82,10 @@ const isSuperAdmin = computed(() => {
 
           <router-link to="/app/documents" class="nav-item" active-class="active">
             <i class="fas fa-file-alt icon"></i> <span>Documents</span>
+          </router-link>
+
+          <router-link to="/app/profile" class="nav-item" active-class="active">
+            <i class="fas fa-user-circle icon"></i> <span>Profil</span>
           </router-link>
         </template>
 

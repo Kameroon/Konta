@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useTenantStore } from '@/stores/tenant.store';
 import { useToast } from 'vue-toastification';
@@ -14,10 +14,19 @@ const toast = useToast(); // Pour les notifications visuelles
 
 const editing = ref(false); // État du mode édition
 const profileForm = ref({
-  firstName: authStore.user?.firstName || '',
-  lastName: authStore.user?.lastName || '',
-  email: authStore.user?.email || ''
+  firstName: '',
+  lastName: '',
+  email: ''
 });
+
+// Synchronisation réactive des données du formulaire avec le store
+watch(() => authStore.user, (newUser: any) => {
+  if (newUser) {
+    profileForm.value.firstName = newUser.firstName;
+    profileForm.value.lastName = newUser.lastName;
+    profileForm.value.email = newUser.email;
+  }
+}, { immediate: true });
 
 /**
  * Charge les informations du tenant au montage du composant.
@@ -60,9 +69,9 @@ const subscriptionDisplay = ref({
 });
 
 // Mise à jour simplifiée selon le plan si aucune info d'abonnement n'est reçue
-onMounted(() => {
-  const plan = tenantStore.currentTenant?.plan || 'Free';
-  if (plan === 'Premium') {
+watch(() => tenantStore.currentTenant?.plan, (plan) => {
+  const currentPlan = plan || 'Free';
+  if (currentPlan === 'Premium') {
     subscriptionDisplay.value = {
       status: '✅ Actif',
       expiry: '31/12/2026',
@@ -70,7 +79,7 @@ onMounted(() => {
       quotaLimit: 5000,
       features: ['10 utilisateurs inclus', 'Expertise OCR illimitée', 'Support 24/7', 'Modules Avancés']
     };
-  } else if (plan === 'Free') {
+  } else {
     subscriptionDisplay.value = {
       status: '✅ Actif',
       expiry: 'Gratuit',
@@ -79,7 +88,7 @@ onMounted(() => {
       features: ['1 utilisateur', 'Lecture OCR (10/mois)', 'Support Email']
     };
   }
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -157,7 +166,7 @@ onMounted(() => {
 
           <div class="quota-section">
             <div class="quota-header">
-              <label>Consommation OCR (Factures)</label>
+              <label>Consommation OCR (Documents)</label>
               <span>{{ subscriptionDisplay.quotaUsed }} / {{ subscriptionDisplay.quotaLimit }}</span>
             </div>
             <div class="progress-bar">
@@ -165,19 +174,31 @@ onMounted(() => {
             </div>
           </div>
 
+          <div class="plan-details-grid">
+            <div class="detail-box">
+              <label>Utilisateurs Max</label>
+              <span>{{ tenantStore.currentTenant?.plan === 'Free' ? '1' : (tenantStore.currentTenant?.plan === 'Premium' ? '10' : 'Illimité') }}</span>
+            </div>
+            <div class="detail-box">
+              <label>Support</label>
+              <span>{{ tenantStore.currentTenant?.plan === 'Premium' ? 'Prioritaire 24/7' : 'Standard' }}</span>
+            </div>
+          </div>
+
           <div class="features-section">
-            <label>Inclus dans votre plan :</label>
+            <label>Inclus dans votre offre actuelle :</label>
             <ul class="features-list">
               <li v-for="feature in subscriptionDisplay.features" :key="feature">
-                ✨ {{ feature }}
+                <i class="fas fa-check-circle"></i> {{ feature }}
               </li>
             </ul>
           </div>
           
           <div class="sub-actions">
             <button @click="$router.push('/plans')" class="upgrade-btn">
-              Changer de plan / Voir les offres 🚀
+              <i class="fas fa-rocket"></i> Modifier mon plan / Upgrader
             </button>
+            <p class="sub-help">Votre plan actuel est prélevé mensuellement. Pour toute question, contactez le support.</p>
           </div>
         </template>
       </section>
@@ -374,13 +395,61 @@ small {
 .upgrade-btn {
   width: 100%;
   padding: 1rem;
-  background: #1e293b;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: white;
   border-radius: 12px;
   border: none;
   font-weight: 700;
   margin-top: 2rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+
+.upgrade-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.plan-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.detail-box {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-box label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.detail-box span {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.features-list li i {
+  color: #10b981;
+  margin-right: 8px;
+}
+
+.sub-help {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: 1rem;
 }
 
 @media (max-width: 900px) {

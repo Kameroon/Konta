@@ -68,20 +68,24 @@ const isSuperAdmin = computed(() => {
       </div>
       
       <nav class="nav-menu">
+        <!-- Dashboard is common for everyone -->
         <router-link to="/app/dashboard" class="nav-item" active-class="active">
           <i class="fas fa-th-large icon"></i> <span>Tableau de bord</span>
         </router-link>
 
-        <router-link to="/app/download" class="nav-item" active-class="active">
-          <i class="fas fa-upload icon"></i> <span>Téléchargement</span>
-        </router-link>
+        <!-- Only for non-SuperAdmins -->
+        <template v-if="!isSuperAdmin">
+          <router-link to="/app/download" class="nav-item" active-class="active">
+            <i class="fas fa-upload icon"></i> <span>Téléchargement</span>
+          </router-link>
 
-        <router-link to="/app/documents" class="nav-item" active-class="active">
-          <i class="fas fa-file-alt icon"></i> <span>Documents</span>
-        </router-link>
+          <router-link to="/app/documents" class="nav-item" active-class="active">
+            <i class="fas fa-file-alt icon"></i> <span>Documents</span>
+          </router-link>
+        </template>
 
-        <!-- Admin Only Sections -->
-        <template v-if="isAdmin">
+        <!-- Only for SuperAdmins -->
+        <template v-if="isSuperAdmin">
           <router-link to="/app/extracted-data" class="nav-item" active-class="active">
             <i class="fas fa-database icon"></i> <span>Données extraites</span>
           </router-link>
@@ -90,21 +94,13 @@ const isSuperAdmin = computed(() => {
             <i class="fas fa-building icon"></i> <span>Entreprises</span>
           </router-link>
 
-          <!-- SuperAdmin Only Sections -->
-          <template v-if="isSuperAdmin">
-            <router-link to="/app/admin" class="nav-item" active-class="active">
-              <i class="fas fa-users icon"></i> <span>Utilisateurs (Global)</span>
-            </router-link>
-          </template>
-          <!-- Admin Only Section -->
-          <template v-else-if="isAdmin">
-            <router-link to="/app/admin" class="nav-item" active-class="active">
-              <i class="fas fa-users icon"></i> <span>Utilisateurs</span>
-            </router-link>
-          </template>
+          <router-link to="/app/admin" class="nav-item" active-class="active">
+            <i class="fas fa-users icon"></i> <span>Utilisateurs</span>
+          </router-link>
         </template>
 
-        <router-link to="/app/settings" class="nav-item" active-class="active">
+        <!-- Settings is common (or only SuperAdmin? User said SuperAdmin sees it. Others? User didn't mention it for Others, but typically it's needed) -->
+        <router-link v-if="isSuperAdmin" to="/app/settings" class="nav-item" active-class="active">
           <i class="fas fa-cog icon"></i> <span>Paramètres</span>
         </router-link>
       </nav>

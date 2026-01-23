@@ -1,11 +1,54 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useTenantStore } from '@/stores/tenant.store';
+import { reportingApi, type DashboardSummary, type ChartDataPoint } from '@/api/reporting.api';
 import StatCard from '@/components/ui/StatCard.vue';
 
 const authStore = useAuthStore();
 const tenantStore = useTenantStore();
+
+const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin');
+
+const summary = ref<DashboardSummary>({
+  totalDocuments: 0,
+  totalCompanies: 0,
+  totalUsers: 0,
+  totalRevenue: 0,
+  documentsTrend: 0,
+  companiesTrend: 0,
+  revenueTrend: 0,
+  monthlyDocuments: [],
+  monthlyRevenue: [],
+  documentTypes: []
+});
+
+const loading = ref(true);
+
+const calculatePercentage = (value: number, all: ChartDataPoint[]) => {
+  const total = all.reduce((acc, curr) => acc + Number(curr.value), 0);
+  return total > 0 ? Math.round((Number(value) / total) * 100) : 0;
+};
+
+const getChartColor = (index: number) => {
+  const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+  return colors[index % colors.length];
+};
+
+const generateDonutGradient = (data: ChartDataPoint[]) => {
+  if (data.length === 0) return '#e2e8f0';
+  let lastPos = 0;
+  const total = data.reduce((acc, curr) => acc + Number(curr.value), 0);
+  if (total === 0) return '#e2e8f0';
+
+  const parts = data.map((item, index) => {
+    const percentage = (Number(item.value) / total) * 100;
+    const start = lastPos;
+    lastPos += percentage;
+    return `${getChartColor(index)} ${start}% ${lastPos}%`;
+  });
+  return `conic-gradient(${parts.join(', ')})`;
+};
 
 const activities = ref([
   { id: 1, type: 'document', text: 'Nouveau document traité : contrats_clients_2024.pdf', time: 'Il y a 2 heures', icon: 'fas fa-file-pdf', color: '#3b82f6' },
@@ -13,39 +56,51 @@ const activities = ref([
   { id: 3, type: 'company', text: 'Nouvelle entreprise ajoutée : Innovation Labs', time: 'Il y a 5 heures', icon: 'fas fa-building', color: '#a855f7' },
   { id: 4, type: 'extraction', text: '13 enregistrements extraits de factures_janvier.xlsx', time: 'Il y a 1 jour', icon: 'fas fa-database', color: '#f59e0b' },
 ]);
+
+onMounted(async () => {
+  try {
+    summary.value = await reportingApi.getDashboardSummary();
+  } catch (err) {
+    console.error('Erreur dashboard:', err);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
   <div class="dashboard-view">
     <header class="dashboard-header">
       <div class="welcome">
-        <p>Voici un aperçu de votre activité sur {{ tenantStore.currentTenant?.name || 'votre entreprise' }}</p>
+        <h1>{{ isSuperAdmin ? 'Tableau de bord SuperAdmin' : ('Bienvenue, ' + authStore.user?.firstName) }}</h1>
+        <p>Voici un aperçu de votre activité sur {{ isSuperAdmin ? 'Konta Platform' : (tenantStore.currentTenant?.name || 'votre entreprise') }}</p>
       </div>
     </header>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
-      <StatCard label="Documents" :value="156" trend="up" :trendValue="12" icon="fas fa-file-alt" color="#3b82f6" />
-      <StatCard label="Entreprises" :value="23" trend="up" :trendValue="12.5" icon="fas fa-building" color="#10b981" />
-      <StatCard label="Utilisateurs" :value="8" icon="fas fa-users" color="#a855f7" />
-      <StatCard label="Chiffre d'affaires" :value="425000" format="currency" trend="up" :trendValue="15" icon="fas fa-euro-sign" color="#f59e0b" />
+      <StatCard label="Documents" :value="summary.totalDocuments" trend="up" :trendValue="summary.documentsTrend" icon="fas fa-file-alt" color="#3b82f6" />
+      
+      <template v-if="isSuperAdmin">
+        <StatCard label="Entreprises" :value="summary.totalCompanies" trend="up" :trendValue="summary.companiesTrend" icon="fas fa-building" color="#10b981" />
+        <StatCard label="Utilisateurs" :value="summary.totalUsers" icon="fas fa-users" color="#a855f7" />
+      </template>
+
+      <StatCard label="Chiffre d'affaires" :value="summary.totalRevenue" format="currency" trend="up" :trendValue="summary.revenueTrend" icon="fas fa-euro-sign" color="#f59e0b" />
     </div>
 
     <!-- Middle Row: Charts -->
-    <div class="charts-row">
+    <div class="charts-row" v-if="!loading">
       <div class="chart-card bar-chart">
         <div class="card-header">
           <h3>Documents par mois</h3>
         </div>
         <div class="chart-placeholder bar-placeholder">
-          <div class="bar" style="height: 40%"><span>Jan</span></div>
-          <div class="bar" style="height: 35%"><span>Fév</span></div>
-          <div class="bar" style="height: 60%"><span>Mar</span></div>
-          <div class="bar" style="height: 50%"><span>Avr</span></div>
-          <div class="bar" style="height: 70%"><span>Mai</span></div>
-          <div class="bar" style="height: 65%"><span>Juin</span></div>
-          <div class="bar" style="height: 85%"><span>Juil</span></div>
-          <div class="bar" style="height: 80%"><span>Août</span></div>
+          <div v-for="point in summary.monthlyDocuments" :key="point.label" class="bar" 
+               :style="{ height: (point.value / (Math.max(...summary.monthlyDocuments.map(p => p.value)) || 1) * 100) + '%' }">
+            <span>{{ point.label }}</span>
+          </div>
+          <div v-if="summary.monthlyDocuments.length === 0" class="empty-chart">Aucune donnée</div>
         </div>
       </div>
       
@@ -54,33 +109,41 @@ const activities = ref([
           <h3>Types de documents</h3>
         </div>
         <div class="chart-placeholder pie-placeholder">
-          <div class="donut">
-            <div class="slice s1"></div>
-            <div class="slice s2"></div>
-            <div class="slice s3"></div>
+          <div class="donut" :style="{ background: generateDonutGradient(summary.documentTypes) }">
             <div class="donut-inner"></div>
           </div>
           <div class="pie-legend">
-            <div class="legend-item"><span class="dot" style="background: #3b82f6"></span> Factures 24%</div>
-            <div class="legend-item"><span class="dot" style="background: #10b981"></span> Contrats 21%</div>
-            <div class="legend-item"><span class="dot" style="background: #f59e0b"></span> Devis 21%</div>
+            <div v-for="(item, index) in summary.documentTypes" :key="item.label" class="legend-item">
+              <span class="dot" :style="{ background: getChartColor(index) }"></span> 
+              {{ item.label }} {{ calculatePercentage(item.value, summary.documentTypes) }}%
+            </div>
+            <div v-if="summary.documentTypes.length === 0" class="empty-legend">Aucune donnée</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Long Chart Row -->
-    <div class="chart-card line-chart">
+    <div class="chart-card line-chart" v-if="!loading">
       <div class="card-header">
         <h3>Évolution du chiffre d'affaires</h3>
       </div>
       <div class="chart-placeholder area-placeholder">
+        <div class="revenue-grid">
+            <div v-for="point in summary.monthlyRevenue" :key="point.label" class="rev-point" 
+                 :style="{ height: (point.value / (Math.max(...summary.monthlyRevenue.map(p => p.value)) || 1) * 80 + 10) + '%' }">
+                <div class="point-glow"></div>
+                <span class="p-val">{{ (point.value / 1000).toFixed(1) }}k</span>
+                <span class="p-label">{{ point.label }}</span>
+            </div>
+            <div v-if="summary.monthlyRevenue.length === 0" class="empty-chart">Aucun revenu disponible</div>
+        </div>
         <div class="area-curve"></div>
       </div>
     </div>
 
     <!-- Bottom Row -->
-    <div class="bottom-grid">
+    <!--<div class="bottom-grid">
       <div class="actions-section">
         <h3>Actions rapides</h3>
         <div class="actions-grid">
@@ -129,7 +192,7 @@ const activities = ref([
           </div>
         </div>
       </div>
-    </div>
+    </div>-->
   </div>
 </template>
 
@@ -240,21 +303,65 @@ const activities = ref([
 .legend-item { display: flex; align-items: center; gap: 8px; color: #64748b; }
 .legend-item .dot { width: 10px; height: 10px; border-radius: 50%; }
 
-/* Area Chart Mockup */
+/* Area Chart Mockup & Real Points */
 .area-placeholder {
-  height: 200px;
-  background: linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+  height: 250px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
   position: relative;
-  border-bottom: 2px solid #e2e8f0;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+}
+
+.revenue-grid {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 40px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 0 2rem;
+  z-index: 5;
+}
+
+.rev-point {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  transition: all 0.5s ease;
+}
+
+.point-glow {
+  width: 8px; height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #3b82f6;
+  margin-bottom: 8px;
+}
+
+.p-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1e293b;
+  position: absolute;
+  top: -20px;
+}
+
+.p-label {
+  position: absolute;
+  bottom: -30px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
 }
 
 .area-curve {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 80px;
-  background: #3b82f6;
+  bottom: 40px; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
   clip-path: polygon(0 80%, 10% 70%, 20% 75%, 30% 60%, 40% 65%, 50% 50%, 60% 55%, 70% 40%, 80% 45%, 90% 30%, 100% 35%, 100% 100%, 0 100%);
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 /* Bottom Grid */

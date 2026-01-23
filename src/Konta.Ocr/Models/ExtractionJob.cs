@@ -24,6 +24,7 @@ public enum DocumentType
 public class ExtractionJob : BaseEntity
 {
     public Guid TenantId { get; set; }
+    public Guid CreatedBy { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
     public JobStatus Status { get; set; } = JobStatus.Pending;

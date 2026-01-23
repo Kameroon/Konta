@@ -32,6 +32,7 @@ const isEditing = ref(false);
 const userForm = reactive<Partial<UserInfo>>({
   id: '',
   email: '',
+  password: '',
   firstName: '',
   lastName: '',
   role: 'User',
@@ -116,7 +117,7 @@ const handleSort = (field: string) => {
 const openAddModal = () => {
   isEditing.value = false;
   Object.assign(userForm, {
-    id: undefined, email: '', firstName: '', lastName: '', role: 'User', isActive: true
+    id: undefined, email: '', password: '', firstName: '', lastName: '', role: 'User', isActive: true
   });
   showModal.value = true;
 };
@@ -138,6 +139,9 @@ const saveUser = async () => {
     // On ne renvoie jamais le tenantId tel quel si on veut laisser le backend s'en charger 
     // ou s'assurer qu'il est valide.
     if (payload.tenantId === '') delete payload.tenantId;
+    
+    // Supprimer le mot de passe si on est en mode édition (pour l'instant on ne gère pas le reset ici)
+    if (isEditing.value) delete payload.password;
 
     if (isEditing.value && payload.id) {
       await userApi.updateUser(payload.id, payload);
@@ -317,6 +321,22 @@ const formatDate = (dateStr: string | null | undefined) => {
         <div class="form-group">
           <label>Email professionnel</label>
           <input type="email" v-model="userForm.email" required placeholder="jean.dupont@entreprise.com" :disabled="isEditing" />
+        </div>
+
+        <div class="form-group" v-if="!isEditing">
+          <label>Mot de passe initial</label>
+          <input type="password" v-model="userForm.password" required placeholder="Saisir un mot de passe temporaire" minlength="6" />
+        </div>
+
+        <div class="form-group" v-if="isSuperAdmin && !isEditing">
+          <label>Assigner à une entreprise (Tenant)</label>
+          <select v-model="userForm.tenantId">
+            <option value="">Utiliser mon tenant</option>
+            <option v-for="t in tenants" :key="t.id" :value="t.id">{{ t.name }}</option>
+          </select>
+          <small v-if="userForm.tenantId" style="color: #718096; font-size: 0.75rem;">
+            L'utilisateur sera rattaché à {{ tenants.find(t => t.id === userForm.tenantId)?.name }}
+          </small>
         </div>
 
         <div class="form-row">

@@ -130,16 +130,24 @@ const openEditModal = (tier: Tier) => {
 const saveTier = async () => {
   saving.value = true;
   try {
-    if (isEditing.value && tierForm.id) {
-      await financeApi.updateTier(tierForm.id, tierForm);
+    const payload = { ...tierForm };
+    
+    // Nettoyage de l'ID pour éviter l'erreur de format Guid "" sur le backend lors de la création
+    if (!isEditing.value || !payload.id) {
+      delete payload.id;
+    }
+
+    if (isEditing.value && payload.id) {
+      await financeApi.updateTier(payload.id, payload);
       toast.success('Informations mises à jour.');
     } else {
-      await financeApi.createTier(tierForm);
+      await financeApi.createTier(payload);
       toast.success('Nouvelle entreprise enregistrée.');
     }
     await fetchCompanies();
     showModal.value = false;
   } catch (err) {
+    console.error('Erreur lors de l\'enregistrement du tiers:', err);
     toast.error('Échec de l\'opération.');
   } finally {
     saving.value = false;
@@ -214,7 +222,8 @@ const formatDate = (dateStr: string | null | undefined) => {
                 Entreprise <i class="fas" :class="sortBy === 'name' ? (sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
               </th>
               <th>Type</th>
-              <th>SIRET / TaxId</th>
+              <th>SIRET</th>
+              <th>Adresse</th>
               <th v-if="isSuperAdmin">Tenant</th>
               <th>Statut</th>
               <th @click="handleSort('createdAt')" class="sortable">
@@ -230,7 +239,6 @@ const formatDate = (dateStr: string | null | undefined) => {
                   <div class="logo-box">{{ comp.name.charAt(0) }}</div>
                   <div class="company-details">
                     <span class="company-name">{{ comp.name }}</span>
-                    <span class="company-address">{{ comp.address || 'Aucune adresse' }}</span>
                   </div>
                 </div>
               </td>
@@ -240,6 +248,7 @@ const formatDate = (dateStr: string | null | undefined) => {
                 </span>
               </td>
               <td class="tax-cell">{{ comp.taxId || '—' }}</td>
+              <td class="address-cell">{{ comp.address || '—' }}</td>
               <td v-if="isSuperAdmin" class="tenant-cell">
                 <span class="t-badge">{{ tenants.find(t => t.id === comp.tenantId)?.name || '...' }}</span>
               </td>

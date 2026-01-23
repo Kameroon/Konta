@@ -55,8 +55,9 @@ Ce document dÃ©taille la configuration du point d'entrÃ©e unique de la plate
 - **Chemin aval** : `/api/ocr/{everything}`
 - **Description** : Analyse automatique de documents (factures, RIB) via intelligence artificielle.
 - **Endpoints clÃ©s** :
-    - `/api/extraction/upload` : Envoi d'un document pour analyse.
-    - `/api/ocr/jobs` : Historique des jobs d'extraction.
+    - `/api/ocr/upload` : Envoi d'un document pour analyse.
+    - `/api/ocr/jobs` : Historique global des jobs du tenant.
+    - `/api/ocr/jobs/mine` : Historique des jobs de l'utilisateur connecté.
 
 ## 7. Service Reporting (Analytics)
 - **Port aval** : `5007`

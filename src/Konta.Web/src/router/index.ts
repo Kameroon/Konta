@@ -56,8 +56,8 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: 'documents',
                 name: 'Documents',
-                component: () => import('@/views/DocumentsView.vue'),
-                meta: { title: 'Documents' }
+                component: () => import('@/views/ArchiveView.vue'),
+                meta: { title: 'Mes Documents' }
             },
             {
                 path: 'extracted-data',

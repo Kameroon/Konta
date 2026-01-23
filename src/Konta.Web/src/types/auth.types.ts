@@ -12,6 +12,7 @@ export interface UserInfo {
     tenantId: string;
     isActive: boolean;
     createdAt: string;
+    password?: string;
 }
 
 export interface LoginRequest {

@@ -78,6 +78,19 @@ export const documentsApi = {
     },
 
     /**
+     * Récupère uniquement les jobs de l'utilisateur connecté.
+     */
+    async getMyJobs(): Promise<ExtractionJob[]> {
+        console.log('[Documents API] Récupération de l\'historique de l\'utilisateur...');
+        const response = await http.get<ApiResponse<ExtractionJob[]>>('/api/ocr/jobs/mine');
+
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        return [];
+    },
+
+    /**
      * Supprime un job d'extraction.
      */
     async deleteJob(jobId: string): Promise<void> {

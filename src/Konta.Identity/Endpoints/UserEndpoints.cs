@@ -1,3 +1,4 @@
+using Konta.Identity.DTOs;
 using Konta.Identity.Models;
 using Konta.Identity.Services.Interfaces;
 using Konta.Shared.Data;
@@ -36,10 +37,23 @@ public static class UserEndpoints
         .WithName("GetAllUsers")
         .Produces<ApiResponse<object>>(StatusCodes.Status200OK);
 
-        group.MapPost("/", async (User user, ITenantContext tenantContext, IUserService userService) =>
+        group.MapPost("/", async (CreateUserRequest request, ITenantContext tenantContext, IUserService userService, IPasswordHasher passwordHasher) =>
         {
             if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
-            user.TenantId = tenantContext.TenantId.Value;
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Role = request.Role,
+                IsActive = request.IsActive,
+                TenantId = request.TenantId ?? tenantContext.TenantId.Value,
+                PasswordHash = passwordHasher.Hash(request.Password),
+                CreatedAt = DateTime.UtcNow
+            };
+
             var id = await userService.CreateUserAsync(user);
             return Results.Created($"/api/users/{id}", ApiResponse<object>.Ok(new { Id = id }));
         }).WithName("CreateUser");

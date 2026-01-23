@@ -18,11 +18,11 @@ public static class ReportingEndpoints
 
         // --- DASHBOARDS ---
         
-        // Obtenir le résumé financier du tableau de bord (Caché)
+        // Obtenir le résumé financier du tableau de bord (Synthèse complète)
         group.MapGet("/dashboard/summary", async (ITenantContext tenantContext, IKpiService service) =>
         {
-            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
-            var summary = await service.GetDashboardSummaryAsync(tenantContext.TenantId.Value);
+            // Si SuperAdmin, on demande le global (null), sinon on filtre par tenant
+            var summary = await service.GetFullDashboardSummaryAsync(tenantContext.IsGlobalAdmin ? null : tenantContext.TenantId);
             return Results.Ok(ApiResponse<object>.Ok(summary));
         }).RequireAuthorization();
 

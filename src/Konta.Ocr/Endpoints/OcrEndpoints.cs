@@ -37,6 +37,7 @@ public static class OcrEndpoints
             {
                 Id = jobId,
                 TenantId = tenantContext.TenantId.Value,
+                CreatedBy = tenantContext.UserId ?? Guid.Empty,
                 FileName = file.FileName,
                 FilePath = filePath,
                 Status = JobStatus.Pending,
@@ -62,7 +63,25 @@ public static class OcrEndpoints
         group.MapGet("/jobs", async (ITenantContext tenantContext, IExtractionJobRepository repo) =>
         {
             if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
-            var jobs = await repo.GetByTenantIdAsync(tenantContext.TenantId.Value);
+            
+            IEnumerable<ExtractionJob> jobs;
+            if (tenantContext.IsGlobalAdmin)
+            {
+                jobs = await repo.GetAllAsync();
+            }
+            else
+            {
+                jobs = await repo.GetByTenantIdAsync(tenantContext.TenantId.Value);
+            }
+            
+            return Results.Ok(ApiResponse<object>.Ok(jobs));
+        }).RequireAuthorization();
+
+        // --- User specific list ---
+        group.MapGet("/jobs/mine", async (ITenantContext tenantContext, IExtractionJobRepository repo) =>
+        {
+            if (!tenantContext.UserId.HasValue) return Results.Unauthorized();
+            var jobs = await repo.GetByUserIdAsync(tenantContext.UserId.Value);
             return Results.Ok(ApiResponse<object>.Ok(jobs));
         }).RequireAuthorization();
 

@@ -20,11 +20,25 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
         return await connection.QuerySingleOrDefaultAsync<ExtractionJob>(sql, new { Id = id });
     }
 
+    public async Task<IEnumerable<ExtractionJob>> GetAllAsync()
+    {
+        const string sql = "SELECT * FROM ocr.ExtractionJobs ORDER BY CreatedAt DESC";
+        using var connection = CreateConnection(sql);
+        return await connection.QueryAsync<ExtractionJob>(sql);
+    }
+
     public async Task<IEnumerable<ExtractionJob>> GetByTenantIdAsync(Guid tenantId)
     {
         const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql, new { TenantId = tenantId });
         return await connection.QueryAsync<ExtractionJob>(sql, new { TenantId = tenantId });
+    }
+
+    public async Task<IEnumerable<ExtractionJob>> GetByUserIdAsync(Guid userId)
+    {
+        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE CreatedBy = @UserId ORDER BY CreatedAt DESC";
+        using var connection = CreateConnection(sql, new { UserId = userId });
+        return await connection.QueryAsync<ExtractionJob>(sql, new { UserId = userId });
     }
 
     public async Task<IEnumerable<ExtractionJob>> GetPendingJobsAsync()
@@ -37,8 +51,8 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
     public async Task<Guid> CreateAsync(ExtractionJob job)
     {
         const string sql = @"
-            INSERT INTO ocr.ExtractionJobs (Id, TenantId, FileName, FilePath, Status, CreatedAt)
-            VALUES (@Id, @TenantId, @FileName, @FilePath, @Status, @CreatedAt)
+            INSERT INTO ocr.ExtractionJobs (Id, TenantId, CreatedBy, FileName, FilePath, Status, CreatedAt)
+            VALUES (@Id, @TenantId, @CreatedBy, @FileName, @FilePath, @Status, @CreatedAt)
             RETURNING Id";
         using var connection = CreateConnection(sql, job);
         return await connection.ExecuteScalarAsync<Guid>(sql, job);
@@ -70,7 +84,7 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
     {
         const string sql = @"
             INSERT INTO ocr.ExtractedInvoices (Id, JobId, VendorName, InvoiceNumber, InvoiceDate, TotalAmountHt, TotalAmountTtc, VatAmount, Currency, RawJson, CreatedAt)
-            VALUES (@Id, @JobId, @VendorName, @InvoiceNumber, @InvoiceDate, @TotalAmountHt, @TotalAmountTtc, @VatAmount, @Currency, @RawJson, @CreatedAt)";
+            VALUES (@Id, @JobId, @VendorName, @InvoiceNumber, @InvoiceDate, @TotalAmountHt, @TotalAmountTtc, @VatAmount, @Currency, @RawJson::jsonb, @CreatedAt)";
         using var connection = CreateConnection(sql, invoice);
         var rows = await connection.ExecuteAsync(sql, invoice);
         return rows > 0;

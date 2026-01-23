@@ -33,12 +33,21 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
     public async Task<IEnumerable<string>> GetPermissionsByUserIdAsync(Guid userId)
     {
         _logger.LogDebug("Accès DB : Récupération des permissions pour l'utilisateur ID : {UserId}", userId);
+        
+        // Cette requête récupère les permissions soit via la table UserRoles (recommandé), 
+        // soit via le champ 'Role' textuel de l'utilisateur (fallback pour simplicité)
         const string sql = @"
             SELECT DISTINCT p.SystemName 
             FROM identity.Permissions p
             JOIN identity.RolePermissions rp ON p.Id = rp.PermissionId
-            JOIN identity.UserRoles ur ON rp.RoleId = ur.RoleId
-            WHERE ur.UserId = @UserId";
+            JOIN identity.Roles r ON rp.RoleId = r.Id
+            WHERE r.Id IN (
+                SELECT RoleId FROM identity.UserRoles WHERE UserId = @UserId
+            )
+            OR (
+                r.Name = (SELECT Role FROM identity.Users WHERE Id = @UserId)
+                AND r.TenantId = (SELECT TenantId FROM identity.Users WHERE Id = @UserId)
+            )";
         
         using var connection = CreateConnection(sql, new { UserId = userId });
         return await connection.QueryAsync<string>(sql, new { UserId = userId });

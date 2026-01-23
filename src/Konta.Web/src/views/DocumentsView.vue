@@ -87,8 +87,8 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
 <template>
   <div class="documents-view">
     <header class="section-header">
-      <h1>Documents & OCR</h1>
-      <p>Numérisez vos factures et automatisez votre comptabilité avec l'intelligence artificielle.</p>
+      <h1>Téléchargement & OCR</h1>
+      <p>Envoyez vos factures pour une analyse automatique par l'intelligence artificielle.</p>
     </header>
 
     <div class="grid-container">
@@ -116,15 +116,10 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
         </div>
       </section>
 
-      <!-- Résultats d'extractions -->
-      <section class="results-section">
-        <h3>Dernières extractions</h3>
-        
-        <div v-if="results.length === 0" class="no-data">
-          Aucun document extrait pour le moment.
-        </div>
-        
-        <div v-else class="results-list">
+      <!-- Résultats immédiats -->
+      <section v-if="results.length > 0" class="results-section">
+        <h3>Extractions terminées (Session actuelle)</h3>
+        <div class="results-list">
           <div v-for="invoice in results" :key="invoice.id" class="invoice-result-card">
             <div class="vendor">{{ invoice.vendorName || 'Vendeur inconnu' }}</div>
             <div class="details">
@@ -142,8 +137,7 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
               </div>
             </div>
             <div class="card-footer">
-              <span class="tag">Facture PDF</span>
-              <button class="view-btn">Générer Écriture</button>
+              <router-link to="/app/documents" class="view-btn">Voir dans Archivage</router-link>
             </div>
           </div>
         </div>

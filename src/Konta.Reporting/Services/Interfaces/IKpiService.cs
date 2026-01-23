@@ -21,4 +21,9 @@ public interface IKpiService
     /// Obtient la tendance des flux de trésorerie sur une période donnée.
     /// </summary>
     Task<IEnumerable<CashFlowTrend>> GetCashFlowTrendAsync(Guid tenantId, int days = 30);
+
+    /// <summary>
+    /// Obtient un résumé complet des statistiques pour le Dashboard.
+    /// </summary>
+    Task<DashboardSummary> GetFullDashboardSummaryAsync(Guid? tenantId);
 }

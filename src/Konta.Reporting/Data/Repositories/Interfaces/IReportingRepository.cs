@@ -21,4 +21,9 @@ public interface IReportingRepository
     /// Récupère la répartition du chiffre d'affaires par catégorie.
     /// </summary>
     Task<IEnumerable<DashboardKpi>> GetRevenueBreakdownAsync(Guid tenantId);
+
+    /// <summary>
+    /// Récupère un résumé complet pour le Dashboard (Stats globales ou par tenant).
+    /// </summary>
+    Task<DashboardSummary> GetFullDashboardSummaryAsync(Guid? tenantId);
 }

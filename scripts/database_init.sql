@@ -469,6 +469,7 @@ CREATE SCHEMA IF NOT EXISTS ocr;
 CREATE TABLE IF NOT EXISTS ocr.ExtractionJobs (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
+    CreatedBy UUID, -- L'utilisateur qui a téléchargé le document
     FileName TEXT NOT NULL,
     FilePath TEXT NOT NULL,
     Status INTEGER NOT NULL DEFAULT 0, -- 0:Pending, 1:Processing, 2:Completed, 3:Failed
@@ -483,6 +484,7 @@ CREATE TABLE IF NOT EXISTS ocr.ExtractionJobs (
 COMMENT ON TABLE ocr.ExtractionJobs IS 'File d''attente et suivi des traitements de reconnaissance de documents';
 COMMENT ON COLUMN ocr.ExtractionJobs.Id IS 'ID job OCR';
 COMMENT ON COLUMN ocr.ExtractionJobs.TenantId IS 'Propriétaire du document';
+COMMENT ON COLUMN ocr.ExtractionJobs.CreatedBy IS 'Identifiant de l''utilisateur ayant soumis le document';
 COMMENT ON COLUMN ocr.ExtractionJobs.FileName IS 'Nom du fichier original';
 COMMENT ON COLUMN ocr.ExtractionJobs.FilePath IS 'Chemin de stockage interne du document';
 COMMENT ON COLUMN ocr.ExtractionJobs.Status IS 'État (0:Pending, 1:Processing, 2:Completed, 3:Failed)';

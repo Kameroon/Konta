@@ -24,7 +24,7 @@ public class WebhookEventRepository : BaseRepository<WebhookEventRepository>, IW
     {
         const string sql = @"
             INSERT INTO billing.WebhookEvents (Id, StripeEventId, EventType, Data, ProcessedAt)
-            VALUES (@Id, @StripeEventId, @EventType, @Data, @ProcessedAt)";
+            VALUES (@Id, @StripeEventId, @EventType, @Data::jsonb, @ProcessedAt)";
             
         using var connection = CreateConnection(sql, @event);
         await connection.ExecuteAsync(sql, @event);

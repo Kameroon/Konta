@@ -99,4 +99,25 @@ public class KpiService : IKpiService
         _logger.LogInformation("Récupération de la tendance de trésorerie pour {TenantId} sur {Days} jours", tenantId, days);
         return await _repository.GetCashFlowTrendAsync(tenantId, days);
     }
+
+    /// <inheritdoc />
+    public async Task<DashboardSummary> GetFullDashboardSummaryAsync(Guid? tenantId)
+    {
+        var cacheKey = $"{CacheKeyPrefix}FullSummary_{tenantId ?? Guid.Empty}";
+
+        if (_cache.TryGetValue(cacheKey, out DashboardSummary? summary) && summary != null)
+        {
+            return summary;
+        }
+
+        summary = await _repository.GetFullDashboardSummaryAsync(tenantId);
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(5)) 
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+
+        _cache.Set(cacheKey, summary, cacheOptions);
+
+        return summary;
+    }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http; // Pour accéder au contexte HTTP
 using Konta.Shared.Data; // Pour ITenantContext
 using System.Security.Claims; // Pour manipuler les claims JWT
+using System.IdentityModel.Tokens.Jwt; // Pour JwtRegisteredClaimNames
 
 namespace Konta.Shared.Middleware;
 
@@ -38,6 +39,10 @@ public class TenantMiddleware
             var tenantIdClaim = context.User.FindFirst("TenantId")?.Value 
                                 ?? context.User.FindFirst("tenant_id")?.Value;
             
+            // Extraire l'ID utilisateur (sub)
+            var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                               ?? context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
             // Tenter de convertir la chaîne en Guid (format UUID)
             if (Guid.TryParse(tenantIdClaim, out var tenantId))
             {
@@ -50,7 +55,11 @@ public class TenantMiddleware
                     tenantContext.IsGlobalAdmin = true;
                 }
             }
-            // Si le parsing échoue ou si le claim n'existe pas, TenantId reste null
+
+            if (Guid.TryParse(userIdClaim, out var userId))
+            {
+                tenantContext.UserId = userId;
+            }
         }
         // Si l'utilisateur n'est pas authentifié, TenantId reste null (requêtes publiques comme /login)
 

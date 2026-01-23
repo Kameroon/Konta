@@ -130,7 +130,8 @@ TEXTE À ANALYSER:
         
         bool isInvoice = rawText.Contains("Facture", StringComparison.OrdinalIgnoreCase) 
                       || rawText.Contains("Invoice", StringComparison.OrdinalIgnoreCase)
-                      || rawText.Contains("TTC", StringComparison.OrdinalIgnoreCase);
+                      || rawText.Contains("TTC", StringComparison.OrdinalIgnoreCase)
+                      || rawText.Contains("Facture N", StringComparison.OrdinalIgnoreCase);
 
         bool isRib = rawText.Contains("RIB", StringComparison.OrdinalIgnoreCase) 
                   || rawText.Contains("IBAN", StringComparison.OrdinalIgnoreCase)
@@ -138,21 +139,55 @@ TEXTE À ANALYSER:
 
         if (isInvoice)
         {
+            // Tentative d'extraction simplifiée
+            var invoiceNum = Regex.Match(rawText, @"(?:Facture|Invoice|N°|Numéro)\s*(?:n°|No)?\s*[:\-\s]*([A-Z0-9\-\/]{3,})", RegexOptions.IgnoreCase).Groups[1].Value;
+            var dateMatch = Regex.Match(rawText, @"(\d{2}[/\-.]\d{2}[/\-.]\d{4})");
+            var amountMatch = Regex.Match(rawText, @"(?:TOTAL|NET|PAYER|REGLER|MONTANT)\s*(?:TTC|À REGLER)?\s*[:]*\s*(\d+[.,\s]*\d{2})", RegexOptions.IgnoreCase);
+
+            // Si le premier pattern échoue pour le montant
+            if (!amountMatch.Success) 
+                amountMatch = Regex.Match(rawText, @"(\d+[.,\s]*\d{2})\s*(?:€|EUR)", RegexOptions.IgnoreCase);
+
+            DateTime? invoiceDate = null;
+            if (dateMatch.Success && DateTime.TryParse(dateMatch.Value.Replace(".", "/"), out var parsedDate))
+                invoiceDate = parsedDate;
+
+            decimal totalAmountTtc = 0;
+            if (amountMatch.Success)
+            {
+                var val = amountMatch.Groups[1].Value.Replace(",", ".").Replace(" ", "").Replace("\u00A0", "");
+                decimal.TryParse(val, out totalAmountTtc);
+            }
+
+            // Détection du vendeur (très basique: première ligne non vide qui n'est pas "Page")
+            var lines = rawText.Split(new[] { '\r', '\n', '-' }, StringSplitOptions.RemoveEmptyEntries);
+            var vendor = lines.FirstOrDefault(l => !l.Contains("Page", StringComparison.OrdinalIgnoreCase) && l.Length > 3)?.Trim() ?? "Détecté via Regex";
+
             return (DocumentType.Invoice, new ExtractedInvoice 
             { 
                 Id = Guid.NewGuid(), 
-                VendorName = "Détecté via Regex",
+                VendorName = vendor,
+                InvoiceNumber = !string.IsNullOrWhiteSpace(invoiceNum) ? invoiceNum : "N/A",
+                InvoiceDate = invoiceDate ?? DateTime.UtcNow,
+                TotalAmountTtc = totalAmountTtc,
+                TotalAmountHt = totalAmountTtc / 1.2m, // Estimation 20%
+                Currency = "EUR",
                 CreatedAt = DateTime.UtcNow,
-                RawJson = "{\"source\": \"fallback-regex\"}"
+                RawJson = "{\"source\": \"fallback-regex-advanced\"}"
             });
         }
         
         if (isRib)
         {
+            var ibanMatch = Regex.Match(rawText, @"(?:IBAN)\s*[:\s]*([A-Z]{2}\d{2}[A-Z0-9\s]{10,30})", RegexOptions.IgnoreCase);
+            var bicMatch = Regex.Match(rawText, @"(?:BIC|SWIFT)\s*[:\s]*([A-Z0-9]{8,11})", RegexOptions.IgnoreCase);
+
             return (DocumentType.Rib, new ExtractedRib 
             { 
                 Id = Guid.NewGuid(), 
                 BankName = "Détecté via Regex",
+                Iban = ibanMatch.Success ? ibanMatch.Groups[1].Value.Replace(" ", "") : "",
+                Bic = bicMatch.Success ? bicMatch.Groups[1].Value.Trim() : "",
                 CreatedAt = DateTime.UtcNow 
             });
         }

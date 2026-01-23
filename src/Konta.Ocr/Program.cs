@@ -2,6 +2,9 @@ using Konta.Ocr.Endpoints;
 using Konta.Ocr.Extensions;
 using Konta.Shared.Extensions;
 
+// Enregistrer les handlers Dapper pour DateOnly/TimeOnly
+DapperExtensions.AddDateOnlyHandlers();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuration de Serilog pour les logs centralisés

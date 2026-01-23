@@ -94,18 +94,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de confirmation moderne -->
+    <ConfirmUpgradeModal 
+      :show="showConfirmModal"
+      :targetPlan="selectedPlanName"
+      :currentPlan="tenantStore.currentTenant?.plan"
+      :loading="upgrading"
+      @close="showConfirmModal = false"
+      @confirm="handleConfirmUpgrade"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
+import { useTenantStore } from '@/stores/tenant.store';
 import { billingApi, type SubscriptionPlan } from '@/api/billing.api';
+import { tenantApi } from '@/api/tenant.api';
+import { useToast } from 'vue-toastification';
+import ConfirmUpgradeModal from '@/components/ui/ConfirmUpgradeModal.vue';
 
 const router = useRouter();
+const authStore = useAuthStore();
+const tenantStore = useTenantStore();
+const toast = useToast();
+
 const plans = ref<SubscriptionPlan[]>([]);
 const loading = ref(true);
+const upgrading = ref(false);
 const error = ref<string | null>(null);
+
+// Modal state
+const showConfirmModal = ref(false);
+const selectedPlanCode = ref('');
+const selectedPlanName = ref('');
 
 const fetchPlans = async () => {
   loading.value = true;
@@ -126,12 +151,49 @@ const fetchPlans = async () => {
 
 onMounted(fetchPlans);
 
-const selectPlan = (planCode: string) => {
+const selectPlan = async (planCode: string) => {
   if (planCode === 'expertise') {
     window.location.href = 'mailto:contact@konta.com?subject=Demande Plan Expertise';
     return;
   }
+
+  // Si l'utilisateur est déjà connecté, on traite la mise à jour immédiate (Upgrade)
+  if (authStore.isAuthenticated && authStore.user?.tenantId) {
+    selectedPlanCode.value = planCode;
+    // Format name for display
+    let name = planCode.charAt(0).toUpperCase() + planCode.slice(1);
+    if (name === 'Discovery') name = 'Free';
+    selectedPlanName.value = name;
+    
+    showConfirmModal.value = true;
+    return;
+  }
+
+  // Sinon, redirection classique vers l'inscription pour les nouveaux clients
   router.push({ name: 'Register', query: { plan: planCode } });
+};
+
+const handleConfirmUpgrade = async () => {
+  if (!authStore.user?.tenantId) return;
+
+  try {
+    upgrading.value = true;
+    const success = await tenantApi.updateTenantPlan(authStore.user.tenantId, selectedPlanName.value);
+    
+    if (success) {
+        toast.success(`Votre abonnement a été mis à jour vers : ${selectedPlanName.value}`);
+        await tenantStore.fetchTenantInfo(authStore.user.tenantId);
+        showConfirmModal.value = false;
+        router.push('/app/profile');
+    } else {
+        toast.error("Impossible de mettre à jour le plan.");
+    }
+  } catch (err) {
+    console.error('[Plans] Erreur upgrade:', err);
+    toast.error("Une erreur technique est survenue.");
+  } finally {
+    upgrading.value = false;
+  }
 };
 
 const getPlanIcon = (code: string) => {

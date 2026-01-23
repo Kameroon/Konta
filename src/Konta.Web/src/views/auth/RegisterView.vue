@@ -1,123 +1,125 @@
 <template>
-  <div class="auth-box fade-in">
-    <div class="auth-header">
-      <h2>Créer votre compte</h2>
-      <p v-if="selectedPlan">Vous avez choisi le plan <strong>{{ selectedPlan }}</strong></p>
-      <p v-else>Rejoignez la révolution de la gestion financière</p>
-    </div>
-
-    <form @submit.prevent="handleRegister" class="auth-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="firstName">Prénom</label>
-          <input 
-            type="text" 
-            id="firstName" 
-            v-model="form.firstName" 
-            placeholder="Jean" 
-            required
-            :disabled="loading"
-          />
-        </div>
-        <div class="form-group">
-          <label for="lastName">Nom</label>
-          <input 
-            type="text" 
-            id="lastName" 
-            v-model="form.lastName" 
-            placeholder="Dupont" 
-            required
-            :disabled="loading"
-          />
-        </div>
+  <div class="register-container">
+    <div class="auth-box fade-in">
+      <div class="auth-header">
+        <h2>Créer votre compte</h2>
+        <p v-if="selectedPlan">Vous avez choisi le plan <strong>{{ selectedPlan }}</strong></p>
+        <p v-else>Rejoignez la révolution de la gestion financière</p>
       </div>
 
-      <div class="form-group">
-        <label for="siret">Numéro SIRET</label>
-        <div class="input-with-button">
-          <div class="input-with-icon">
-            <i class="fas fa-fingerprint"></i>
+      <form @submit.prevent="handleRegister" class="auth-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Prénom</label>
             <input 
               type="text" 
-              id="siret" 
-              v-model="form.siret" 
-              placeholder="123 456 789 00012" 
+              id="firstName" 
+              v-model="form.firstName" 
+              placeholder="Jean" 
               required
               :disabled="loading"
-              maxlength="14"
             />
           </div>
-          <button type="button" class="btn-lookup" @click="handleLookup" :disabled="loading || form.siret.length < 9">
-            <i class="fas fa-search" v-if="!lookingUp"></i>
-            <span v-else class="loader-small"></span>
-          </button>
+          <div class="form-group">
+            <label for="lastName">Nom</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              v-model="form.lastName" 
+              placeholder="Dupont" 
+              required
+              :disabled="loading"
+            />
+          </div>
         </div>
-        <small class="form-help" v-if="lookupError">{{ lookupError }}</small>
-        <small class="form-success" v-if="companyFound">Information récupérée !</small>
-      </div>
 
-      <div class="form-group">
-        <label for="companyName">Nom de l'entreprise</label>
-        <div class="input-with-icon">
-          <i class="fas fa-building"></i>
-          <input 
-            type="text" 
-            id="companyName" 
-            v-model="form.tenantName" 
-            placeholder="Konta Corp" 
-            required
-            :disabled="loading || companyFound"
-          />
+        <div class="form-group">
+          <label for="siret">Numéro SIRET</label>
+          <div class="input-with-button">
+            <div class="input-with-icon">
+              <i class="fas fa-fingerprint"></i>
+              <input 
+                type="text" 
+                id="siret" 
+                v-model="form.siret" 
+                placeholder="123 456 789 00012" 
+                required
+                :disabled="loading"
+                maxlength="14"
+              />
+            </div>
+            <button type="button" class="btn-lookup" @click="handleLookup" :disabled="loading || form.siret.length < 9">
+              <i class="fas fa-search" v-if="!lookingUp"></i>
+              <span v-else class="loader-small"></span>
+            </button>
+          </div>
+          <small class="form-help" v-if="lookupError">{{ lookupError }}</small>
+          <small class="form-success" v-if="companyFound">Information récupérée !</small>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="email">Adresse email professionelle</label>
-        <div class="input-with-icon">
-          <i class="fas fa-envelope"></i>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="form.email" 
-            placeholder="admin@entreprise.com" 
-            required
-            :disabled="loading || !companyFound"
-          />
+        <div class="form-group">
+          <label for="companyName">Nom de l'entreprise</label>
+          <div class="input-with-icon">
+            <i class="fas fa-building"></i>
+            <input 
+              type="text" 
+              id="companyName" 
+              v-model="form.tenantName" 
+              placeholder="Konta Corp" 
+              required
+              :disabled="loading || companyFound"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <div class="input-with-icon">
-          <i class="fas fa-lock"></i>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="form.password" 
-            placeholder="••••••••" 
-            required
-            :disabled="loading || !companyFound"
-          />
+        <div class="form-group">
+          <label for="email">Adresse email professionelle</label>
+          <div class="input-with-icon">
+            <i class="fas fa-envelope"></i>
+            <input 
+              type="email" 
+              id="email" 
+              v-model="form.email" 
+              placeholder="admin@entreprise.com" 
+              required
+              :disabled="loading || !companyFound"
+            />
+          </div>
         </div>
+
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock"></i>
+            <input 
+              type="password" 
+              id="password" 
+              v-model="form.password" 
+              placeholder="••••••••" 
+              required
+              :disabled="loading || !companyFound"
+            />
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <label class="checkbox-container">
+            <input type="checkbox" required :disabled="loading || !companyFound">
+            <span class="checkmark"></span>
+            J'accepte les <a href="#">Conditions d'Utilisation</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-auth" :disabled="loading || !companyFound">
+          <span v-if="!loading">Créer mon espace</span>
+          <span v-else class="loader"></span>
+        </button>
+      </form>
+
+      <div class="auth-extra">
+        Déjà un compte ? 
+        <router-link :to="{ name: 'Login' }" class="link">Se connecter</router-link>
       </div>
-
-      <div class="form-footer">
-        <label class="checkbox-container">
-          <input type="checkbox" required :disabled="loading || !companyFound">
-          <span class="checkmark"></span>
-          J'accepte les <a href="#">Conditions d'Utilisation</a>
-        </label>
-      </div>
-
-      <button type="submit" class="btn-auth" :disabled="loading || !companyFound">
-        <span v-if="!loading">Créer mon espace</span>
-        <span v-else class="loader"></span>
-      </button>
-    </form>
-
-    <div class="auth-extra">
-      Déjà un compte ? 
-      <router-link :to="{ name: 'Login' }" class="link">Se connecter</router-link>
     </div>
   </div>
 </template>
@@ -195,15 +197,23 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
+.register-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: calc(100vh - 80px);
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
 .auth-box {
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
+  background: white;
   padding: 40px;
   border-radius: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid #edf2f7;
 }
 
 .auth-header {

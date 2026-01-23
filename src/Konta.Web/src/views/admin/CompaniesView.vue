@@ -7,6 +7,7 @@ import { TierType } from '@/types/finance.types';
 import type { Tier } from '@/types/finance.types';
 import StatCard from '@/components/ui/StatCard.vue';
 import BaseModal from '@/components/ui/BaseModal.vue';
+import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
@@ -28,6 +29,11 @@ const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin');
 // Modale & Formulaire
 const showModal = ref(false);
 const isEditing = ref(false);
+
+// Modern Deletion Confirmation
+const showDeleteConfirm = ref(false);
+const tierToDelete = ref<Tier | null>(null);
+const isDeleting = ref(false);
 const tierForm = reactive<Partial<Tier>>({
   id: '',
   name: '',
@@ -154,15 +160,25 @@ const saveTier = async () => {
   }
 };
 
-const confirmDelete = async (tier: Tier) => {
-  if (confirm(`Supprimer définitivement l'entreprise "${tier.name}" ?`)) {
-    try {
-      await financeApi.deleteTier(tier.id);
-      companies.value = companies.value.filter(c => c.id !== tier.id);
-      toast.success('Entreprise supprimée.');
-    } catch (err) {
-      toast.error('Erreur lors de la suppression.');
-    }
+const confirmDelete = (tier: Tier) => {
+  tierToDelete.value = tier;
+  showDeleteConfirm.value = true;
+};
+
+const handleDelete = async () => {
+  if (!tierToDelete.value) return;
+  
+  try {
+    isDeleting.value = true;
+    await financeApi.deleteTier(tierToDelete.value.id);
+    companies.value = companies.value.filter(c => c.id !== tierToDelete.value!.id);
+    toast.success('Entreprise supprimée.');
+    showDeleteConfirm.value = false;
+  } catch (err) {
+    toast.error('Erreur lors de la suppression.');
+  } finally {
+    isDeleting.value = false;
+    tierToDelete.value = null;
   }
 };
 
@@ -290,6 +306,18 @@ const formatDate = (dateStr: string | null | undefined) => {
         </div>
       </div>
     </div>
+
+    <!-- Modale de confirmation moderne -->
+    <ConfirmModal
+      :show="showDeleteConfirm"
+      title="Supprimer la fiche"
+      :message="`Supprimer définitivement l'entreprise '${tierToDelete?.name}' ? Cette action effacera toutes les données liées à ce tiers.`"
+      confirmText="Supprimer"
+      type="danger"
+      :loading="isDeleting"
+      @close="showDeleteConfirm = false"
+      @confirm="handleDelete"
+    />
 
     <!-- Tier Modal -->
     <BaseModal :show="showModal" :title="isEditing ? 'Editer la fiche tiers' : 'Nouveau tiers'" @close="showModal = false">

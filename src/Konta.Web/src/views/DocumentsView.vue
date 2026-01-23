@@ -53,10 +53,12 @@ const trackJob = async (jobId: string) => {
         const result = await documentsApi.getInvoiceResult(jobId);
         
         if (result) {
+          console.log('[DocumentsView] Résultat reçu:', result);
           results.value.unshift(result);
           toast.success(`Facture extraite avec succès.`);
         } else {
-          toast.warning(`Aucune donnée structurée n'a pu être extraite de ${job.fileName}.`);
+          console.warn('[DocumentsView] Job terminé mais aucun résultat retourné pour:', jobId);
+          toast.warning(`Aucune donnée n'a été extraite de ${job.fileName}.`);
         }
         activeJobs.value.delete(jobId);
       } else if (job.status === JobStatus.Failed) {
@@ -91,11 +93,46 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
       <p>Envoyez vos factures pour une analyse automatique par l'intelligence artificielle.</p>
     </header>
 
-    <div class="grid-container">
       <!-- Zone d'Upload -->
       <section class="upload-section">
         <DocumentUpload @upload="handleUpload" />
         <LoadingOverlay :active="uploading" message="Téléchargement du fichier..." />
+        
+        <!-- Résultats immédiats (Session actuelle) -->
+        <div v-if="results.length > 0" class="recent-results fade-in">
+          <div class="results-header">
+            <h3>Dernières extractions</h3>
+            <span class="count">{{ results.length }} document(s)</span>
+          </div>
+          
+          <div class="results-container custom-scrollbar">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Vendeur</th>
+                  <th>N° Facture</th>
+                  <th>Date</th>
+                  <th class="text-right">Total TTC</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="invoice in results" :key="invoice.id" class="result-row">
+                  <td class="vendor-cell">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <strong>{{ invoice.vendorName || 'Inconnu' }}</strong>
+                  </td>
+                  <td>{{ invoice.invoiceNumber || '—' }}</td>
+                  <td>{{ invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString() : '—' }}</td>
+                  <td class="text-right amount">{{ formatCurrency(invoice.totalAmountTtc, invoice.currency) }}</td>
+                  <td class="text-right">
+                    <router-link to="/app/archive" class="btn-goto">Détails</router-link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- Suivi des extractions en cours -->
@@ -114,35 +151,7 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- Résultats immédiats -->
-      <section v-if="results.length > 0" class="results-section">
-        <h3>Extractions terminées (Session actuelle)</h3>
-        <div class="results-list">
-          <div v-for="invoice in results" :key="invoice.id" class="invoice-result-card">
-            <div class="vendor">{{ invoice.vendorName || 'Vendeur inconnu' }}</div>
-            <div class="details">
-              <div class="detail-item">
-                <label>N° Facture</label>
-                <span>{{ invoice.invoiceNumber || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <label>Date</label>
-                <span>{{ invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString() : 'N/A' }}</span>
-              </div>
-              <div class="detail-item amount">
-                <label>Total TTC</label>
-                <span>{{ formatCurrency(invoice.totalAmountTtc, invoice.currency) }}</span>
-              </div>
-            </div>
-            <div class="card-footer">
-              <router-link to="/app/documents" class="view-btn">Voir dans Archivage</router-link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -224,85 +233,106 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
   100% { transform: translateX(400%); }
 }
 
-/* Results section */
-.results-section h3 {
-  margin-bottom: 1.5rem;
-  color: #1e293b;
-}
-
-.results-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-}
-
-.invoice-result-card {
+/* Recent results display */
+.recent-results {
+  margin-top: 2rem;
   background: white;
-  padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  transition: box-shadow 0.2s;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.invoice-result-card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-}
-
-.vendor {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #1e293b;
-  margin-bottom: 1rem;
-}
-
-.details {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-}
-
-.detail-item label {
-  display: block;
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-bottom: 0.2rem;
-}
-
-.detail-item span {
-  font-weight: 600;
-  color: #334155;
-}
-
-.detail-item.amount span {
-  color: #42b883;
-  font-size: 1.1rem;
-}
-
-.card-footer {
+.results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
 }
 
-.tag {
-  background: #f1f5f9;
-  color: #475569;
+.results-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.results-header .count {
+  font-size: 0.8rem;
+  background: #3b82f6;
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.results-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th {
+  text-align: left;
+  padding: 0.75rem 1.5rem;
   font-size: 0.75rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  background: #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.view-btn {
+.results-table td {
+  padding: 1rem 1.5rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.result-row:hover td {
+  background: #f0f9ff;
+}
+
+.vendor-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vendor-cell i {
+  color: #3b82f6;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.amount {
+  font-weight: 700;
+  color: #10b981;
+}
+
+.btn-goto {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
   background: #1e293b;
   color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.8rem;
   font-weight: 600;
-  font-size: 0.85rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-goto:hover {
+  background: #3b82f6;
+  transform: translateY(-1px);
 }
 
 .no-data {
@@ -313,4 +343,11 @@ const formatCurrency = (amount?: number, currency = 'EUR') => {
   color: #94a3b8;
   border: 2px dashed #e2e8f0;
 }
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

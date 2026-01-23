@@ -1,3 +1,4 @@
+using System;
 using Konta.Shared.Models;
 
 namespace Konta.Ocr.Models;
@@ -10,7 +11,7 @@ public class ExtractedInvoice : BaseEntity
     public Guid JobId { get; set; }
     public string? VendorName { get; set; }
     public string? InvoiceNumber { get; set; }
-    public DateTime? InvoiceDate { get; set; }
+    public DateOnly? InvoiceDate { get; set; }
     public decimal? TotalAmountHt { get; set; }
     public decimal? TotalAmountTtc { get; set; }
     public decimal? VatAmount { get; set; }

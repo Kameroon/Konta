@@ -140,7 +140,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 

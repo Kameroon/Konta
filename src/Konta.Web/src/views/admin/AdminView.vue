@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import type { UserInfo } from '@/types/auth.types';
 import StatCard from '@/components/ui/StatCard.vue';
 import BaseModal from '@/components/ui/BaseModal.vue';
+import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
@@ -29,6 +30,11 @@ const isSuperAdmin = computed(() => {
 // Modale & Formulaire
 const showModal = ref(false);
 const isEditing = ref(false);
+
+// Deletion UI
+const showDeleteConfirm = ref(false);
+const userToDelete = ref<UserInfo | null>(null);
+const isDeleting = ref(false);
 const userForm = reactive<Partial<UserInfo>>({
   id: '',
   email: '',
@@ -159,15 +165,25 @@ const saveUser = async () => {
   }
 };
 
-const confirmDelete = async (user: UserInfo) => {
-  if (confirm(`Supprimer définitivement l'utilisateur ${user.firstName} ${user.lastName} ?`)) {
-    try {
-      await userApi.deleteUser(user.id);
-      users.value = users.value.filter(u => u.id !== user.id);
-      toast.success('Utilisateur supprimé.');
-    } catch (err) {
-      toast.error('Erreur lors de la suppression.');
-    }
+const confirmDelete = (user: UserInfo) => {
+  userToDelete.value = user;
+  showDeleteConfirm.value = true;
+};
+
+const handleDelete = async () => {
+  if (!userToDelete.value) return;
+  
+  try {
+    isDeleting.value = true;
+    await userApi.deleteUser(userToDelete.value.id);
+    users.value = users.value.filter(u => u.id !== userToDelete.value!.id);
+    toast.success('Utilisateur supprimé.');
+    showDeleteConfirm.value = false;
+  } catch (err) {
+    toast.error('Erreur lors de la suppression.');
+  } finally {
+    isDeleting.value = false;
+    userToDelete.value = null;
   }
 };
 
@@ -303,6 +319,18 @@ const formatDate = (dateStr: string | null | undefined) => {
         </div>
       </div>
     </div>
+
+    <!-- Modale de confirmation moderne -->
+    <ConfirmModal
+      :show="showDeleteConfirm"
+      title="Supprimer l'utilisateur"
+      :message="`Supprimer définitivement l'utilisateur ${userToDelete?.firstName} ${userToDelete?.lastName} ? Son accès à la plateforme sera immédiatement révoqué.`"
+      confirmText="Supprimer"
+      type="danger"
+      :loading="isDeleting"
+      @close="showDeleteConfirm = false"
+      @confirm="handleDelete"
+    />
 
     <!-- User Modal -->
     <BaseModal :show="showModal" :title="isEditing ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'" @close="showModal = false">

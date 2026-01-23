@@ -49,7 +49,13 @@ export const documentsApi = {
         if (response.data.success && response.data.data) {
             return response.data.data;
         }
-        throw new Error(response.data.message || 'Impossible de récupérer les résultats de la facture');
+        const errorMessage = response.data.message || 'Impossible de récupérer les résultats de la facture';
+        console.error(`[Documents API] Erreur récupération facture pour Job ${jobId}:`, {
+            success: response.data.success,
+            message: response.data.message,
+            data: response.data.data
+        });
+        throw new Error(errorMessage);
     },
 
     /**

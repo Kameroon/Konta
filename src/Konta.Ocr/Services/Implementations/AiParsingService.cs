@@ -94,7 +94,7 @@ TEXTE À ANALYSER:
                     Id = Guid.NewGuid(),
                     VendorName = invoiceData.GetProperty("vendor").GetString() ?? "Inconnu",
                     InvoiceNumber = invoiceData.GetProperty("number").GetString() ?? "Inconnu",
-                    InvoiceDate = DateTime.TryParse(invoiceData.GetProperty("date").GetString(), out var d) ? d : DateTime.UtcNow,
+                    InvoiceDate = DateOnly.FromDateTime(DateTime.TryParse(invoiceData.GetProperty("date").GetString(), out var d) ? d : DateTime.UtcNow),
                     TotalAmountHt = invoiceData.GetProperty("totalHt").GetDecimal(),
                     TotalAmountTtc = invoiceData.GetProperty("totalTtc").GetDecimal(),
                     VatAmount = invoiceData.GetProperty("vat").GetDecimal(),
@@ -168,7 +168,7 @@ TEXTE À ANALYSER:
                 Id = Guid.NewGuid(), 
                 VendorName = vendor,
                 InvoiceNumber = !string.IsNullOrWhiteSpace(invoiceNum) ? invoiceNum : "N/A",
-                InvoiceDate = invoiceDate ?? DateTime.UtcNow,
+                InvoiceDate = invoiceDate.HasValue ? DateOnly.FromDateTime(invoiceDate.Value) : DateOnly.FromDateTime(DateTime.UtcNow),
                 TotalAmountTtc = totalAmountTtc,
                 TotalAmountHt = totalAmountTtc / 1.2m, // Estimation 20%
                 Currency = "EUR",

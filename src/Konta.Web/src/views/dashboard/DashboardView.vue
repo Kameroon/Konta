@@ -81,10 +81,8 @@ onMounted(async () => {
     <div class="stats-grid">
       <StatCard label="Documents" :value="summary.totalDocuments" trend="up" :trendValue="summary.documentsTrend" icon="fas fa-file-alt" color="#3b82f6" />
       
-      <template v-if="isSuperAdmin">
-        <StatCard label="Entreprises" :value="summary.totalCompanies" trend="up" :trendValue="summary.companiesTrend" icon="fas fa-building" color="#10b981" />
-        <StatCard label="Utilisateurs" :value="summary.totalUsers" icon="fas fa-users" color="#a855f7" />
-      </template>
+      <StatCard label="Entreprises" :value="summary.totalCompanies" trend="up" :trendValue="summary.companiesTrend" icon="fas fa-building" color="#10b981" />
+      <StatCard label="Utilisateurs" :value="summary.totalUsers" icon="fas fa-users" color="#a855f7" />
 
       <StatCard label="Chiffre d'affaires" :value="summary.totalRevenue" format="currency" trend="up" :trendValue="summary.revenueTrend" icon="fas fa-euro-sign" color="#f59e0b" />
     </div>

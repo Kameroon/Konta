@@ -30,6 +30,11 @@ public interface ITenantService
     Task<bool> UpdateTenantAsync(Guid id, UpdateTenantRequest request);
 
     /// <summary>
+    /// Updates only the subscription plan of a tenant.
+    /// </summary>
+    Task<bool> UpdatePlanAsync(Guid id, string plan);
+
+    /// <summary>
     /// Deletes a tenant.
     /// </summary>
     Task<bool> DeleteTenantAsync(Guid id);

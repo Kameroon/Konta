@@ -162,6 +162,20 @@ public class TenantService : ITenantService
     }
 
     /// <inheritdoc />
+    public async Task<bool> UpdatePlanAsync(Guid id, string plan)
+    {
+        var tenant = await _tenantRepository.GetByIdAsync(id);
+        if (tenant == null) return false;
+
+        _logger.LogInformation("Changement de plan pour le tenant {TenantId} : {OldPlan} -> {NewPlan}", id, tenant.Plan, plan);
+        
+        tenant.Plan = plan;
+        tenant.UpdatedAt = DateTime.UtcNow;
+
+        return await _tenantRepository.UpdateAsync(tenant);
+    }
+
+    /// <inheritdoc />
     public async Task<bool> DeleteTenantAsync(Guid id)
     {
         return await _tenantRepository.DeleteAsync(id);

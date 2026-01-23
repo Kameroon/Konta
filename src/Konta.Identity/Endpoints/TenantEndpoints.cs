@@ -59,6 +59,18 @@ public static class TenantEndpoints
         .Produces<ApiResponse<object>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
 
+        group.MapPatch("/{id:guid}/plan", async (Guid id, [FromBody] string plan, ITenantService tenantService) =>
+        {
+            var success = await tenantService.UpdatePlanAsync(id, plan);
+            return success 
+                ? Results.Ok(ApiResponse.Ok("Plan mis à jour avec succès"))
+                : Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"));
+        })
+        .RequireAuthorization()
+        .WithName("UpdateTenantPlan")
+        .Produces<ApiResponse<object>>(StatusCodes.Status200OK)
+        .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
+
         group.MapDelete("/{id:guid}", async (Guid id, ITenantService tenantService) =>
         {
             var success = await tenantService.DeleteTenantAsync(id);

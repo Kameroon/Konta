@@ -20,5 +20,14 @@ export const tenantApi = {
             return response.data.data;
         }
         throw new Error(response.data.message || 'Erreur lors de la récupération des tenants');
+    },
+    /**
+     * Met à jour le plan d'un tenant.
+     */
+    async updateTenantPlan(tenantId: string, plan: string): Promise<boolean> {
+        const response = await http.patch<ApiResponse<any>>(`/api/tenants/${tenantId}/plan`, JSON.stringify(plan), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        return response.data.success;
     }
 };

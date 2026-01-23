@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { documentsApi } from '@/api/documents.api';
-import type { ExtractionJob } from '@/types/document.types';
+import type { ExtractionJob, ExtractedInvoice, ExtractedRib } from '@/types/document.types';
+import { DocumentType, JobStatus } from '@/types/document.types';
 import StatCard from '@/components/ui/StatCard.vue';
+import BaseModal from '@/components/ui/BaseModal.vue';
+import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 import { useToast } from 'vue-toastification';
 
 const toast = useToast();
@@ -16,11 +19,23 @@ const extractedData = ref<ExtractionJob[]>([]);
 const searchData = ref('');
 const loading = ref(true);
 
+// Détails modal
+const showDetailsModal = ref(false);
+const detailLoading = ref(false);
+const selectedJob = ref<ExtractionJob | null>(null);
+const invoiceData = ref<ExtractedInvoice | null>(null);
+const ribData = ref<ExtractedRib | null>(null);
+
 // Pagination et Tri
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 const sortBy = ref('createdAt');
 const sortOrder = ref<'asc' | 'desc'>('desc');
+
+// Confirmation Deletion
+const showDeleteConfirm = ref(false);
+const itemToDelete = ref<ExtractionJob | null>(null);
+const deleting = ref(false);
 
 onMounted(async () => {
   await fetchData();
@@ -99,15 +114,53 @@ const downloadPdf = async (item: ExtractionJob) => {
   }
 };
 
-const confirmDelete = async (item: ExtractionJob) => {
-  if (confirm(`Voulez-vous vraiment supprimer l'extraction de "${item.fileName}" ? Cette action est irréversible.`)) {
-    try {
-      await documentsApi.deleteJob(item.id);
-      extractedData.value = extractedData.value.filter(e => e.id !== item.id);
-      toast.success('Extraction supprimée.');
-    } catch (err) {
-      toast.error('Erreur lors de la suppression.');
+const viewDetails = async (job: ExtractionJob) => {
+  if (job.status !== JobStatus.Completed) return;
+  
+  selectedJob.value = job;
+  showDetailsModal.value = true;
+  detailLoading.value = true;
+  invoiceData.value = null;
+  ribData.value = null;
+
+  try {
+    if (job.detectedType === DocumentType.Invoice) {
+      invoiceData.value = await documentsApi.getInvoiceResult(job.id);
+    } else if (job.detectedType === DocumentType.Rib) {
+      ribData.value = await documentsApi.getRibResult(job.id);
     }
+  } catch (err) {
+    console.error('Erreur détails:', err);
+    toast.error('Impossible de charger les résultats d\'extraction.');
+  } finally {
+    detailLoading.value = false;
+  }
+};
+
+const formatCurrency = (amount?: number) => {
+  if (amount === undefined || amount === null) return '—';
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
+};
+
+const confirmDelete = (item: ExtractionJob) => {
+  itemToDelete.value = item;
+  showDeleteConfirm.value = true;
+};
+
+const handleDelete = async () => {
+  if (!itemToDelete.value) return;
+  
+  try {
+    deleting.value = true;
+    await documentsApi.deleteJob(itemToDelete.value.id);
+    extractedData.value = extractedData.value.filter(e => e.id !== itemToDelete.value!.id);
+    toast.success('Extraction supprimée.');
+    showDeleteConfirm.value = false;
+  } catch (err) {
+    toast.error('Erreur lors de la suppression.');
+  } finally {
+    deleting.value = false;
+    itemToDelete.value = null;
   }
 };
 </script>
@@ -170,6 +223,7 @@ const confirmDelete = async (item: ExtractionJob) => {
               <th @click="handleSort('processedAt')" class="sortable">
                 Traité le <i class="fas" :class="sortBy === 'processedAt' ? (sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort'"></i>
               </th>
+              <th>Données</th>
               <th class="text-right">Actions</th>
             </tr>
           </thead>
@@ -192,6 +246,16 @@ const confirmDelete = async (item: ExtractionJob) => {
               </td>
               <td class="date-cell">{{ formatDate(item.createdAt) }}</td>
               <td class="date-cell">{{ formatDate(item.processedAt) }}</td>
+              <td>
+                <button 
+                  v-if="item.status === JobStatus.Completed" 
+                  class="btn-view-results" 
+                  @click="viewDetails(item)"
+                >
+                  <i class="fas fa-eye"></i> Voir détails
+                </button>
+                <span v-else class="text-muted">—</span>
+              </td>
               <td class="actions text-right">
                 <button class="action-btn download" @click="downloadPdf(item)" title="Télécharger">
                   <i class="fas fa-download"></i>
@@ -223,6 +287,115 @@ const confirmDelete = async (item: ExtractionJob) => {
         </div>
       </div>
     </div>
+
+    <!-- Confirmation de suppression moderne -->
+    <ConfirmModal
+      :show="showDeleteConfirm"
+      title="Supprimer l'extraction"
+      :message="`Voulez-vous vraiment supprimer l'extraction de '${itemToDelete?.fileName}' ? Cette action est irréversible.`"
+      confirmText="Supprimer définitivement"
+      type="danger"
+      :loading="deleting"
+      @close="showDeleteConfirm = false"
+      @confirm="handleDelete"
+    />
+
+    <!-- Details Modal -->
+    <BaseModal 
+      :show="showDetailsModal" 
+      :title="selectedJob?.detectedType === DocumentType.Invoice ? 'Détails de la Facture' : 'Détails du RIB'" 
+      @close="showDetailsModal = false"
+      width="600px"
+    >
+      <div v-if="detailLoading" class="modal-loading">
+        <div class="spinner"></div>
+        <p>Récupération des données extraites...</p>
+      </div>
+      <div v-else-if="invoiceData" class="ocr-details">
+        <div class="detail-header">
+          <i class="fas fa-file-invoice detail-icon"></i>
+          <div class="header-info">
+            <span class="doc-title">{{ selectedJob?.fileName }}</span>
+            <span class="doc-type">Type: Facture / Devis</span>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="detail-item">
+            <label>Entreprise / Fournisseur</label>
+            <p class="detail-value">{{ invoiceData.vendorName || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>N° de Facture</label>
+            <p class="detail-value">{{ invoiceData.invoiceNumber || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Date du document</label>
+            <p class="detail-value">{{ invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate).toLocaleDateString('fr-FR') : 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Devise</label>
+            <p class="detail-value">{{ invoiceData.currency || 'EUR' }}</p>
+          </div>
+        </div>
+
+        <div class="amounts-summary">
+          <div class="amount-row">
+            <span>Montant HT</span>
+            <span class="amount-val">{{ formatCurrency(invoiceData.totalAmountHt) }}</span>
+          </div>
+          <div class="amount-row">
+            <span>TVA</span>
+            <span class="amount-val">{{ formatCurrency(invoiceData.vatAmount) }}</span>
+          </div>
+          <div class="amount-row total">
+            <span>TOTAL TTC</span>
+            <span class="amount-val">{{ formatCurrency(invoiceData.totalAmountTtc) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="ribData" class="ocr-details">
+        <div class="detail-header">
+          <i class="fas fa-university detail-icon"></i>
+          <div class="header-info">
+            <span class="doc-title">{{ selectedJob?.fileName }}</span>
+            <span class="doc-type">Type: RIB / Coordonnées Bancaires</span>
+          </div>
+        </div>
+
+        <div class="details-grid">
+          <div class="detail-item full">
+            <label>Titulaire du compte</label>
+            <p class="detail-value">{{ ribData.accountHolder || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item full">
+            <label>IBAN</label>
+            <p class="detail-value iban">{{ ribData.iban || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>BIC / SWIFT</label>
+            <p class="detail-value">{{ ribData.bic || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Banque</label>
+            <p class="detail-value">{{ ribData.bankName || 'Non détecté' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="empty-results">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Aucune donnée n'a pu être extraite de ce document.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-close-modal" @click="showDetailsModal = false">Fermer</button>
+        <button class="btn-download-pdf" @click="selectedJob && downloadPdf(selectedJob)">
+          <i class="fas fa-file-pdf"></i> Voir le PDF
+        </button>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -331,5 +504,53 @@ const confirmDelete = async (item: ExtractionJob) => {
   .view-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
   .toolbar { flex-direction: column; gap: 1rem; }
   .search-input-wrapper { width: 100%; }
+}
+.btn-view-results {
+  background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8;
+  padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
+.btn-view-results:hover { background: #bee3f8; transform: translateY(-1px); }
+
+.modal-loading { text-align: center; padding: 3rem 0; color: #718096; }
+.modal-loading .spinner { margin: 0 auto 1rem; }
+
+.ocr-details { display: flex; flex-direction: column; gap: 1.5rem; }
+.detail-header { display: flex; align-items: center; gap: 15px; padding-bottom: 1.5rem; border-bottom: 1px solid #edf2f7; }
+.detail-icon { font-size: 2rem; color: #3182ce; }
+.header-info { display: flex; flex-direction: column; }
+.doc-title { font-weight: 800; color: #1a202c; font-size: 1.1rem; }
+.doc-type { font-size: 0.8rem; color: #718096; font-weight: 600; }
+
+.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.detail-item { display: flex; flex-direction: column; gap: 4px; }
+.detail-item.full { grid-column: span 2; }
+.detail-item label { font-size: 0.75rem; font-weight: 800; color: #a0aec0; text-transform: uppercase; }
+.detail-value { font-weight: 700; color: #2d3748; margin: 0; font-size: 1rem; }
+.detail-value.iban { font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
+
+.amounts-summary {
+  background: #f7fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.amount-row { display: flex; justify-content: space-between; font-weight: 600; color: #4a5568; }
+.amount-row.total { 
+  margin-top: 5px; padding-top: 10px; border-top: 2px dashed #cbd5e0;
+  font-size: 1.25rem; color: #1a202c; font-weight: 900;
+}
+.amount-val { color: #2d3748; }
+.total .amount-val { color: #3182ce; }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 1rem; }
+.btn-close-modal { padding: 0.75rem 1.5rem; border-radius: 10px; background: #f7fafc; border: 1px solid #e2e8f0; font-weight: 700; cursor: pointer; }
+.btn-download-pdf { padding: 0.75rem 1.5rem; border-radius: 10px; background: #1a202c; color: white; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+.text-muted { color: #cbd5e0; }
+.empty-results { text-align: center; padding: 3rem 0; color: #a0aec0; }
+.empty-results i { font-size: 2.5rem; margin-bottom: 1rem; }
+
+@media (max-width: 640px) {
+  .details-grid { grid-template-columns: 1fr; }
+  .detail-item.full { grid-column: auto; }
 }
 </style>

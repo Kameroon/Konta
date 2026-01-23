@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { documentsApi } from '@/api/documents.api';
 import { JobStatus, type ExtractionJob } from '@/types/document.types';
 import { useToast } from 'vue-toastification';
+import ConfirmModal from '@/components/ui/ConfirmModal.vue';
 
 /**
  * ArchiveView : Historique des documents envoyés par l'utilisateur.
@@ -13,6 +14,11 @@ const authStore = useAuthStore();
 const toast = useToast();
 const jobs = ref<ExtractionJob[]>([]);
 const loading = ref(true);
+
+// Deletion UI
+const showDeleteConfirm = ref(false);
+const jobIdToDelete = ref<string | null>(null);
+const deleting = ref(false);
 
 const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin');
 
@@ -35,15 +41,25 @@ const fetchJobs = async () => {
   }
 };
 
-const deleteJob = async (id: string) => {
-  if (confirm("Voulez-vous supprimer ce document de votre historique ?")) {
-    try {
-      await documentsApi.deleteJob(id);
-      jobs.value = jobs.value.filter(j => j.id !== id);
-      toast.success("Document supprimé.");
-    } catch (err) {
-      toast.error("Erreur lors de la suppression.");
-    }
+const deleteJob = (id: string) => {
+  jobIdToDelete.value = id;
+  showDeleteConfirm.value = true;
+};
+
+const confirmDelete = async () => {
+  if (!jobIdToDelete.value) return;
+  
+  try {
+    deleting.value = true;
+    await documentsApi.deleteJob(jobIdToDelete.value);
+    jobs.value = jobs.value.filter(j => j.id !== jobIdToDelete.value);
+    toast.success("Document supprimé.");
+    showDeleteConfirm.value = false;
+  } catch (err) {
+    toast.error("Erreur lors de la suppression.");
+  } finally {
+    deleting.value = false;
+    jobIdToDelete.value = null;
   }
 };
 
@@ -142,6 +158,18 @@ const formatDate = (dateStr: string) => {
         </table>
       </div>
     </div>
+
+    <!-- Confirmation de suppression moderne -->
+    <ConfirmModal
+      :show="showDeleteConfirm"
+      title="Supprimer le document"
+      message="Voulez-vous supprimer ce document de votre historique ? Cette action est irréversible."
+      confirmText="Supprimer"
+      type="danger"
+      :loading="deleting"
+      @close="showDeleteConfirm = false"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 

@@ -118,6 +118,24 @@
             }
         },
         {
+            "DownstreamPathTemplate": "/api/tenants/{id}/plan",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5001
+                }
+            ],
+            "UpstreamPathTemplate": "/api/tenants/{id}/plan",
+            "UpstreamHttpMethod": [
+                "Patch"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
             "DownstreamPathTemplate": "/api/users",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [

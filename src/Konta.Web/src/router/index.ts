@@ -48,10 +48,31 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: 'Tableau de Bord' }
             },
             {
+                path: 'download',
+                name: 'Download',
+                component: () => import('@/views/DocumentsView.vue'), // Shortcut to existing view for now
+                meta: { title: 'Téléchargement' }
+            },
+            {
                 path: 'documents',
                 name: 'Documents',
                 component: () => import('@/views/DocumentsView.vue'),
-                meta: { title: 'Documents & OCR' }
+                meta: { title: 'Documents' }
+            },
+            {
+                path: 'extracted-data',
+                name: 'ExtractedData',
+                component: () => import('@/views/ExtractedDataView.vue'),
+                meta: { title: 'Données Extraites' }
+            },
+            {
+                path: 'companies',
+                name: 'Companies',
+                component: () => import('@/views/admin/CompaniesView.vue'),
+                meta: {
+                    title: 'Entreprises',
+                    roles: ['SuperAdmin']
+                }
             },
             {
                 path: 'profile',
@@ -64,7 +85,7 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'Admin',
                 component: () => import('@/views/admin/AdminView.vue'),
                 meta: {
-                    title: 'Administration',
+                    title: 'Utilisateurs',
                     roles: ['Admin', 'SuperAdmin']
                 }
             }
@@ -111,13 +132,13 @@ router.beforeEach(async (to, from, next) => {
     // 2. Vérification des rôles (RBAC)
     if (to.meta.roles) {
         const requiredRoles = to.meta.roles as string[];
-        const userRoles = authStore.user?.roles || [];
+        const userRole = authStore.user?.role || '';
 
-        // Vérifie si l'utilisateur possède au moins un des rôles requis
-        const hasRole = requiredRoles.some(role => userRoles.includes(role));
+        // Vérifie si l'utilisateur possède l'un des rôles requis
+        const hasRole = requiredRoles.includes(userRole);
 
         if (!hasRole) {
-            console.error(`[Router] Droits insuffisants pour ${to.path}. Rôles requis : ${requiredRoles}`);
+            console.error(`[Router] Droits insuffisants pour ${to.path}. Rôle requis parmi : ${requiredRoles}`);
             toast.error("Vous n'avez pas les droits nécessaires pour accéder à cet espace.");
             return next({ name: 'Unauthorized' });
         }

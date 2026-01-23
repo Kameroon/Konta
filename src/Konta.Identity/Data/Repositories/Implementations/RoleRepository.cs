@@ -81,4 +81,26 @@ public class RoleRepository : BaseRepository<RoleRepository>, IRoleRepository
         using var connection = CreateConnection(sql, new { UserId = userId, RoleId = roleId });
         await connection.ExecuteAsync(sql, new { UserId = userId, RoleId = roleId });
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Role>> GetAllByTenantIdAsync(Guid tenantId)
+    {
+        _logger.LogDebug("Accès DB : Récupération des rôles pour le tenant : {TenantId}", tenantId);
+        const string sql = "SELECT * FROM identity.Roles WHERE TenantId = @TenantId";
+        using var connection = CreateConnection(sql, new { TenantId = tenantId });
+        return await connection.QueryAsync<Role>(sql, new { TenantId = tenantId });
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<Permission>> GetPermissionsByRoleIdAsync(Guid roleId)
+    {
+        _logger.LogDebug("Accès DB : Récupération des permissions pour le rôle : {RoleId}", roleId);
+        const string sql = @"
+            SELECT p.* 
+            FROM identity.Permissions p
+            JOIN identity.RolePermissions rp ON p.Id = rp.PermissionId
+            WHERE rp.RoleId = @RoleId";
+        using var connection = CreateConnection(sql, new { RoleId = roleId });
+        return await connection.QueryAsync<Permission>(sql, new { RoleId = roleId });
+    }
 }

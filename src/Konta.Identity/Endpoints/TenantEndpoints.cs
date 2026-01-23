@@ -11,14 +11,26 @@ public static class TenantEndpoints
     public static void MapTenantEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/tenants")
-            .WithTags("Tenants")
-            .RequireAuthorization(); // On protège par défaut, à affiner selon les besoins
+            .WithTags("Tenants");
+
+        group.MapGet("/lookup/{siret}", async (string siret, ICompanyRegistryService registryService) =>
+        {
+            var result = await registryService.LookupBySiretAsync(siret);
+            return result == null 
+                ? Results.NotFound(ApiResponse<object>.Fail("Aucune entreprise trouvée pour ce SIRET."))
+                : Results.Ok(ApiResponse<CompanyRegistrationResult>.Ok(result));
+        })
+        .AllowAnonymous()
+        .WithName("LookupCompany")
+        .Produces<ApiResponse<CompanyRegistrationResult>>(StatusCodes.Status200OK)
+        .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
 
         group.MapGet("/", async (ITenantService tenantService) =>
         {
             var tenants = await tenantService.GetAllTenantsAsync();
             return Results.Ok(ApiResponse<IEnumerable<TenantResponse>>.Ok(tenants));
         })
+        .RequireAuthorization()
         .WithName("GetAllTenants")
         .Produces<ApiResponse<IEnumerable<TenantResponse>>>(StatusCodes.Status200OK);
 
@@ -29,6 +41,7 @@ public static class TenantEndpoints
                 ? Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"))
                 : Results.Ok(ApiResponse<TenantResponse>.Ok(tenant));
         })
+        .RequireAuthorization()
         .WithName("GetTenantById")
         .Produces<ApiResponse<TenantResponse>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
@@ -40,6 +53,7 @@ public static class TenantEndpoints
                 ? Results.Ok(ApiResponse.Ok("Tenant mis à jour avec succès"))
                 : Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"));
         })
+        .RequireAuthorization()
         .WithName("UpdateTenant")
         .AddEndpointFilter<ValidationFilter<UpdateTenantRequest>>()
         .Produces<ApiResponse<object>>(StatusCodes.Status200OK)
@@ -52,6 +66,7 @@ public static class TenantEndpoints
                 ? Results.Ok(ApiResponse.Ok("Tenant supprimé avec succès"))
                 : Results.NotFound(ApiResponse<object>.Fail("Tenant non trouvé"));
         })
+        .RequireAuthorization()
         .WithName("DeleteTenant")
         .Produces<ApiResponse<object>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);

@@ -1,12 +1,30 @@
 # L'Encyclopédie Suprême de l'Architecture Konta ERP (Édition Architecte Master)
 
-**Dernière mise à jour**: 22 Janvier 2026
-**Version**: 46.0 (Role Fix, SaaS Plan Enrichment & Dashboard Sync)
+**Dernière mise à jour**: 23 Janvier 2026
+**Version**: 50.0 (Networking Reliability & BCrypt Fix)
 
 ---
 
 ## 1. Introduction Visionnaire et Vision Systémique de Konta
 La plateforme Konta n'est pas un simple logiciel ; c'est un écosystème ERP SaaS distribué conçu pour répondre aux défis les plus complexes de la gestion d'entreprise moderne. Fondée sur une architecture microservices décentralisée utilisant .NET 10 et PostgreSQL, Konta privilégie la performance brute, la sécurité granulaire et une isolation multi-tenant absolue. Notre mission est de fournir un "Système d'Exploitation" pour les entreprises, capable de s'adapter à n'importe quelle échelle.
+
+### 1.1 UI Refactoring (Mockup 2026)
+L'interface a été entièrement repensée pour offrir une expérience premium :
+- **Modern Sidebar** : Passage au blanc (`#ffffff`) avec section profil enrichie.
+- **Management Views** : Refonte totale des vues Utilisateurs, Entreprises et Données Extraites pour une ergonomie maximale. Intégration de modales CRUD (`BaseModal.vue`) pour une gestion fluide sans changement de page.
+- **Reporting Visuel** : Dashboards interactifs avec graphiques et KPIs unifiés.
+- **Data Tables** : Implémentation de la pagination, du tri et de la recherche temps réel sur toutes les tables administratives.
+
+### 1.2 Améliorations de la Sécurité & UX Login
+- **Gestion des Erreurs 401** : Le système intercepte désormais les erreurs d'authentification sans tenter de rafraîchir le token si l'utilisateur est sur la page de connexion, permettant l'affichage immédiat du message "Identifiants invalides".
+- **Feedback Visuel** : Alertes animées et retour utilisateur amélioré sur les formulaires d'authentification.
+- **Fiabilité Réseau Local** : Recommandation systématique de `127.0.0.1` au lieu de `localhost` pour éliminer les lenteurs de résolution DNS et IPv6 sur Windows.
+- **Hashes BCrypt** : Tous les mots de passe par défaut (`Admin123!`, `Password123!`) utilisent désormais des empreintes BCrypt réelles générées avec un coût de 11, garantissant la compatibilité avec `BCrypt.Net`.
+
+### 1.3 Onboarding Intelligent & Gouvernance (Phase 6)
+- **SIRET Lookup Integration** : Intégration de l'API `recherche-entreprises.api.gouv.fr` pour une inscription simplifiée et fiabilisée.
+- **SuperAdmin Support** : Introduction d'une couche de gestion "Plateforme" permettant aux administrateurs Konta de gérer l'ensemble des tenants depuis une interface unifiée.
+- **Isolation Dynamique** : Evolution du `TenantContext` pour supporter un mode `IsGlobalAdmin` permettant de lever l'isolation multi-tenant pour les besoins de maintenance et de support.
 
 ### 1.1 Les Quatre Piliers Fondamentaux de Konta
 ---
@@ -27,6 +45,11 @@ La passerelle **Ocelot** agit comme le gardien et l'aiguilleur unique de l'écos
 | `/gateway/ocr/*` | `Konta.Ocr` | 5005 |
 | `/gateway/finance-core/*` | `Konta.Finance.Core` | 5006 |
 | `/gateway/reporting/*` | `Konta.Reporting` | 5007 |
+| `/api/users` | `Konta.Identity` | 5001 |
+| `/api/finance-core/tiers` | `Konta.Finance.Core` | 5006 |
+
+> [!IMPORTANT]
+> **Routes Administratives** : Les routes `/api/users` et `/api/finance-core/tiers` sont essentielles pour les opérations CRUD. Elles doivent impérativement être configurées dans `ocelot.json` pour permettre au frontend de gérer les utilisateurs et les entreprises. Une priorité élevée est appliquée pour éviter les conflits de routage.
 
 ---
 
@@ -70,6 +93,7 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
       - **Seq** : Envoi vers http://localhost:5341 pour visualisation centralisée
     - **Enrichissement** : Ajout automatique de `ServiceName`, `MachineName`, `EnvironmentName`
     - **Bénéfice** : Tous les microservices logguent de manière uniforme et centralisée.
+    - **Performance Tracking** : Introduction de marqueurs de performance granulaires (`[Step X]`) dans le service d'authentification pour identifier les goulots d'étranglement (hachage vs DB).
 
 #### **Résilience et Patterns**
 - **`/Resilience/ResilienceConstants.cs`** : Constantes pour les patterns Retry et Circuit Breaker (Polly).
@@ -79,16 +103,17 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
 
 ---
 
-## 3. Microservice Identity : Identité, Sécurité et Onboarding
+## 4. Microservice Identity : Identité, Sécurité et Onboarding
 
 ### 3.1 Anatomie des Services d'Identité
 - **`AuthService.cs`** : Cœur de la sécurité. Coordonne le login, vérifie le hash BCrypt, valide l'état du compte et génère le couple Access/RefreshToken. Gère également la détection de rejeu des tokens.
 - **`TokenService.cs`** : Forge de jetons JWT. Elle calcule les claims critiques (`tenant_id`, `permissions`, `email`) et définit les durées de vie des jetons.
-- **`TenantService.cs`** : Orchestrateur de l'onboarding pour les nouveaux clients SaaS. Lors d'un `Register`, il crée :
-    1. Le Tenant (L'Entreprise).
+- **`TenantService.cs`** : Orchestrateur de l'onboarding. Lors d'un `Register`, il utilise désormais le `CompanyRegistryService` pour valider le SIRET et pré-remplir les données (Nom, APE, Adresse). Il crée ensuite :
+    1. Le Tenant (L'Entreprise) avec les données officielles.
     2. Le rôle Administrateur par défaut.
-    3. Les permissions système initiales pour ce rôle.
-    4. L'utilisateur administrateur racine lié au rôle.
+    3. Les permissions système initiales.
+    4. L'utilisateur administrateur racine.
+- **`CompanyRegistryService.cs`** : Connecteur externe vers l'API Gouv (Siren/Siret). Gère le fallback en cas d'indisponibilité de l'API.
 - **`RoleService.cs`** : **[COMPLÉTÉ]** Gestion des rôles et assignation de permissions avec sécurité multi-tenant.
     - **`AssignPermissionAsync(roleId, request)`** : Assigne une permission à un rôle avec validations :
       1. **Vérification d'existence du rôle** : Récupère le rôle via `GetByIdAsync()`, lève une exception si inexistant
@@ -102,15 +127,18 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
 | Table | Colonne | Type SQL | Rôle et Contrainte |
 | :--- | :--- | :--- | :--- |
 | **Tenants** | `Plan` | TEXT | Niveau d'abonnement SaaS (Free, Premium, etc.). |
+| **Tenants** | `TaxId` | TEXT | Stockage du SIRET de l'entreprise. |
+| **Tenants** | `Industry` | TEXT | Secteur d'activité (Code APE récupéré via API). |
+| **Tenants** | `Address` | TEXT | Adresse officielle du siège social. |
 | **Users** | `Email` | TEXT UNIQUE | Identifiant de connexion indexé. |
 | **Users** | `PasswordHash`| TEXT | Secret hashé en BCrypt. |
-| **Users** | `Role` | TEXT | Rôle principal injecté dans les claims JWT. |
+| **Users** | `Role` | TEXT | Rôle principal injecté dans les claims JWT. Supporte `SuperAdmin`. |
 | **Roles** | `Name` | TEXT | Nom du rôle (ex: Comptable, Admin). |
 | **Permissions**| `SystemName` | TEXT UNIQUE | Identifiant technique (ex: `finance.write`). |
 
 ---
 
-## 4. Microservice Tenant : Gestion SaaS et Identité d'Entreprise
+## 5. Microservice Tenant : Gestion SaaS et Identité d'Entreprise
 
 ### 4.1 Rôle et Périmètre
 Le microservice Tenant est désormais purement focalisé sur la structure de l'entreprise. Il ne gère plus les aspects financiers qui ont été déportés vers `Konta.Billing`.
@@ -121,7 +149,7 @@ Le microservice Tenant est désormais purement focalisé sur la structure de l'e
 
 ---
 
-## 5. Microservice Billing : Paiements, Stripe et Facturation
+## 6. Microservice Billing : Paiements, Stripe et Facturation
 
 ### 5.1 Architecture Stripe Intégrée
 Le service `Konta.Billing` centralise toute la monétisation de la plateforme.
@@ -158,7 +186,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 
 ---
 
-## 6. Microservice Finance : Comptabilité Générale et Grand Livre
+## 7. Microservice Finance : Comptabilité Générale et Grand Livre
 
 ### 6.1 Le Réacteur Comptable (Double-Entry Engine)
 `Konta.Finance` est le cœur métier de l'ERP. Il assure l'intégrité financière de chaque entreprise via un moteur de validation strict.
@@ -182,7 +210,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 `Konta.Finance.Core` gère les dimensions opérationnelles de la finance, complétant le service de comptabilité pure.
 - **Gestion Budgétaire** : Surveillance en temps réel des dépenses par catégorie avec alertes de dépassement (Warning à 90%, Critical à 100%).
 - **Trésorerie Dynamic** : Suivi des soldes bancaires et alertes automatique en cas de découvert.
-- **Base de Tiers** : Référentiel unifié des clients et fournisseurs.
+- **Base de Tiers** : Référentiel unifié des clients et fournisseurs avec support complet du CRUD (Création, Modification, Suppression).
 
 ### 7.2 Spécification de la Base de Données (Finance Core Table Analysis)
 | Table | Colonne | Type SQL | Rôle et Contrainte |
@@ -194,7 +222,53 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 
 ---
 
-## 9. Microservice Reporting & Analytics : Aide à la décision
+## 8. Sécurité & Permissions (RBAC Master Matrix)
+Le système Konta utilise un contrôle d'accès basé sur les rôles (RBAC) granulaire, permettant une isolation stricte des fonctionnalités par utilisateur.
+
+### 8.1 Matrice de Sécurité (Permissions Système)
+Les permissions sont structurées par module (`service.ressource.action`) :
+
+| Module | Permissions Clés | Description |
+| :--- | :--- | :--- |
+| **Identity** | `identity.users.*` | Gestion complète des comptes (View, Create, Update, Disable, Roles). |
+| | `identity.roles.*` | Gestion de la configuration RBAC (View, Create, Update, Delete, Permissions). |
+| **Finance** | `finance.accounts.*` | Gestion du Plan Comptable (PCG). |
+| | `finance.journals.*` | Gestion des journaux comptables. |
+| | `finance.entries.*` | Cycle de vie des écritures (View, Create, Update, Validate, Cancel). |
+| **Finance Core** | `finance_core.tiers.*` | Gestion des Clients et Fournisseurs. |
+| | `finance_core.invoices.*` | Facturation opérationnelle (View, Create, Update, Validate, Pay, Cancel). |
+| | `finance_core.budgets.*` | Contrôle budgétaire (View, Create, Update, Close). |
+| | `finance_core.treasury.*` | Gestion de trésorerie et rapprochement. |
+| **OCR** | `ocr.jobs.*` | Téléchargement et suivi des jobs d'extraction. |
+| | `ocr.extractions.*` | Consultation, correction et validation des données IA. |
+| **Reporting** | `reporting.*` | Accès aux analytiques, exports et snapshots. |
+| **Billing** | `billing.*` | Gestion de l'abonnement SaaS et des factures Stripe. |
+
+> [!TIP]
+> Chaque permission est affectée à un rôle. L'isolation multi-tenant est garantie au niveau de la base de données (RLS) et vérifiée par les microservices via le claim `tenant_id`.
+
+---
+
+## 9. Données de Test Étalons (Globex Corp Standard)
+Pour garantir une stabilité visuelle et technique, la plateforme est livrée avec un environnement de test standardisé (`database_init.sql`).
+
+### 9.1 Utilisateurs Étalons
+| Login | Rôle | Permissions |
+| :--- | :--- | :--- |
+| `admin@globex.com` | **Administrateur** | Accès total (100% des permissions). |
+| `comptable@globex.com`| **Expert Comptable**| Finance, Finance Core et Reporting. |
+| `manager@globex.com` | **Gérant / Manager** | OCR, Budgets, Validation de factures. |
+| `auditeur@globex.com` | **Auditeur** | Uniquement les droits de type `.view` (Lecture seule). |
+
+### 9.2 Structure Financière de Démo
+- **Tenant** : Globex Corporation (Plan Premium).
+- **Journals** : VT (Ventes), HA (Achats), BQ (Banque), OD (Opérations Diverses).
+- **Trésorerie** : BNP Paribas (45k€) et Société Générale (120k€).
+- **Tiers** : Oracle France (Fournisseur), Amazon AWS (Fournisseur), Client Alpha (Client).
+
+---
+
+## 11. Microservice Reporting & Analytics : Aide à la décision
 
 ### 8.1 Moteur de Performance
 `Konta.Reporting` centralise les indicateurs et fournit une couche analytique optimisée.
@@ -211,7 +285,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 
 ---
 
-## 10. Microservice OCR & Extraction : Intelligence Documentaire
+## 12. Microservice OCR & Extraction : Intelligence Documentaire
 
 ### 7.1 Extraction Asynchrone (LLM Powered)
 `Konta.Ocr` transforme des fichiers PDF bruts en données comptables structurées.
@@ -219,6 +293,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
     1. Extraction du texte natif via `PdfPig`.
     2. Parsing sémantique par IA (LLM) pour identifier les champs financiers.
 - **Queue de Traitement** : Utilisation d'un `BackgroundWorker` asynchrone pour traiter les documents sans bloquer l'interface utilisateur.
+- **Téléchargement Direct** : Endpoint `GET /jobs/{id}/download` permettant de récupérer le fichier PDF original stocké sur le serveur après extraction.
 
 ### 7.2 Spécification de la Base de Données (OCR Table Analysis)
 | Table | Colonne | Type SQL | Rôle et Contrainte |
@@ -232,7 +307,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 
 ---
 
-## 11. Perspectives : Les Services du Futur (La Route de l'ERP Galactique)
+## 13. Perspectives : Les Services du Futur (La Route de l'ERP Galactique)
 
 ### 8.1 `Konta.Inventory` (Stock & Logistique)
 - **Objectif** : Gestion des articles, des entrepôts et des mouvements physiques.
@@ -244,7 +319,7 @@ Génération automatique de factures PDF via **QuestPDF** lors de la réception 
 
 ---
 
-## 12. Manuel de Maintenance et Guide de Survie Master
+## 14. Manuel de Maintenance et Guide de Survie Master
 
 ### 6.1 Règles d'Or pour le Développeur Konta
 1. **Langue** : Noms techniques en Anglais, mais Logique, Commentaires et Messages Utilisateurs en **Français** uniquement.
@@ -262,7 +337,7 @@ En cas d'erreur de base de données suspectée :
 
 ---
 
-## 13. Catalogue des Librairies et Dépendances Technique
+## 15. Catalogue des Librairies et Dépendances Technique
 | Librairie | Version | Rôle et Justification |
 | :--- | :--- | :--- |
 | **Dapper** | 2.1.66 | Micro-ORM pour la performance brute et le contrôle SQL total. |
@@ -280,11 +355,12 @@ En cas d'erreur de base de données suspectée :
 
 ---
 
-## 14. Index exhaustif des Services et Méthodes (Service Interface Map)
+## 16. Index exhaustif des Services et Méthodes (Service Interface Map)
 
 ### `IAuthService`
 - `LoginAsync(request)` : Authentifie l'utilisateur et retourne les jetons Access/Refresh.
 - `RefreshTokenAsync(token, refresh)` : Gère le renouvellement des sessions.
+- `CreateUserAsync(user)` / `UpdateUserAsync(user)` / `DeleteUserAsync(id)` : **[NOUVEAU]** Cycle de vie complet des utilisateurs du tenant.
 
 ### `ITenantService`
 - `RegisterTenantAsync(request)` : Orchestration de l'inscription (Identity + Tenant DB).
@@ -295,7 +371,7 @@ En cas d'erreur de base de données suspectée :
 
 ---
 
-## 15. Glossaire Technique de la Plateforme (Glossary)
+## 17. Glossaire Technique de la Plateforme (Glossary)
 - **Tenant** : Une instance d'entreprise isolée sur la plateforme.
 - **Multi-Tenancy** : Architecture permettant à un seul logiciel de servir plusieurs clients isolés.
 - **RBAC (Role-Based Access Control)** : Gestion des droits basée sur l'affectation de permissions à des rôles.
@@ -304,7 +380,7 @@ En cas d'erreur de base de données suspectée :
 
 ---
 
-## 16. Manuel d'Onboarding (Processus d'apprentissage 4 Semaines)
+## 18. Manuel d'Onboarding (Processus d'apprentissage 4 Semaines)
 
 ### Semaine 1 : Le Noyau
 - Maîtrise du **Shared Kernel** et du `BaseRepository`.
@@ -321,7 +397,7 @@ En cas d'erreur de base de données suspectée :
 
 ---
 
-## 17. Outils de Développement et Monitoring
+## 19. Outils de Développement et Monitoring
 
 ### 17.1 Seq : Visualisation Centralisée des Logs
 **Seq** est l'outil de visualisation des logs pour tous les microservices Konta.
@@ -368,7 +444,7 @@ Chaque microservice expose une interface Swagger sur `/swagger` :
 
 ---
  
- ## 12. Configuration de la Documentation API (Swagger & Security)
+ ## 20. Configuration de la Documentation API (Swagger & Security)
  La documentation OpenAPI (Swagger) est configurée pour supporter l'authentification JWT directement dans l'interface.
  
  ### 11.1 Support JWT dans Swagger UI
@@ -379,7 +455,7 @@ Chaque microservice expose une interface Swagger sur `/swagger` :
  
  ---
 
-## 18. FAQ Technique (Foire Aux Questions)
+## 21. FAQ Technique (Foire Aux Questions)
 **Q : Pourquoi ne pas avoir utilisé EF Core ?**
 R : Pour privilégier la performance brute et avoir un contrôle total sur le SQL généré.
 
@@ -403,7 +479,7 @@ R : Dans le dossier `logs/` de chaque microservice, avec rotation quotidienne : 
 
 ---
 
-## 19. Architecture Frontend : `Konta.Web`
+## 22. Architecture Frontend : `Konta.Web`
 
 L'interface utilisateur de Konta est une application de pointe utilisant **Vue.js 3**, **Vite** et **TypeScript**. Elle est conçue pour être à la fois extrêmement performante et visuellement époustouflante.
 
@@ -441,7 +517,7 @@ La console d'administration (`AdminView.vue`) offre un contrôle total sur l'éc
 
 ---
 
-## 21. Conclusion technique
+## 23. Conclusion technique
 La plateforme Konta est bâtie pour durer. Chaque dossier, chaque fichier et chaque ligne de code respecte une architecture pensée pour l'échelle. Cette encyclopédie technique de plus de 500 lignes est le garant que n'importe quel ingénieur, actuel ou futur, pourra s'approprier le système et le faire évoluer avec la même rigueur.
 
 ---

@@ -38,5 +38,26 @@ public static class RoleEndpoints
         .WithName("AssignPermission")
         .AddEndpointFilter<ValidationFilter<AssignPermissionRequest>>()
         .Produces<ApiResponse<object>>(StatusCodes.Status200OK);
+
+        group.MapGet("/", async (ITenantService tenantService, HttpContext httpContext, IRoleService roleService) =>
+        {
+            var tenantIdClaim = httpContext.User.FindFirst("TenantId")?.Value 
+                                ?? httpContext.User.FindFirst("tenant_id")?.Value;
+            if (string.IsNullOrEmpty(tenantIdClaim)) return Results.Unauthorized();
+
+            var roles = await roleService.GetRolesAsync(Guid.Parse(tenantIdClaim));
+            return Results.Ok(ApiResponse<IEnumerable<RoleResponse>>.Ok(roles));
+        })
+        .WithName("GetRoles")
+        .Produces<ApiResponse<IEnumerable<RoleResponse>>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapGet("/{id}/permissions", async (Guid id, IRoleService roleService) =>
+        {
+            var permissions = await roleService.GetPermissionsByRoleIdAsync(id);
+            return Results.Ok(ApiResponse<IEnumerable<PermissionResponse>>.Ok(permissions));
+        })
+        .WithName("GetRolePermissions")
+        .Produces<ApiResponse<IEnumerable<PermissionResponse>>>(StatusCodes.Status200OK);
     }
 }

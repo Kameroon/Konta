@@ -44,5 +44,49 @@ export const financeApi = {
             return response.data.data;
         }
         return [];
+    },
+
+    /**
+     * Récupère la liste des tiers (Clients/Fournisseurs/Entreprises).
+     */
+    async getTiers(): Promise<any[]> {
+        console.log('[Finance API] Récupération de la liste des tiers...');
+        const response = await http.get<ApiResponse<any[]>>('/api/finance-core/tiers');
+
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        return [];
+    },
+
+    /**
+     * Crée un nouveau tiers (Client/Fournisseur).
+     */
+    async createTier(tier: any): Promise<string> {
+        const response = await http.post<ApiResponse<{ id: string }>>('/api/finance-core/tiers', tier);
+        if (response.data.success && response.data.data) {
+            return response.data.data.id;
+        }
+        throw new Error(response.data.message || 'Échec de la création du tiers');
+    },
+
+    /**
+     * Met à jour les informations d'un tiers.
+     */
+    async updateTier(id: string, tier: any): Promise<void> {
+        const response = await http.put<ApiResponse<void>>(`/api/finance-core/tiers/${id}`, tier);
+        if (!response.data.success) {
+            throw new Error(response.data.message || 'Échec de la mise à jour du tiers');
+        }
+    },
+
+    /**
+     * Supprime un tiers par son ID.
+     */
+    async deleteTier(id: string): Promise<void> {
+        const response = await http.delete<ApiResponse<void>>(`/api/finance-core/tiers/${id}`);
+        if (!response.data.success) {
+            throw new Error(response.data.message || 'Échec de la suppression du tiers');
+        }
     }
 };

@@ -9,6 +9,7 @@ public record UserInfoResponse
     public string Email { get; init; } = string.Empty;
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
+    public string Role { get; init; } = string.Empty;
     public List<string> Roles { get; init; } = new();
     public Guid TenantId { get; init; }
 }

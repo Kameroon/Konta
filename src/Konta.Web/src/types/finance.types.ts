@@ -3,6 +3,26 @@
  * Correspondant aux modèles C# du backend.
  */
 
+export enum TierType {
+    Client = 1,
+    Supplier = 2
+}
+
+/**
+ * Représente un tiers (Client ou Fournisseur).
+ */
+export interface Tier {
+    id: string;
+    tenantId: string;
+    name: string;
+    type: TierType;
+    email?: string;
+    taxId?: string;
+    address?: string;
+    isActive: boolean;
+    createdAt: string;
+}
+
 /**
  * Résumé financier agrégé pour le tableau de bord.
  * @see FinancialSummary in Konta.Reporting

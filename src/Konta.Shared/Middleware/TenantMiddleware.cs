@@ -41,8 +41,14 @@ public class TenantMiddleware
             // Tenter de convertir la chaîne en Guid (format UUID)
             if (Guid.TryParse(tenantIdClaim, out var tenantId))
             {
-                // Injecter le TenantId dans le contexte (disponible pour tous les repositories et services)
+                // Injecter le TenantId dans le contexte
                 tenantContext.TenantId = tenantId;
+
+                // Si le TenantId est celui du système (tout à zéro), c'est un administrateur global
+                if (tenantId == Guid.Empty)
+                {
+                    tenantContext.IsGlobalAdmin = true;
+                }
             }
             // Si le parsing échoue ou si le claim n'existe pas, TenantId reste null
         }

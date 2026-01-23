@@ -40,7 +40,9 @@ public class AuthService : IAuthService
         _logger.LogInformation("Tentative de connexion pour : {Email}", request.Email);
 
         // 1. Récupération de l'utilisateur via le service dédié
+        _logger.LogInformation("[Step 1] Début récupération utilisateur");
         var user = await _userService.GetUserByEmailAsync(request.Email);
+        _logger.LogInformation("[Step 1] Fin récupération utilisateur (Trouvé: {UserFound})", user != null);
         
         if (user == null)
         {
@@ -49,7 +51,9 @@ public class AuthService : IAuthService
         }
 
         // 2. Vérification des identifiants
+        _logger.LogInformation("[Step 2] Début vérification mot de passe");
         bool isPasswordValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
+        _logger.LogInformation("[Step 2] Fin vérification mot de passe (Valide: {IsValid})", isPasswordValid);
         
         if (!isPasswordValid)
         {
@@ -58,6 +62,7 @@ public class AuthService : IAuthService
         }
 
         // 3. Vérification du statut de l'utilisateur
+        _logger.LogInformation("[Step 3] Vérification statut");
         if (!user.IsActive)
         {
             _logger.LogWarning("Tentative de connexion d'un utilisateur inactif : {Email}", request.Email);
@@ -65,15 +70,27 @@ public class AuthService : IAuthService
         }
 
         // 4. Récupération des permissions
-        _logger.LogDebug("Récupération des permissions pour l'utilisateur ID : {UserId}", user.Id);
-        var permissions = await _permissionRepository.GetPermissionsByUserIdAsync(user.Id);
+        _logger.LogInformation("[Step 4] Début récupération permissions");
+        
+        IEnumerable<string> permissions;
+        if (user.Role == "SuperAdmin")
+        {
+            _logger.LogInformation("Utilisateur SuperAdmin détecté. Attribution de TOUTES les permissions système.");
+            permissions = await _permissionRepository.GetAllPermissionSystemNamesAsync();
+        }
+        else
+        {
+            permissions = await _permissionRepository.GetPermissionsByUserIdAsync(user.Id);
+        }
+        _logger.LogInformation("[Step 4] Fin récupération permissions (Compte: {Count})", permissions.Count());
 
         // 5. Génération des tokens
-        _logger.LogDebug("Génération des tokens JWT et Refresh");
+        _logger.LogInformation("[Step 5] Génération tokens");
         var accessToken = _tokenService.GenerateToken(user, user.TenantId.ToString(), permissions);
         var refreshToken = _tokenService.GenerateRefreshToken(user.Id);
 
         // 6. Sauvegarde du Refresh Token
+        _logger.LogInformation("[Step 6] Sauvegarde Refresh Token");
         await _refreshTokenRepository.CreateAsync(refreshToken);
         
         _logger.LogInformation("Connexion réussie pour : {Email}", request.Email);
@@ -88,6 +105,7 @@ public class AuthService : IAuthService
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                Role = user.Role,
                 Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
                 TenantId = user.TenantId
             }
@@ -129,7 +147,17 @@ public class AuthService : IAuthService
 
         // 3. Rotation des Tokens
         _logger.LogDebug("Rotation des tokens pour l'utilisateur : {Email}", user.Email);
-        var permissions = await _permissionRepository.GetPermissionsByUserIdAsync(user.Id);
+        
+        IEnumerable<string> permissions;
+        if (user.Role == "SuperAdmin")
+        {
+            _logger.LogInformation("Utilisateur SuperAdmin détecté lors du refresh. Attribution de TOUTES les permissions.");
+            permissions = await _permissionRepository.GetAllPermissionSystemNamesAsync();
+        }
+        else
+        {
+            permissions = await _permissionRepository.GetPermissionsByUserIdAsync(user.Id);
+        }
         
         var newAccessToken = _tokenService.GenerateToken(user, user.TenantId.ToString(), permissions);
         var newRefreshToken = _tokenService.GenerateRefreshToken(user.Id);
@@ -152,6 +180,7 @@ public class AuthService : IAuthService
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                Role = user.Role,
                 Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
                 TenantId = user.TenantId
             }

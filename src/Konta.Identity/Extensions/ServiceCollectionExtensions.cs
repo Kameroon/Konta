@@ -35,6 +35,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IAuthService, AuthService>();
+        
+        // External Services
+        services.AddHttpClient<ICompanyRegistryService, CompanyRegistryService>();
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<Program>();

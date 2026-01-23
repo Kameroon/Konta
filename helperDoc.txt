@@ -75,3 +75,36 @@ Finance     	5004
 OCR	5005
 Finance.Core	5006
 Reporting	    5007
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------                                                 GESTION DES ROLES                                                 ------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+C'est une excellente question qui touche au cœur de la sécurité multi-tenant du système. Voici comment cela fonctionne techniquement :
+
+1. Le rôle "SuperAdmin" (Administrateur Plateforme)
+Le SuperAdmin n'est pas créé via le formulaire d'inscription public. C'est un compte "système" privilégié :
+
+Initialisation : Il est créé lors du déploiement initial via le script 
+seed_comprehensive.sql
+.
+Tenant Spécial : Il appartient au Tenant Système (ID 00000000-0000...), ce qui lui donne techniquement une portée globale dans le code.
+Rôle : Son champ Role dans la base de données est explicitement défini sur SuperAdmin. C'est ce compte (ex: admin@konta.fr) qui peut voir toutes les entreprises et tous les utilisateurs du système.
+2. Le rôle "Admin" (Administrateur Entreprise)
+C'est le rôle attribué automatiquement lors de l'inscription d'une nouvelle entreprise :
+
+Attribution Automatique : Dans 
+TenantService.cs
+, lorsqu'un utilisateur remplit le formulaire "Créer votre compte", le système lui assigne immédiatement le rôle Admin.
+Portée : Cet Admin ne peut gérer que les données liées à son propre TenantId. Il ne voit pas les autres entreprises.
+3. Les autres utilisateurs (Collaborateurs)
+Une fois que l'Admin d'entreprise est connecté, il peut inviter des collaborateurs (comptables, gestionnaires) depuis son tableau de bord :
+
+Gestion Locale : L'Admin utilise la page "Utilisateurs" (vue locale) pour créer de nouveaux comptes.
+Rôles Standards : Il peut leur assigner des rôles comme User ou Accountant (ces rôles sont définis au niveau de son tenant avec des permissions spécifiques).
+En résumé :
+SuperAdmin : Créé par vous (Konta) via script pour piloter la plateforme.
+Admin : Créé par le client lors de son achat/inscription pour piloter son entreprise.
+User : Créé par l'Admin du client pour ses employés.
+Est-ce que cela clarifie la hiérarchie pour vous ?

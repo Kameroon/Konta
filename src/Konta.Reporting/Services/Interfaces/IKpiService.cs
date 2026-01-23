@@ -16,4 +16,9 @@ public interface IKpiService
     /// Obtient les KPIs principaux (CA, Marge, Trésorerie).
     /// </summary>
     Task<IEnumerable<DashboardKpi>> GetMainKpisAsync(Guid tenantId);
+
+    /// <summary>
+    /// Obtient la tendance des flux de trésorerie sur une période donnée.
+    /// </summary>
+    Task<IEnumerable<CashFlowTrend>> GetCashFlowTrendAsync(Guid tenantId, int days = 30);
 }

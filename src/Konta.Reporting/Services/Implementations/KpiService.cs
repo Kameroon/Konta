@@ -92,4 +92,11 @@ public class KpiService : IKpiService
             }
         };
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<CashFlowTrend>> GetCashFlowTrendAsync(Guid tenantId, int days = 30)
+    {
+        _logger.LogInformation("Récupération de la tendance de trésorerie pour {TenantId} sur {Days} jours", tenantId, days);
+        return await _repository.GetCashFlowTrendAsync(tenantId, days);
+    }
 }

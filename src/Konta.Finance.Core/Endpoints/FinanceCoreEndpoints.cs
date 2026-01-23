@@ -35,6 +35,21 @@ public static class FinanceCoreEndpoints
             return Results.Ok(ApiResponse<object>.Ok(tiers));
         }).RequireAuthorization();
 
+        // Mettre à jour un tiers
+        group.MapPut("/tiers/{id}", async (Guid id, Tier tier, ITierRepository repo) =>
+        {
+            tier.Id = id;
+            var success = await repo.UpdateAsync(tier);
+            return success ? Results.Ok(ApiResponse<object>.Ok(null)) : Results.NotFound(ApiResponse<object>.Fail("Tiers introuvable."));
+        }).RequireAuthorization();
+
+        // Supprimer un tiers
+        group.MapDelete("/tiers/{id}", async (Guid id, ITierRepository repo) =>
+        {
+            var success = await repo.DeleteAsync(id);
+            return success ? Results.Ok(ApiResponse<object>.Ok(null)) : Results.NotFound(ApiResponse<object>.Fail("Tiers introuvable."));
+        }).RequireAuthorization();
+
         // --- GESTION BUDGÉTAIRE ---
         
         // Définir une nouvelle enveloppe budgétaire

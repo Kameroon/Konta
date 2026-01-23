@@ -35,29 +35,27 @@ const formatValue = (val: number) => {
 </script>
 
 <template>
-  <div class="stat-card" :style="{ borderLeftColor: color }">
+  <div class="stat-card">
     <div v-if="loading" class="skeleton-loader">
       <div class="skeleton title"></div>
       <div class="skeleton value"></div>
     </div>
     
     <template v-else>
-      <div class="card-header">
-        <span class="label">{{ label }}</span>
-        <span v-if="icon" class="icon" :style="{ backgroundColor: color + '20', color: color }">
-          {{ icon }}
-        </span>
-      </div>
-      
-      <div class="card-body">
-        <h2 class="value">{{ formatValue(value) }}</h2>
+      <div class="card-content">
+        <div class="stat-icon-wrapper" :style="{ backgroundColor: color + '15', color: color }">
+           <i v-if="icon" :class="icon"></i>
+           <span v-else>{{ label.charAt(0) }}</span>
+        </div>
         
-        <div v-if="trend" class="trend" :class="trend">
-          <span class="trend-icon">
-            {{ trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→' }}
-          </span>
-          <span v-if="trendValue" class="trend-value">{{ trendValue }}%</span>
-          <span class="trend-label">vs mois dernier</span>
+        <div class="stat-info">
+          <span class="value">{{ formatValue(value) }}</span>
+          <span class="label">{{ label }}</span>
+          
+          <div v-if="trend" class="trend" :class="trend">
+            <span class="trend-value">{{ trend === 'up' ? '+' : '' }}{{ trendValue }}%</span>
+            <span class="trend-label">ce mois</span>
+          </div>
         </div>
       </div>
     </template>
@@ -68,58 +66,62 @@ const formatValue = (val: number) => {
 .stat-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  border-left: 4px solid #42b883;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
   transition: transform 0.2s, box-shadow 0.2s;
   overflow: hidden;
-  position: relative;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
 }
 
-.card-header {
+.card-content {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 1.2rem;
 }
 
-.label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.stat-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
 }
 
 .value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
 }
 
 /* Trends */
 .trend {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  gap: 0.3rem;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
 .trend.up { color: #10b981; }
@@ -127,21 +129,21 @@ const formatValue = (val: number) => {
 .trend.stable { color: #64748b; }
 
 .trend-label {
-  font-weight: 400;
+  font-weight: 500;
   color: #94a3b8;
-  margin-left: 0.2rem;
+  margin-left: 2px;
 }
 
 /* Skeleton Loading */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
-.skeleton.title { height: 16px; width: 60%; margin-bottom: 1rem; }
-.skeleton.value { height: 32px; width: 80%; }
+.skeleton.title { height: 14px; width: 40%; margin-bottom: 0.5rem; }
+.skeleton.value { height: 24px; width: 70%; }
 
 @keyframes loading {
   0% { background-position: 200% 0; }

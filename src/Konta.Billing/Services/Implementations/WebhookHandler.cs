@@ -65,7 +65,8 @@ public class WebhookHandler
             {
                 StripeEventId = stripeEvent.Id,
                 EventType = stripeEvent.Type,
-                ProcessedSuccessfully = success
+                Data = json,
+                ProcessedAt = DateTime.UtcNow
             });
         }
         catch (StripeException ex)

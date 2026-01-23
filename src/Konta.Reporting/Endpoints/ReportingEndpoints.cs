@@ -33,6 +33,14 @@ public static class ReportingEndpoints
             var kpis = await service.GetMainKpisAsync(tenantContext.TenantId.Value);
             return Results.Ok(ApiResponse<object>.Ok(kpis));
         }).RequireAuthorization();
+        
+        // Obtenir l'évolution de la trésorerie (Trend)
+        group.MapGet("/dashboard/cashflow", async (int? days, ITenantContext tenantContext, IKpiService service) =>
+        {
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var trend = await service.GetCashFlowTrendAsync(tenantContext.TenantId.Value, days ?? 30);
+            return Results.Ok(ApiResponse<object>.Ok(trend));
+        }).RequireAuthorization();
 
         // --- EXPORTS ---
         

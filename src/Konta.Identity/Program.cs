@@ -44,5 +44,6 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapAuthEndpoints();
 app.MapRoleEndpoints();
 app.MapTenantEndpoints();
+app.MapUserEndpoints();
 
 app.Run();

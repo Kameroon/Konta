@@ -116,7 +116,7 @@ onMounted(() => {
           <div class="form-group">
             <label>Rôles</label>
             <div class="roles-tags">
-              <span v-for="role in authStore.user?.roles" :key="role" class="role-tag">{{ role }}</span>
+              <span class="role-tag">{{ authStore.user?.role }}</span>
             </div>
           </div>
           

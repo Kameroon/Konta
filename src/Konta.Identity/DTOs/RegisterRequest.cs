@@ -14,6 +14,11 @@ public record RegisterRequest
     public string TenantName { get; init; } = string.Empty;
 
     /// <summary>
+    /// Numéro SIRET de l'entreprise (14 chiffres).
+    /// </summary>
+    public string? Siret { get; init; }
+
+    /// <summary>
     /// Adresse email du futur administrateur.
     /// </summary>
     [Required(ErrorMessage = "L'adresse email est obligatoire.")]

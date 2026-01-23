@@ -7,9 +7,6 @@ import type { ApiResponse } from '@/types/common.types';
  * Regroupe tous les appels vers le microservice Identity via la Gateway.
  */
 export const authApi = {
-    /**
-     * Enregistre un nouveau tenant et son administrateur.
-     */
     async register(data: RegisterRequest): Promise<any> {
         console.log(`[Auth API] Tentative d'inscription pour : ${data.email}`);
         const response = await http.post<ApiResponse<any>>('/api/auth/register', data);
@@ -18,6 +15,17 @@ export const authApi = {
             return response.data;
         }
         throw new Error(response.data.message || 'Échec de l\'inscription');
+    },
+
+    /**
+     * Recherche une entreprise par SIRET.
+     */
+    async lookupCompany(siret: string): Promise<any> {
+        const response = await http.get<ApiResponse<any>>(`/api/tenants/lookup/${siret}`);
+        if (response.data.success) {
+            return response.data.data;
+        }
+        throw new Error(response.data.message || 'Entreprise non trouvée');
     },
 
     /**

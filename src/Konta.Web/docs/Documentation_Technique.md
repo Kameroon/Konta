@@ -106,6 +106,26 @@ Pour s'assurer que tout est bien configuré :
 
 ---
 
+## 👥 Gestion Multi-Tenant & Hiérarchie
+L'application utilise une structure multi-tenant stricte avec isolation forcée par la base de données (RLS).
+
+### Niveaux d'Accès
+1.  **SuperAdmin (Plateforme)** :
+    *   **Périmètre** : Global (tous les tenants).
+    *   **TenantId** : `00000000-0000-0000-0000-000000000000` (Système).
+    *   **Capacités** : Liste et gestion de toutes les entreprises, supervision globale, configuration des plans.
+    *   **Multi-SuperAdmin** : Le système supporte plusieurs SuperAdmins associés au tenant système.
+2.  **Admin (Entreprise)** :
+    *   **Périmètre** : Local (uniquement son propre tenant).
+    *   **Capacités** : Gestion des utilisateurs de son entreprise, souscription aux plans, configuration financière locale.
+3.  **User / Accountant (Collaborateur)** :
+    *   **Périmètre** : Local avec permissions restreintes définies par l'Admin local.
+
+### Sécurité Row Level (RLS)
+L'isolation est garantie au niveau PostgreSQL via la fonction `current_tenant_id()`. Aucune requête ne peut "fuiter" d'un tenant à un autre, même en cas d'erreur dans le code applicatif, car la base de données bloque l'accès aux lignes dont le `TenantId` ne correspond pas à la session active.
+
+---
+
 ## 🔒 Sécurité & Standards
 - **Routage Sécurisé** : Protection granulaire des routes par flag `requiresAuth` et tableau `roles`.
 - **RBAC Client-side** : Validation des permissions avant l'affichage des composants.
@@ -115,3 +135,17 @@ Pour s'assurer que tout est bien configuré :
 - **Gestion d'Erreurs** : Centralisation des erreurs HTTP (401, 403, 500) avec notifications visuelles.
 - **TypeScript Strict** : Typage complet des payloads API synchronisé avec les DTOs backend.
 - **Fichiers .env** : Utilisation de variables d'environnement pour les URLs des microservices.
+
+---
+
+## 📅 Journal des Évolutions
+
+### [2026-01-23] LOT 7 — Routage, SIRET & Ocelot
+- **Gateway Fix** : Restauration et priorisation de la route de recherche SIRET dans Ocelot (Priorité 100).
+- **DTO Alignment** : Standardisation de la sérialisation JSON via `JsonPropertyName` pour garantir le camelCase entre C# et Vue.js.
+- **Navigation RBAC** : Restriction dynamique du menu "Entreprises" aux seuls profils `SuperAdmin`.
+
+### [2026-01-23] LOT 8 — Sécurité Database & SuperAdmins
+- **RLS Integration** : Consolidation du script `database_init.sql` avec les politiques d'isolation PostgreSQL.
+- **Support Multi-SuperAdmin** : Extension du script d'initialisation pour inclure plusieurs comptes administrateurs plateforme (`admin` et `support`).
+- **Idempotence** : Optimisation des scripts SQL pour permettre des ré-exécutions sans erreurs.

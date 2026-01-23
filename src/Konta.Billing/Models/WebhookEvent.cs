@@ -18,12 +18,12 @@ public class WebhookEvent : BaseEntity
     public string EventType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Date de réception.
+    /// Corps complet de l'événement au format JSON.
     /// </summary>
-    public DateTime ReceivedAt { get; set; } = DateTime.UtcNow;
+    public string Data { get; set; } = string.Empty;
 
     /// <summary>
-    /// Indique si le traitement a réussi.
+    /// Date de prise en compte par le système.
     /// </summary>
-    public bool ProcessedSuccessfully { get; set; }
+    public DateTime ProcessedAt { get; set; } = DateTime.UtcNow;
 }

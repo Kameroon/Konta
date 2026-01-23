@@ -17,7 +17,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
     public async Task<JournalEntry?> GetByIdAsync(Guid id)
     {
         const string sqlEntry = "SELECT * FROM finance.JournalEntries WHERE Id = @Id";
-        const string sqlLines = "SELECT * FROM EntryLines WHERE EntryId = @Id";
+        const string sqlLines = "SELECT * FROM finance.EntryLines WHERE EntryId = @Id";
 
         using var connection = CreateConnection(sqlEntry, new { Id = id });
         var entry = await connection.QuerySingleOrDefaultAsync<JournalEntry>(sqlEntry, new { Id = id });
@@ -57,7 +57,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
             await connection.ExecuteAsync(sqlEntry, entry, transaction);
 
             const string sqlLine = @"
-                INSERT INTO EntryLines (Id, EntryId, AccountId, Label, Debit, Credit, CreatedAt)
+                INSERT INTO finance.EntryLines (Id, EntryId, AccountId, Label, Debit, Credit, CreatedAt)
                 VALUES (@Id, @EntryId, @AccountId, @Label, @Debit, @Credit, @CreatedAt)";
 
             foreach (var line in entry.Lines)
@@ -84,7 +84,7 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
 
         try
         {
-            await connection.ExecuteAsync("DELETE FROM EntryLines WHERE EntryId = @Id", new { Id = id }, transaction);
+            await connection.ExecuteAsync("DELETE FROM finance.EntryLines WHERE EntryId = @Id", new { Id = id }, transaction);
             var rows = await connection.ExecuteAsync("DELETE FROM finance.JournalEntries WHERE Id = @Id", new { Id = id }, transaction);
             
             transaction.Commit();
@@ -101,8 +101,8 @@ public class JournalEntryRepository : BaseRepository<JournalEntryRepository>, IJ
     {
         const string sql = @"
             SELECT l.* 
-            FROM EntryLines l
-            JOIN JournalEntries e ON l.EntryId = e.Id
+            FROM finance.EntryLines l
+            JOIN finance.JournalEntries e ON l.EntryId = e.Id
             WHERE l.AccountId = @AccountId 
               AND e.EntryDate >= @StartDate 
               AND e.EntryDate <= @EndDate

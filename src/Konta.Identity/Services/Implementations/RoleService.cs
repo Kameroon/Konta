@@ -76,4 +76,32 @@ public class RoleService : IRoleService
         _logger.LogInformation("Permission '{PermissionName}' assignée avec succès au rôle '{RoleName}' (Tenant: {TenantId})", 
             permission.SystemName, role.Name, role.TenantId);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<RoleResponse>> GetRolesAsync(Guid tenantId)
+    {
+        _logger.LogInformation("Récupération des rôles pour le tenant {TenantId}", tenantId);
+        var roles = await _roleRepository.GetAllByTenantIdAsync(tenantId);
+        return roles.Select(r => new RoleResponse
+        {
+            Id = r.Id,
+            Name = r.Name,
+            Description = r.Description,
+            IsDefault = r.IsDefault
+        });
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<PermissionResponse>> GetPermissionsByRoleIdAsync(Guid roleId)
+    {
+        _logger.LogInformation("Récupération des permissions pour le rôle {RoleId}", roleId);
+        var permissions = await _roleRepository.GetPermissionsByRoleIdAsync(roleId);
+        return permissions.Select(p => new PermissionResponse
+        {
+            Id = p.Id,
+            SystemName = p.SystemName,
+            Name = p.Name,
+            Description = p.Description
+        });
+    }
 }

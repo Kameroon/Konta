@@ -8,6 +8,11 @@ namespace Konta.Billing.Models;
 public class BillingInvoice : BaseEntity
 {
     /// <summary>
+    /// Identifiant du tenant propriétaire.
+    /// </summary>
+    public Guid TenantId { get; set; }
+
+    /// <summary>
     /// Identifiant de la facture dans Stripe (ex: in_...).
     /// </summary>
     public string StripeInvoiceId { get; set; } = string.Empty;

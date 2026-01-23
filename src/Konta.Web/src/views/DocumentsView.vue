@@ -49,9 +49,15 @@ const trackJob = async (jobId: string) => {
       activeJobs.value.set(jobId, job);
 
       if (job.status === JobStatus.Completed) {
-        toast.success(`Extraction terminée : ${job.fileName}`);
+        toast.info(`Extraction terminée pour ${job.fileName}. Analyse des résultats...`);
         const result = await documentsApi.getInvoiceResult(jobId);
-        results.value.unshift(result);
+        
+        if (result) {
+          results.value.unshift(result);
+          toast.success(`Facture extraite avec succès.`);
+        } else {
+          toast.warning(`Aucune donnée structurée n'a pu être extraite de ${job.fileName}.`);
+        }
         activeJobs.value.delete(jobId);
       } else if (job.status === JobStatus.Failed) {
         toast.error(`Échec de l'extraction : ${job.fileName}`);

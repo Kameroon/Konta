@@ -53,8 +53,8 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Création du tenant : {Name}", tenant.Name);
         const string sql = @"
-            INSERT INTO identity.Tenants (Id, Name, Plan, CreatedAt) 
-            VALUES (@Id, @Name, @Plan, @CreatedAt)
+            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, Plan, CreatedAt) 
+            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @Plan, @CreatedAt)
             RETURNING Id";
         
         using var connection = CreateConnection(sql, tenant);
@@ -68,6 +68,10 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
         const string sql = @"
             UPDATE identity.Tenants 
             SET Name = @Name, 
+                Identifier = @Identifier,
+                Industry = @Industry,
+                Address = @Address,
+                TaxId = @TaxId,
                 Plan = @Plan, 
                 UpdatedAt = @UpdatedAt 
             WHERE Id = @Id";

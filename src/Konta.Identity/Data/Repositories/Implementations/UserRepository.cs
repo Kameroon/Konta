@@ -50,4 +50,46 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
         using var connection = CreateConnection(sql, user);
         return await connection.ExecuteScalarAsync<Guid>(sql, user);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<User>> GetAllByTenantIdAsync(Guid tenantId)
+    {
+        _logger.LogDebug("Accès DB : Récupération de tous les utilisateurs pour le tenant : {TenantId}", tenantId);
+        const string sql = "SELECT * FROM identity.Users WHERE TenantId = @TenantId";
+        using var connection = CreateConnection(sql, new { TenantId = tenantId });
+        return await connection.QueryAsync<User>(sql, new { TenantId = tenantId });
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<User>> GetAllAsync()
+    {
+        _logger.LogDebug("Accès DB : Récupération de TOUS les utilisateurs (Global)");
+        const string sql = "SELECT * FROM identity.Users";
+        using var connection = CreateConnection(sql, null);
+        return await connection.QueryAsync<User>(sql);
+    }
+    public async Task<bool> UpdateAsync(User user)
+    {
+        _logger.LogInformation("Accès DB : Mise à jour utilisateur: {Id}", user.Id);
+        const string sql = @"
+            UPDATE identity.Users 
+            SET FirstName = @FirstName, LastName = @LastName, Role = @Role, 
+                IsActive = @IsActive, UpdatedAt = @UpdatedAt
+            WHERE Id = @Id";
+        
+        user.UpdatedAt = DateTime.UtcNow;
+        using var connection = CreateConnection(sql, user);
+        var rows = await connection.ExecuteAsync(sql, user);
+        return rows > 0;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        _logger.LogInformation("Accès DB : Suppression utilisateur: {Id}", id);
+        const string sql = "DELETE FROM identity.Users WHERE Id = @Id";
+        using var connection = CreateConnection(sql, new { Id = id });
+        var rows = await connection.ExecuteAsync(sql, new { Id = id });
+        return rows > 0;
+    }
 }

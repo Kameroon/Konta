@@ -61,4 +61,31 @@ public class UserService : IUserService
         _logger.LogDebug("Recherche de l'utilisateur par ID : {Id}", id);
         return await _userRepository.GetByIdAsync(id);
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<User>> GetAllUsersByTenantIdAsync(Guid tenantId)
+    {
+        _logger.LogInformation("Récupération de tous les utilisateurs pour le tenant : {TenantId}", tenantId);
+        return await _userRepository.GetAllByTenantIdAsync(tenantId);
+    }
+
+    public async Task<IEnumerable<User>> GetAllUsersAsync()
+    {
+        _logger.LogInformation("Récupération de TOUS les utilisateurs du système");
+        return await _userRepository.GetAllAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateUserAsync(User user)
+    {
+        _logger.LogInformation("Mise à jour de l'utilisateur : {Id}", user.Id);
+        return await _userRepository.UpdateAsync(user);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeleteUserAsync(Guid id)
+    {
+        _logger.LogInformation("Suppression de l'utilisateur : {Id}", id);
+        return await _userRepository.DeleteAsync(id);
+    }
 }

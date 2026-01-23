@@ -58,7 +58,12 @@ public class SubscriptionPlan : BaseEntity
     public bool HasApiAccess { get; set; }
 
     /// <summary>
-    /// Liste des caractéristiques au format JSON (pour affichage frontend).
+    /// Liste des modules inclus au format JSONB.
+    /// </summary>
+    public string? Modules { get; set; }
+
+    /// <summary>
+    /// Liste des caractéristiques au format JSONB (pour affichage frontend).
     /// </summary>
     public string? Features { get; set; }
 }

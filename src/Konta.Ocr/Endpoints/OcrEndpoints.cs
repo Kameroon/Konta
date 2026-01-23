@@ -48,6 +48,24 @@ public static class OcrEndpoints
             return Results.Accepted($"/api/ocr/jobs/{jobId}", ApiResponse<object>.Ok(new { JobId = jobId }, "Fichier mis en file d'attente."));
         }).DisableAntiforgery().RequireAuthorization();
 
+        // --- Delete ---
+        group.MapDelete("/jobs/{id}", async (Guid id, IExtractionJobRepository repo) =>
+        {
+            var job = await repo.GetByIdAsync(id);
+            if (job == null) return Results.NotFound(ApiResponse<object>.Fail("Job introuvable."));
+            
+            await repo.DeleteAsync(job);
+            return Results.Ok(ApiResponse<object>.Ok(null, "Job supprimé avec succès."));
+        }).RequireAuthorization();
+
+        // --- List ---
+        group.MapGet("/jobs", async (ITenantContext tenantContext, IExtractionJobRepository repo) =>
+        {
+            if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
+            var jobs = await repo.GetByTenantIdAsync(tenantContext.TenantId.Value);
+            return Results.Ok(ApiResponse<object>.Ok(jobs));
+        }).RequireAuthorization();
+
         // --- Status ---
         group.MapGet("/jobs/{id}", async (Guid id, IExtractionJobRepository repo) =>
         {
@@ -73,7 +91,19 @@ public static class OcrEndpoints
                 return Results.Ok(ApiResponse<object>.Ok(result));
             }
 
-            return Results.NotFound(ApiResponse<object>.Fail("Aucun résultat structuré disponible pour ce type."));
+            // Retourner 200 avec null plutôt que 404 pour éviter de casser le polling frontend
+            return Results.Ok(ApiResponse<object>.Ok(null));
+        }).RequireAuthorization();
+
+        // --- Download ---
+        group.MapGet("/jobs/{id}/download", async (Guid id, IExtractionJobRepository repo) =>
+        {
+            var job = await repo.GetByIdAsync(id);
+            if (job == null) return Results.NotFound(ApiResponse<object>.Fail("Job introuvable."));
+            if (!File.Exists(job.FilePath)) return Results.NotFound(ApiResponse<object>.Fail("Fichier physique introuvable sur le serveur."));
+
+            var contentType = "application/pdf";
+            return Results.File(job.FilePath, contentType, job.FileName);
         }).RequireAuthorization();
     }
 }

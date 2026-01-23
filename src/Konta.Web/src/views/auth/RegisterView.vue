@@ -33,6 +33,30 @@
       </div>
 
       <div class="form-group">
+        <label for="siret">Numéro SIRET</label>
+        <div class="input-with-button">
+          <div class="input-with-icon">
+            <i class="fas fa-fingerprint"></i>
+            <input 
+              type="text" 
+              id="siret" 
+              v-model="form.siret" 
+              placeholder="123 456 789 00012" 
+              required
+              :disabled="loading"
+              maxlength="14"
+            />
+          </div>
+          <button type="button" class="btn-lookup" @click="handleLookup" :disabled="loading || form.siret.length < 9">
+            <i class="fas fa-search" v-if="!lookingUp"></i>
+            <span v-else class="loader-small"></span>
+          </button>
+        </div>
+        <small class="form-help" v-if="lookupError">{{ lookupError }}</small>
+        <small class="form-success" v-if="companyFound">Information récupérée !</small>
+      </div>
+
+      <div class="form-group">
         <label for="companyName">Nom de l'entreprise</label>
         <div class="input-with-icon">
           <i class="fas fa-building"></i>
@@ -42,7 +66,7 @@
             v-model="form.tenantName" 
             placeholder="Konta Corp" 
             required
-            :disabled="loading"
+            :disabled="loading || companyFound"
           />
         </div>
       </div>
@@ -57,7 +81,7 @@
             v-model="form.email" 
             placeholder="admin@entreprise.com" 
             required
-            :disabled="loading"
+            :disabled="loading || !companyFound"
           />
         </div>
       </div>
@@ -72,20 +96,20 @@
             v-model="form.password" 
             placeholder="••••••••" 
             required
-            :disabled="loading"
+            :disabled="loading || !companyFound"
           />
         </div>
       </div>
 
       <div class="form-footer">
         <label class="checkbox-container">
-          <input type="checkbox" required>
+          <input type="checkbox" required :disabled="loading || !companyFound">
           <span class="checkmark"></span>
           J'accepte les <a href="#">Conditions d'Utilisation</a>
         </label>
       </div>
 
-      <button type="submit" class="btn-auth" :disabled="loading">
+      <button type="submit" class="btn-auth" :disabled="loading || !companyFound">
         <span v-if="!loading">Créer mon espace</span>
         <span v-else class="loader"></span>
       </button>
@@ -102,6 +126,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
+import { authApi } from '@/api/auth.api';
 import { useToast } from 'vue-toastification';
 
 const route = useRoute();
@@ -111,18 +136,43 @@ const toast = useToast();
 
 const selectedPlan = ref<string | null>(null);
 const loading = ref(false);
+const lookingUp = ref(false);
+const lookupError = ref('');
+const companyFound = ref(false);
 
 const form = reactive({
   firstName: '',
   lastName: '',
   email: '',
   password: '',
-  tenantName: ''
+  tenantName: '',
+  siret: ''
 });
 
 onMounted(() => {
   selectedPlan.value = (route.query.plan as string) || null;
 });
+
+const handleLookup = async () => {
+  if (form.siret.length < 9) return;
+  
+  lookingUp.value = true;
+  lookupError.value = '';
+  companyFound.value = false;
+  
+  try {
+    const data = await authApi.lookupCompany(form.siret);
+    if (data) {
+      form.tenantName = data.name;
+      companyFound.value = true;
+      toast.info(`Entreprise identifiée : ${data.name}`);
+    }
+  } catch (err: any) {
+    lookupError.value = "Impossible de trouver l'entreprise. Vérifiez le SIRET.";
+  } finally {
+    lookingUp.value = false;
+  }
+};
 
 const handleRegister = async () => {
   loading.value = true;
@@ -227,6 +277,51 @@ input:focus {
   outline: none;
   border-color: #3182ce;
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-lookup {
+  padding: 0 16px;
+  background: white;
+  border: 2px solid #edf2f7;
+  border-radius: 12px;
+  color: #3182ce;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-lookup:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: #3182ce;
+}
+
+.btn-lookup:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-help {
+  color: #e53e3e;
+  font-size: 0.75rem;
+}
+
+.form-success {
+  color: #38a169;
+  font-size: 0.75rem;
+}
+
+.loader-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(49, 130, 206, 0.2);
+  border-radius: 50%;
+  border-top-color: #3182ce;
+  animation: spin 1s linear infinite;
+  display: inline-block;
 }
 
 .btn-auth {

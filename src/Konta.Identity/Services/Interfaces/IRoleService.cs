@@ -16,4 +16,14 @@ public interface IRoleService
     /// Assigne une permission à un rôle.
     /// </summary>
     Task AssignPermissionAsync(Guid roleId, AssignPermissionRequest request);
+
+    /// <summary>
+    /// Récupère tous les rôles d'un tenant.
+    /// </summary>
+    Task<IEnumerable<RoleResponse>> GetRolesAsync(Guid tenantId);
+
+    /// <summary>
+    /// Récupère les permissions d'un rôle.
+    /// </summary>
+    Task<IEnumerable<PermissionResponse>> GetPermissionsByRoleIdAsync(Guid roleId);
 }

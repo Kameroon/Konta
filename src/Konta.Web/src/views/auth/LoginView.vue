@@ -16,6 +16,7 @@ const toast = useToast();
 const email = ref('admin@konta.com');
 const password = ref('password');
 const isSubmitting = ref(false);
+const errorMessage = ref<string | null>(null);
 
 /**
  * Gère la soumission du formulaire de connexion.
@@ -27,6 +28,7 @@ const handleLogin = async () => {
   }
 
   isSubmitting.value = true;
+  errorMessage.value = null;
   console.log('[LoginView] Tentative de connexion...');
 
   try {
@@ -38,7 +40,7 @@ const handleLogin = async () => {
     toast.success('Bienvenue sur Konta !');
     
     // Logique de redirection basée sur le rôle
-    if (authStore.user?.roles.includes('Admin')) {
+    if (authStore.user?.role === 'Admin' || authStore.user?.role === 'SuperAdmin') {
       router.push({ name: 'Admin' });
     } else {
       // Redirection vers la page demandée initialement ou vers le dashboard utilisateur
@@ -47,7 +49,12 @@ const handleLogin = async () => {
     }
   } catch (err: any) {
     console.error('[LoginView] Erreur:', err);
-    toast.error(err.message || 'Identifiants invalides ou erreur serveur.');
+    if (err.response?.status === 401) {
+      errorMessage.value = 'Identifiants invalides. Veuillez réessayer.';
+    } else {
+      errorMessage.value = err.message || 'Une erreur est survenue lors de la connexion.';
+      toast.error(errorMessage.value!);
+    }
   } finally {
     isSubmitting.value = false;
   }
@@ -64,6 +71,11 @@ const handleLogin = async () => {
       
       <h2>Bienvenue</h2>
       <p class="subtitle">Connectez-vous pour gérer votre entreprise</p>
+
+      <!-- Message d'erreur local -->
+      <div v-if="errorMessage" class="error-alert">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
 
       <form @submit.prevent="handleLogin">
         <div class="form-group">
@@ -104,6 +116,26 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
+.error-alert {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,1) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
 .login-view {
   display: flex;
   align-items: center;

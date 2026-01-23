@@ -20,6 +20,13 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
         return await connection.QuerySingleOrDefaultAsync<ExtractionJob>(sql, new { Id = id });
     }
 
+    public async Task<IEnumerable<ExtractionJob>> GetByTenantIdAsync(Guid tenantId)
+    {
+        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
+        using var connection = CreateConnection(sql, new { TenantId = tenantId });
+        return await connection.QueryAsync<ExtractionJob>(sql, new { TenantId = tenantId });
+    }
+
     public async Task<IEnumerable<ExtractionJob>> GetPendingJobsAsync()
     {
         const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE Status = @Status ORDER BY CreatedAt ASC";
@@ -91,5 +98,22 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
         const string sql = "SELECT * FROM ocr.ExtractedRibs WHERE JobId = @JobId";
         using var connection = CreateConnection(sql, new { JobId = jobId });
         return await connection.QuerySingleOrDefaultAsync<ExtractedRib>(sql, new { JobId = jobId });
+    }
+
+    public async Task DeleteAsync(ExtractionJob job)
+    {
+        // On supprime d'abord les résultats potentiels (contraintes FK si existantes)
+        const string sqlDelResults = "DELETE FROM ocr.ExtractedInvoices WHERE JobId = @Id; DELETE FROM ocr.ExtractedRibs WHERE JobId = @Id;";
+        const string sqlDelJob = "DELETE FROM ocr.ExtractionJobs WHERE Id = @Id";
+        
+        using var connection = CreateConnection(sqlDelJob, new { Id = job.Id });
+        await connection.ExecuteAsync(sqlDelResults, new { Id = job.Id });
+        await connection.ExecuteAsync(sqlDelJob, new { Id = job.Id });
+
+        // Note: Suppression du fichier physique recommandée en production
+        if (File.Exists(job.FilePath))
+        {
+            try { File.Delete(job.FilePath); } catch { /* Log and ignore */ }
+        }
     }
 }

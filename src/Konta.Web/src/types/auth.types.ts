@@ -8,8 +8,10 @@ export interface UserInfo {
     email: string;
     firstName: string;
     lastName: string;
-    roles: string[];
+    role: string;
     tenantId: string;
+    isActive: boolean;
+    createdAt: string;
 }
 
 export interface LoginRequest {

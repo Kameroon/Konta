@@ -1,17 +1,11 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUiStore } from '@/stores/ui.store';
 import { useTenantStore } from '@/stores/tenant.store';
 import { useToast } from 'vue-toastification';
-
 import Footer from '@/components/layout/Footer.vue';
-
-/**
- * MainLayout : Structure principale de l'ERP après connexion.
- * Gère la navigation latérale et l'état SaaS.
- */
 
 const authStore = useAuthStore();
 const uiStore = useUiStore();
@@ -19,25 +13,27 @@ const tenantStore = useTenantStore();
 const router = useRouter();
 const toast = useToast();
 
-/**
- * Initialisation du layout : Chargement des données SaaS.
- */
 onMounted(async () => {
-  if (authStore.user?.tenantId && !tenantStore.currentTenant) {
-    console.log('[MainLayout] Initialisation des données du tenant...');
-    await tenantStore.fetchTenantInfo(authStore.user.tenantId);
-  }
+    if (authStore.user?.tenantId && !tenantStore.currentTenant) {
+        console.log('[MainLayout] Initialisation des données du tenant...');
+        await tenantStore.fetchTenantInfo(authStore.user.tenantId);
+    }
 });
 
-/**
- * Déconnexion sécurisée de l'application.
- */
 const handleLogout = () => {
-  console.log('[MainLayout] Tentative de déconnexion...');
-  authStore.logout();
-  toast.success('Déconnexion réussie.');
-  router.push({ name: 'Login' });
+    console.log('[MainLayout] Tentative de déconnexion...');
+    authStore.logout();
+    toast.success('Déconnexion réussie.');
+    router.push({ name: 'Login' });
 };
+
+const isAdmin = computed(() => {
+    return ['Admin', 'SuperAdmin'].includes(authStore.user?.role || '') ?? false;
+});
+
+const isSuperAdmin = computed(() => {
+    return authStore.user?.role === 'SuperAdmin';
+});
 </script>
 
 <template>
@@ -53,28 +49,69 @@ const handleLogout = () => {
           {{ uiStore.isSidebarOpen ? '❮' : '❯' }}
         </button>
       </div>
+
+      <!-- Section Profil (Nouveauté Mockup) -->
+      <div class="user-profile-section" v-if="uiStore.isSidebarOpen">
+        <div class="avatar-large">
+          {{ authStore.user?.firstName?.charAt(0) }}{{ authStore.user?.lastName?.charAt(0) }}
+        </div>
+        <div class="profile-details">
+          <span class="full-name">{{ authStore.fullName }}</span>
+          <span class="company-name" v-if="tenantStore.currentTenant">{{ tenantStore.currentTenant.name }}</span>
+          <span class="user-role">{{ authStore.user?.role || 'Utilisateur' }}</span>
+        </div>
+      </div>
+      <div class="user-profile-section-collapsed" v-else>
+        <div class="avatar-sm">
+          {{ authStore.user?.firstName?.charAt(0) }}{{ authStore.user?.lastName?.charAt(0) }}
+        </div>
+      </div>
       
       <nav class="nav-menu">
         <router-link to="/app/dashboard" class="nav-item" active-class="active">
-          <i class="icon">📊</i> <span>Tableau de bord</span>
+          <i class="fas fa-th-large icon"></i> <span>Tableau de bord</span>
+        </router-link>
+
+        <router-link to="/app/download" class="nav-item" active-class="active">
+          <i class="fas fa-upload icon"></i> <span>Téléchargement</span>
         </router-link>
 
         <router-link to="/app/documents" class="nav-item" active-class="active">
-          <i class="icon">📄</i> <span>Documents & OCR</span>
+          <i class="fas fa-file-alt icon"></i> <span>Documents</span>
         </router-link>
-        
-        <!-- Visible seulement pour les Admins -->
-        <router-link v-if="authStore.user?.roles.includes('Admin')" to="/app/admin" class="nav-item" active-class="active">
-          <i class="icon">⚙️</i> <span>Administration</span>
+
+        <!-- Admin Only Sections -->
+        <template v-if="isAdmin">
+          <router-link to="/app/extracted-data" class="nav-item" active-class="active">
+            <i class="fas fa-database icon"></i> <span>Données extraites</span>
+          </router-link>
+
+          <router-link to="/app/companies" class="nav-item" active-class="active">
+            <i class="fas fa-building icon"></i> <span>Entreprises</span>
+          </router-link>
+
+          <!-- SuperAdmin Only Sections -->
+          <template v-if="isSuperAdmin">
+            <router-link to="/app/admin" class="nav-item" active-class="active">
+              <i class="fas fa-users icon"></i> <span>Utilisateurs (Global)</span>
+            </router-link>
+          </template>
+          <!-- Admin Only Section -->
+          <template v-else-if="isAdmin">
+            <router-link to="/app/admin" class="nav-item" active-class="active">
+              <i class="fas fa-users icon"></i> <span>Utilisateurs</span>
+            </router-link>
+          </template>
+        </template>
+
+        <router-link to="/app/settings" class="nav-item" active-class="active">
+          <i class="fas fa-cog icon"></i> <span>Paramètres</span>
         </router-link>
       </nav>
 
       <div class="sidebar-footer">
-        <router-link to="/app/profile" class="nav-item profile-link" active-class="active">
-          <i class="icon">👤</i> <span>Mon Profil</span>
-        </router-link>
         <button @click="handleLogout" class="logout-btn">
-          <i class="icon">🚪</i> <span>Déconnexion</span>
+          <i class="fas fa-sign-out-alt icon"></i> <span v-if="uiStore.isSidebarOpen">Déconnexion</span>
         </button>
       </div>
     </aside>
@@ -94,7 +131,7 @@ const handleLogout = () => {
           
           <div class="user-info">
             <span class="user-name">{{ authStore.fullName }}</span>
-            <div class="avatar" :style="{ backgroundColor: '#42b883' }">
+            <div class="avatar-top" :style="{ backgroundColor: '#42b883' }">
               {{ authStore.user?.firstName?.charAt(0) }}{{ authStore.user?.lastName?.charAt(0) }}
             </div>
           </div>
@@ -123,11 +160,11 @@ const handleLogout = () => {
   background-color: #f8fafc;
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - Basée sur Mockup Blanc */
 .sidebar {
   width: 280px;
-  background-color: #1e293b;
-  color: white;
+  background-color: #ffffff;
+  color: #1e293b;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -135,16 +172,11 @@ const handleLogout = () => {
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
+  border-right: 1px solid #e2e8f0;
 }
 
 .main-layout.sidebar-collapsed .sidebar {
   width: 80px;
-}
-
-.main-layout.sidebar-collapsed .sidebar .logo-text,
-.main-layout.sidebar-collapsed .sidebar .nav-item span,
-.main-layout.sidebar-collapsed .sidebar .profile-link span {
-  display: none;
 }
 
 .sidebar-header {
@@ -152,14 +184,14 @@ const handleLogout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
   height: 70px;
+  margin-bottom: 1rem;
 }
 
 .collapse-btn {
-  background: rgba(255,255,255,0.05);
+  background: #f1f5f9;
   border: none;
-  color: white;
+  color: #64748b;
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -171,7 +203,8 @@ const handleLogout = () => {
 }
 
 .collapse-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 .logo {
@@ -181,7 +214,8 @@ const handleLogout = () => {
 }
 
 .logo-icon {
-  background-color: #42b883;
+  background-color: #000;
+  color: #fff;
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -194,34 +228,105 @@ const handleLogout = () => {
 
 .logo-text {
   font-size: 1.2rem;
+  font-weight: 600;
+  color: #000;
   letter-spacing: -0.5px;
+}
+
+/* User Profile Section */
+.user-profile-section {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.avatar-large {
+  width: 48px;
+  height: 48px;
+  background-color: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-profile-section-collapsed {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  background-color: #f1f5f9;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.8rem;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-name {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.company-name {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.user-role {
+  font-size: 0.7rem;
+  color: #42b883;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 2px;
 }
 
 .nav-menu {
   flex: 1;
-  padding: 1.5rem 0.8rem;
+  padding: 0 0.8rem;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   padding: 0.8rem 1rem;
-  color: #94a3b8;
+  color: #64748b;
   text-decoration: none;
   border-radius: 8px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   transition: all 0.2s;
   font-weight: 500;
+  font-size: 0.95rem;
 }
 
-.nav-item:hover, .nav-item.active {
-  background-color: rgba(255,255,255,0.05);
-  color: white;
+.nav-item:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
 .nav-item.active {
-  background-color: #42b883;
-  color: white;
+  background-color: #eff6ff;
+  color: #3b82f6;
+  font-weight: 600;
 }
 
 .icon {
@@ -229,7 +334,7 @@ const handleLogout = () => {
   display: flex;
   justify-content: center;
   margin-right: 1rem;
-  font-style: normal;
+  font-size: 1.1rem;
 }
 
 .main-layout.sidebar-collapsed .icon {
@@ -238,10 +343,7 @@ const handleLogout = () => {
 
 .sidebar-footer {
   padding: 1rem 0.8rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  border-top: 1px solid #f1f5f9;
 }
 
 /* Top Bar Styling */
@@ -264,16 +366,16 @@ const handleLogout = () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 2.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #f1f5f9;
   position: sticky;
   top: 0;
   z-index: 90;
 }
 
 .top-bar-left .page-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
 .top-bar-right {
@@ -287,7 +389,7 @@ const handleLogout = () => {
   align-items: center;
   gap: 0.8rem;
   padding-right: 2rem;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid #f1f5f9;
 }
 
 .tenant-badge {
@@ -318,7 +420,7 @@ const handleLogout = () => {
   font-size: 0.9rem;
 }
 
-.avatar {
+.avatar-top {
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -330,24 +432,24 @@ const handleLogout = () => {
   font-size: 0.9rem;
 }
 
-/* Logout Button */
 .logout-btn {
   width: 100%;
   padding: 0.8rem;
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: #64748b;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  transition: background 0.2s;
+  transition: all 0.2s;
   font-weight: 500;
 }
 
 .logout-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: #fef2f2;
+  color: #ef4444;
 }
 
 /* Transitions */
@@ -370,13 +472,20 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: calc(100vh - 70px); /* Hauteur moins la top-bar */
+  min-height: calc(100vh - 70px);
 }
 
 .page-content {
   flex: 1;
-  padding: 2.5rem; /* Marges standardisées */
+  padding: 2rem;
   display: flex;
   flex-direction: column;
+}
+
+/* Responsive Hide Text */
+@media (max-width: 1024px) {
+  .logo-text, .nav-item span, .user-name, .tenant-name {
+    display: none;
+  }
 }
 </style>

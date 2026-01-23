@@ -62,5 +62,52 @@ export const documentsApi = {
             return response.data.data;
         }
         throw new Error(response.data.message || 'Impossible de récupérer les résultats du RIB');
+    },
+
+    /**
+     * Récupère l'historique de tous les jobs d'extraction du tenant.
+     */
+    async getJobs(): Promise<ExtractionJob[]> {
+        console.log('[Documents API] Récupération de l\'historique des jobs...');
+        const response = await http.get<ApiResponse<ExtractionJob[]>>('/api/ocr/jobs');
+
+        if (response.data.success && response.data.data) {
+            return response.data.data;
+        }
+        return [];
+    },
+
+    /**
+     * Supprime un job d'extraction.
+     */
+    async deleteJob(jobId: string): Promise<void> {
+        console.log(`[Documents API] Suppression du job : ${jobId}`);
+        const response = await http.delete<ApiResponse<void>>(`/api/ocr/jobs/${jobId}`);
+
+        if (!response.data.success) {
+            throw new Error(response.data.message || 'Échec de la suppression');
+        }
+    },
+
+    /**
+     * Télécharge le fichier PDF associé à un job.
+     */
+    async downloadDocument(jobId: string, fileName: string): Promise<void> {
+        console.log(`[Documents API] Téléchargement du document : ${jobId}`);
+        const response = await http.get(`/api/ocr/jobs/${jobId}/download`, {
+            responseType: 'blob'
+        });
+
+        // Créer un lien temporaire pour déclencher le téléchargement
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName || `document_${jobId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+
+        // Nettoyage
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
     }
 };

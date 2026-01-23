@@ -18,6 +18,7 @@ public class TenantService : ITenantService
     private readonly IRoleRepository _roleRepository;
     private readonly IPermissionRepository _permissionRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ICompanyRegistryService _registryService;
     private readonly PostgresErrorService _errorService;
     private readonly ILogger<TenantService> _logger;
 
@@ -27,6 +28,7 @@ public class TenantService : ITenantService
         IRoleRepository roleRepository,
         IPermissionRepository permissionRepository,
         IPasswordHasher passwordHasher,
+        ICompanyRegistryService registryService,
         PostgresErrorService errorService,
         ILogger<TenantService> logger)
     {
@@ -35,6 +37,7 @@ public class TenantService : ITenantService
         _roleRepository = roleRepository;
         _permissionRepository = permissionRepository;
         _passwordHasher = passwordHasher;
+        _registryService = registryService;
         _errorService = errorService;
         _logger = logger;
     }
@@ -46,11 +49,33 @@ public class TenantService : ITenantService
 
         try
         {
+            // 0. Recherche SIRET si fourni
+            var tenantName = request.TenantName;
+            string? industry = null;
+            string? address = null;
+            string? taxId = request.Siret;
+
+            if (!string.IsNullOrWhiteSpace(request.Siret))
+            {
+                var registryData = await _registryService.LookupBySiretAsync(request.Siret);
+                if (registryData != null)
+                {
+                    _logger.LogInformation("Données SIRET récupérées pour {Siret} : {Name}", request.Siret, registryData.Name);
+                    tenantName = registryData.Name;
+                    industry = registryData.Industry;
+                    address = registryData.Address;
+                }
+            }
+
             // 1. Création du Tenant
-            _logger.LogDebug("Création du tenant : {TenantName}", request.TenantName);
+            _logger.LogDebug("Création du tenant : {TenantName}", tenantName);
             var tenant = new Tenant
             {
-                Name = request.TenantName,
+                Name = tenantName,
+                Identifier = taxId, // On peut stocker le SIRET ici aussi
+                Industry = industry,
+                Address = address,
+                TaxId = taxId,
                 Plan = request.Plan
             };
             var tenantId = await _tenantRepository.CreateAsync(tenant);

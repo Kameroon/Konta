@@ -52,4 +52,13 @@ public class PermissionRepository : BaseRepository<PermissionRepository>, IPermi
         using var connection = CreateConnection(sql, new { SystemName = systemName });
         return await connection.QuerySingleOrDefaultAsync<Permission>(sql, new { SystemName = systemName });
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<string>> GetAllPermissionSystemNamesAsync()
+    {
+        _logger.LogDebug("Accès DB : Récupération de TOUS les noms système de permissions");
+        const string sql = "SELECT SystemName FROM identity.Permissions WHERE IsActive = TRUE";
+        using var connection = CreateConnection(sql);
+        return await connection.QueryAsync<string>(sql);
+    }
 }

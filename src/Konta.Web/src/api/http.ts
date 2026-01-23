@@ -9,7 +9,7 @@ import { useToast } from 'vue-toastification';
 const http: AxiosInstance = axios.create({
     // URL de base récupérée depuis les variables d'environnement (Vite)
     baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
-    timeout: 10000, // Timeout de 10 secondes
+    timeout: 30000, // Timeout de 30 secondes
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -75,7 +75,9 @@ http.interceptors.response.use(
         const authStore = useAuthStore();
 
         // Cas 1 : Erreur 401 (Non autorisé) - Probablement Token expiré
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Exception : Ne pas tenter de rafraîchir si on est sur l'endpoint de login ou de lookup SIRET (publics)
+        const isPublicEndpoint = originalRequest.url?.includes('/api/auth/login') || originalRequest.url?.includes('/api/tenants/lookup/');
+        if (error.response?.status === 401 && !originalRequest._retry && !isPublicEndpoint) {
             console.warn(`[HTTP Response] Erreur 401 sur ${originalRequest.url}. Tentative de rafraîchissement...`);
 
             if (isRefreshing) {

@@ -34,11 +34,21 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     /// </summary>
     public async Task<IEnumerable<Tier>> GetByTenantIdAsync(Guid tenantId, TierType? type = null)
     {
-        var sql = "SELECT * FROM finance_core.Tiers WHERE TenantId = @TenantId";
-        if (type.HasValue) sql += " AND Type = @Type";
+        // Si c'est le tenant système (Guid.Empty), on autorise la vue sur TOUS les tiers
+        bool isGlobal = tenantId == Guid.Empty;
+
+        var sql = isGlobal 
+            ? "SELECT * FROM finance_core.Tiers" 
+            : "SELECT * FROM finance_core.Tiers WHERE TenantId = @TenantId";
+
+        if (type.HasValue) 
+        {
+            sql += isGlobal ? " WHERE Type = @Type" : " AND Type = @Type";
+        }
+        
         sql += " ORDER BY Name ASC";
 
-        _logger.LogDebug("Listing des tiers pour Tenant : {TenantId} (Type: {Type})", tenantId, type);
+        _logger.LogDebug("Listing des tiers {Mode} (Type: {Type})", isGlobal ? "GLOBAL" : $"pour Tenant {tenantId}", type);
 
         using var connection = CreateConnection(sql, new { TenantId = tenantId, Type = type });
         return await connection.QueryAsync<Tier>(sql, new { TenantId = tenantId, Type = type });
@@ -75,6 +85,20 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
         tier.UpdatedAt = DateTime.UtcNow;
         using var connection = CreateConnection(sql, tier);
         var rows = await connection.ExecuteAsync(sql, tier);
+        return rows > 0;
+    }
+
+    /// <summary>
+    /// Supprime un tiers par son ID.
+    /// </summary>
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        const string sql = "DELETE FROM finance_core.Tiers WHERE Id = @Id";
+        
+        _logger.LogInformation("Suppression du tiers : {Id}", id);
+        
+        using var connection = CreateConnection(sql, new { Id = id });
+        var rows = await connection.ExecuteAsync(sql, new { Id = id });
         return rows > 0;
     }
 }

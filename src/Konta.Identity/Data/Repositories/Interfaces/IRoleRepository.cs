@@ -8,6 +8,8 @@ public interface IRoleRepository
     Task<Role?> GetByIdAsync(Guid roleId);
     Task<Role?> GetByNameAsync(Guid tenantId, string roleName);
     Task<IEnumerable<Role>> GetByUserIdAsync(Guid userId);
+    Task<IEnumerable<Role>> GetAllByTenantIdAsync(Guid tenantId);
+    Task<IEnumerable<Permission>> GetPermissionsByRoleIdAsync(Guid roleId);
     Task AddPermissionToRoleAsync(Guid roleId, Guid permissionId);
     Task AssignRoleToUserAsync(Guid userId, Guid roleId);
 }

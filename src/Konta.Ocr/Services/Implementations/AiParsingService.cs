@@ -126,9 +126,37 @@ TEXTE À ANALYSER:
 
     private (DocumentType Type, object? Result) ParseWithRegex(string rawText)
     {
-        // ... (Logique Regex existante simplifiée)
-        if (rawText.Contains("Facture", StringComparison.OrdinalIgnoreCase))
-            return (DocumentType.Invoice, new ExtractedInvoice { Id = Guid.NewGuid(), VendorName = "Regex Match" });
+        _logger.LogDebug("Parsing de secours avec Regex...");
+        
+        bool isInvoice = rawText.Contains("Facture", StringComparison.OrdinalIgnoreCase) 
+                      || rawText.Contains("Invoice", StringComparison.OrdinalIgnoreCase)
+                      || rawText.Contains("TTC", StringComparison.OrdinalIgnoreCase);
+
+        bool isRib = rawText.Contains("RIB", StringComparison.OrdinalIgnoreCase) 
+                  || rawText.Contains("IBAN", StringComparison.OrdinalIgnoreCase)
+                  || rawText.Contains("BIC", StringComparison.OrdinalIgnoreCase);
+
+        if (isInvoice)
+        {
+            return (DocumentType.Invoice, new ExtractedInvoice 
+            { 
+                Id = Guid.NewGuid(), 
+                VendorName = "Détecté via Regex",
+                CreatedAt = DateTime.UtcNow,
+                RawJson = "{\"source\": \"fallback-regex\"}"
+            });
+        }
+        
+        if (isRib)
+        {
+            return (DocumentType.Rib, new ExtractedRib 
+            { 
+                Id = Guid.NewGuid(), 
+                BankName = "Détecté via Regex",
+                CreatedAt = DateTime.UtcNow 
+            });
+        }
+
         return (DocumentType.Unknown, null);
     }
 }

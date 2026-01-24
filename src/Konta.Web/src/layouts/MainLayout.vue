@@ -478,7 +478,7 @@ const isSuperAdmin = computed(() => {
 
 .page-content {
   flex: 1;
-  padding: 2rem;
+  padding: 2rem 2rem 0.5rem;
   display: flex;
   flex-direction: column;
 }

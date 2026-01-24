@@ -64,7 +64,7 @@
 .main-footer {
   background: #0f172a;
   color: #94a3b8;
-  padding: 80px 0 40px;
+  padding: 20px 0 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-family: 'Inter', sans-serif;
 }
@@ -79,14 +79,14 @@
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 2fr;
   gap: 60px;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 }
 
 .footer-brand .logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .logo-icon {
@@ -109,7 +109,7 @@
 
 .brand-desc {
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   font-size: 0.95rem;
 }
 
@@ -132,7 +132,7 @@
   color: white;
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .footer-links ul {
@@ -142,7 +142,7 @@
 }
 
 .footer-links li {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .footer-links a {
@@ -192,7 +192,7 @@
 }
 
 .footer-bottom {
-  padding-top: 40px;
+  padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: space-between;

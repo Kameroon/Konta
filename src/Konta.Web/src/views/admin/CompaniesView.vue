@@ -68,7 +68,10 @@ const fetchTenants = async () => {
 const fetchCompanies = async () => {
   loading.value = true;
   try {
-    companies.value = await financeApi.getTiers();
+     companies.value = await financeApi.getTiers();
+      //var fournisseurs = companies.filter(c => c.type === TierType.Supplier).length
+      //console.log(companies);
+      //console.log(fournisseurs);
   } catch (err) {
     toast.error('Erreur lors du chargement des entreprises.');
   } finally {

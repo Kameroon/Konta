@@ -56,7 +56,7 @@ public static class OcrEndpoints
             if (job == null) return Results.NotFound(ApiResponse<object>.Fail("Job introuvable."));
             
             await repo.DeleteAsync(job);
-            return Results.Ok(ApiResponse<object>.Ok(null, "Job supprimé avec succès."));
+            return Results.Ok(ApiResponse.Ok("Job supprimé avec succès."));
         }).RequireAuthorization();
 
         // --- List ---
@@ -102,16 +102,16 @@ public static class OcrEndpoints
             if (job.DetectedType == DocumentType.Invoice)
             {
                 var result = await repo.GetInvoiceResultByJobIdAsync(jobId);
-                return Results.Ok(ApiResponse<object>.Ok(result));
+                return Results.Ok(ApiResponse<object>.Ok(result!));
             }
             else if (job.DetectedType == DocumentType.Rib)
             {
                 var result = await repo.GetRibResultByJobIdAsync(jobId);
-                return Results.Ok(ApiResponse<object>.Ok(result));
+                return Results.Ok(ApiResponse<object>.Ok(result!));
             }
 
             // Retourner 200 avec null plutôt que 404 pour éviter de casser le polling frontend
-            return Results.Ok(ApiResponse<object>.Ok(null));
+            return Results.Ok(ApiResponse<object?>.Ok(null));
         }).RequireAuthorization();
 
         // --- Download ---

@@ -156,8 +156,9 @@ const handleDelete = async () => {
     extractedData.value = extractedData.value.filter(e => e.id !== itemToDelete.value!.id);
     toast.success('Extraction supprimée.');
     showDeleteConfirm.value = false;
-  } catch (err) {
-    toast.error('Erreur lors de la suppression.');
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || 'Erreur lors de la suppression.';
+    toast.error(errorMsg);
   } finally {
     deleting.value = false;
     itemToDelete.value = null;

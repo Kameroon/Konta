@@ -72,7 +72,7 @@ public class TenantService : ITenantService
             var tenant = new Tenant
             {
                 Name = tenantName,
-                Identifier = taxId, // On peut stocker le SIRET ici aussi
+                Identifier = taxId ?? string.Empty, // On peut stocker le SIRET ici aussi
                 Industry = industry,
                 Address = address,
                 TaxId = taxId,

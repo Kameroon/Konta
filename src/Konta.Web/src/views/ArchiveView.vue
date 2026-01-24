@@ -55,8 +55,9 @@ const confirmDelete = async () => {
     jobs.value = jobs.value.filter(j => j.id !== jobIdToDelete.value);
     toast.success("Document supprimé.");
     showDeleteConfirm.value = false;
-  } catch (err) {
-    toast.error("Erreur lors de la suppression.");
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || "Erreur lors de la suppression.";
+    toast.error(errorMsg);
   } finally {
     deleting.value = false;
     jobIdToDelete.value = null;

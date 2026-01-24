@@ -19,6 +19,42 @@
             }
         },
         {
+            "DownstreamPathTemplate": "/api/ocr/jobs",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5005
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/jobs",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/ocr/jobs/mine",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5005
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/jobs/mine",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
             "DownstreamPathTemplate": "/api/ocr/jobs/{id}",
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
@@ -29,7 +65,8 @@
             ],
             "UpstreamPathTemplate": "/api/ocr/jobs/{id}",
             "UpstreamHttpMethod": [
-                "Get"
+                "Get",
+                "Delete"
             ],
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
@@ -46,6 +83,24 @@
                 }
             ],
             "UpstreamPathTemplate": "/api/ocr/results/{jobId}",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/ocr/jobs/{id}/download",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5005
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/jobs/{id}/download",
             "UpstreamHttpMethod": [
                 "Get"
             ],

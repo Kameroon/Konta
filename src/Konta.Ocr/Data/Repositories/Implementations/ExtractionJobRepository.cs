@@ -1,4 +1,5 @@
 using Dapper;
+using System.Data;
 using Konta.Ocr.Data.Repositories.Interfaces;
 using Konta.Ocr.Models;
 using Konta.Shared.Data;
@@ -116,18 +117,35 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
 
     public async Task DeleteAsync(ExtractionJob job)
     {
-        // On supprime d'abord les résultats potentiels (contraintes FK si existantes)
-        const string sqlDelResults = "DELETE FROM ocr.ExtractedInvoices WHERE JobId = @Id; DELETE FROM ocr.ExtractedRibs WHERE JobId = @Id;";
-        const string sqlDelJob = "DELETE FROM ocr.ExtractionJobs WHERE Id = @Id";
-        
-        using var connection = CreateConnection(sqlDelJob, new { Id = job.Id });
-        await connection.ExecuteAsync(sqlDelResults, new { Id = job.Id });
-        await connection.ExecuteAsync(sqlDelJob, new { Id = job.Id });
+        // On récupère une connexion et on l'ouvre manuellement pour garantir que la session RLS est active sur toute l'opération
+        using var connection = ConnectionFactory.CreateConnection();
+        if (connection.State != ConnectionState.Open) connection.Open();
 
-        // Note: Suppression du fichier physique recommandée en production
-        if (File.Exists(job.FilePath))
+        using var transaction = connection.BeginTransaction();
+        try
         {
-            try { File.Delete(job.FilePath); } catch { /* Log and ignore */ }
+            // On supprime d'abord les résultats potentiels (contraintes FK si existantes)
+            const string sqlDelResults = "DELETE FROM ocr.ExtractedInvoices WHERE JobId = @JobId; DELETE FROM ocr.ExtractedRibs WHERE JobId = @JobId;";
+            const string sqlDelJob = "DELETE FROM ocr.ExtractionJobs WHERE Id = @JobId";
+            
+            var parameters = new { JobId = job.Id };
+            
+            await connection.ExecuteAsync(sqlDelResults, parameters, transaction);
+            await connection.ExecuteAsync(sqlDelJob, parameters, transaction);
+
+            transaction.Commit();
+
+            // Suppression du fichier physique seulement si la DB est OK
+            if (File.Exists(job.FilePath))
+            {
+                try { File.Delete(job.FilePath); } catch { /* Log and ignore */ }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la suppression du job OCR {JobId}", job.Id);
+            transaction.Rollback();
+            throw;
         }
     }
 }

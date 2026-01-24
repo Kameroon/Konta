@@ -15,6 +15,7 @@ export const financeApi = {
         const response = await http.get<ApiResponse<FinancialSummary>>('/api/reporting/dashboard/summary');
 
         if (response.data.success && response.data.data) {
+            console.log(response.data);
             return response.data.data;
         }
         throw new Error(response.data.message || 'Erreur lors du chargement du résumé financier');

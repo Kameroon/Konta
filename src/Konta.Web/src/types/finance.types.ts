@@ -4,8 +4,8 @@
  */
 
 export enum TierType {
-    Client = 1,
-    Supplier = 2
+    Client = 'Client',
+    Supplier = 'Supplier'
 }
 
 /**

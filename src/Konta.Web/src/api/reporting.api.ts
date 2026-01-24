@@ -29,6 +29,7 @@ export const reportingApi = {
     async getDashboardSummary(): Promise<DashboardSummary> {
         const response = await http.get<ApiResponse<DashboardSummary>>('/api/reporting/dashboard/summary');
         if (response.data.success && response.data.data) {
+            console.log(response.data);
             return response.data.data;
         }
         throw new Error(response.data.message || 'Impossible de charger les statistiques');

@@ -8,6 +8,7 @@ public interface ITenantRepository
     Task<Tenant?> GetByNameAsync(string name);
     Task<IEnumerable<Tenant>> GetAllAsync();
     Task<Guid> CreateAsync(Tenant tenant);
+    Task<Tenant?> GetBySiretAsync(string siret);
     Task<bool> UpdateAsync(Tenant tenant);
     Task<bool> DeleteAsync(Guid id);
 }

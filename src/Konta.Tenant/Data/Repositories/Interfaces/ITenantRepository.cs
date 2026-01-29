@@ -18,6 +18,11 @@ public interface ITenantRepository
     Task<Models.Tenant?> GetByIdentifierAsync(string identifier);
 
     /// <summary>
+    /// Récupère un tenant par son numéro SIRET.
+    /// </summary>
+    Task<Models.Tenant?> GetBySiretAsync(string siret);
+
+    /// <summary>
     /// Récupère la liste de tous les tenants enregistrés.
     /// </summary>
     Task<IEnumerable<Models.Tenant>> GetAllAsync();

@@ -39,6 +39,15 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     }
 
     /// <inheritdoc />
+    public async Task<Models.Tenant?> GetBySiretAsync(string siret)
+    {
+        _logger.LogDebug("Accès DB : Récupération du tenant par SIRET {Siret}", siret); // Log de débogage
+        const string sql = "SELECT * FROM identity.Tenants WHERE Siret = @Siret";
+        using var connection = CreateConnection(sql, new { Siret = siret });
+        return await connection.QuerySingleOrDefaultAsync<Models.Tenant>(sql, new { Siret = siret });
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<Models.Tenant>> GetAllAsync()
     {
         _logger.LogDebug("Accès DB : Récupération de tous les tenants"); // Log de débogage
@@ -52,8 +61,8 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Insertion du nouveau tenant {Name}", tenant.Name); // Log d'information
         const string sql = @"
-            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, Plan, CreatedAt)
-            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @Plan, @CreatedAt)
+            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, Siret, Plan, CreatedAt)
+            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @Siret, @Plan, @CreatedAt)
             RETURNING Id"; // Requête SQL brute avec retour de l'ID
         
         using var connection = CreateConnection(sql, tenant);
@@ -70,7 +79,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
                 Identifier = @Identifier, 
                 Industry = @Industry, 
                 Address = @Address, 
-                TaxId = @TaxId, 
+                Siret = @Siret, 
                 Plan = @Plan,
                 UpdatedAt = @UpdatedAt,
                 IsActive = @IsActive

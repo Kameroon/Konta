@@ -60,8 +60,8 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     public async Task<Guid> CreateAsync(Tier tier)
     {
         const string sql = @"
-            INSERT INTO finance_core.Tiers (Id, TenantId, Name, Type, Email, TaxId, Address, CreatedAt)
-            VALUES (@Id, @TenantId, @Name, @Type, @Email, @TaxId, @Address, @CreatedAt)
+            INSERT INTO finance_core.Tiers (Id, TenantId, Name, Type, Email, Siret, Address, CreatedAt)
+            VALUES (@Id, @TenantId, @Name, @Type, @Email, @Siret, @Address, @CreatedAt)
             RETURNING Id";
             
         _logger.LogInformation("Création d'un nouveau tiers : {Name} (Type: {Type})", tier.Name, tier.Type);
@@ -77,7 +77,7 @@ public class TierRepository : BaseRepository<TierRepository>, ITierRepository
     {
         const string sql = @"
             UPDATE finance_core.Tiers 
-            SET Name = @Name, Type = @Type, Email = @Email, TaxId = @TaxId, Address = @Address, UpdatedAt = @UpdatedAt
+            SET Name = @Name, Type = @Type, Email = @Email, Siret = @Siret, Address = @Address, UpdatedAt = @UpdatedAt
             WHERE Id = @Id";
             
         _logger.LogInformation("Mise à jour du tiers : {Id}", tier.Id);

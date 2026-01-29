@@ -26,7 +26,7 @@ public record CreateTenantRequest
     public string? Address { get; init; }
 
     /// <summary>
-    /// Numéro d'identification fiscale.
+    /// Numéro SIRET de l'entreprise (14 chiffres).
     /// </summary>
-    public string? TaxId { get; init; }
+    public string? Siret { get; init; }
 }

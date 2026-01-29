@@ -21,4 +21,9 @@ public interface ITenantService
     /// Récupère la liste de toutes les entreprises.
     /// </summary>
     Task<IEnumerable<TenantResponse>> GetAllTenantsAsync();
+
+    /// <summary>
+    /// Recherche une entreprise par son identifiant unique (SIRET ou slug).
+    /// </summary>
+    Task<TenantResponse?> GetTenantByIdentifierAsync(string identifier);
 }

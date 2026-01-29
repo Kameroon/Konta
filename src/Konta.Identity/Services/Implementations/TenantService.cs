@@ -75,7 +75,7 @@ public class TenantService : ITenantService
                 Identifier = taxId ?? string.Empty, // On peut stocker le SIRET ici aussi
                 Industry = industry,
                 Address = address,
-                TaxId = taxId,
+                Siret = taxId,
                 Plan = request.Plan
             };
             var tenantId = await _tenantRepository.CreateAsync(tenant);

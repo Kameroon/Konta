@@ -40,6 +40,15 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     }
 
     /// <inheritdoc />
+    public async Task<Tenant?> GetBySiretAsync(string siret)
+    {
+        _logger.LogDebug("Accès DB : Récupération du tenant par SIRET : {Siret}", siret);
+        const string sql = "SELECT * FROM identity.Tenants WHERE Siret = @Siret";
+        using var connection = CreateConnection(sql, new { Siret = siret });
+        return await connection.QuerySingleOrDefaultAsync<Tenant>(sql, new { Siret = siret });
+    }
+
+    /// <inheritdoc />
     public async Task<IEnumerable<Tenant>> GetAllAsync()
     {
         _logger.LogDebug("Accès DB : Récupération de tous les tenants");
@@ -53,8 +62,8 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
     {
         _logger.LogInformation("Accès DB : Création du tenant : {Name}", tenant.Name);
         const string sql = @"
-            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, Plan, CreatedAt) 
-            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @TaxId, @Plan, @CreatedAt)
+            INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, Siret, Plan, CreatedAt) 
+            VALUES (@Id, @Name, @Identifier, @Industry, @Address, @Siret, @Plan, @CreatedAt)
             RETURNING Id";
         
         using var connection = CreateConnection(sql, tenant);
@@ -71,7 +80,7 @@ public class TenantRepository : BaseRepository<TenantRepository>, ITenantReposit
                 Identifier = @Identifier,
                 Industry = @Industry,
                 Address = @Address,
-                TaxId = @TaxId,
+                Siret = @Siret,
                 Plan = @Plan, 
                 UpdatedAt = @UpdatedAt 
             WHERE Id = @Id";

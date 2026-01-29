@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS identity.Tenants (
     Identifier TEXT,
     Industry TEXT,
     Address TEXT,
-    TaxId TEXT,
+    Siret TEXT,
     Plan TEXT NOT NULL DEFAULT 'Free',
     CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE,
@@ -655,8 +655,8 @@ DELETE FROM identity.Roles WHERE TenantId = '7c1e95fa-1234-4a5b-8cde-f0123456789
 DELETE FROM finance_core.Tiers WHERE TenantId = '7c1e95fa-1234-4a5b-8cde-f01234567890';
 DELETE FROM identity.Tenants WHERE Id = '7c1e95fa-1234-4a5b-8cde-f01234567890';
 
-INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, TaxId, Plan)
-VALUES ('7c1e95fa-1234-4a5b-8cde-f01234567890', 'Globex Corporation', 'GLOBEX-FR', 'Technologie', '123 Avenue des Champs-Élysées, 75008 Paris', 'FR12345678901', 'Premium');
+INSERT INTO identity.Tenants (Id, Name, Identifier, Industry, Address, Siret, Plan)
+VALUES ('7c1e95fa-1234-4a5b-8cde-f01234567890', 'Globex Corporation', 'GLOBEX-FR', 'Technologie', '123 Avenue des Champs-Élysées, 75008 Paris', '78467169500079', 'Premium');
 
 -- 3. RÔLES GLOBEX
 INSERT INTO identity.Roles (Id, TenantId, Name, Description) VALUES

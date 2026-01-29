@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using Konta.Identity.Data.Repositories.Interfaces;
 using Konta.Identity.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -8,11 +9,16 @@ namespace Konta.Identity.Services.Implementations;
 public class CompanyRegistryService : ICompanyRegistryService
 {
     private readonly HttpClient _httpClient;
+    private readonly ITenantRepository _tenantRepository;
     private readonly ILogger<CompanyRegistryService> _logger;
 
-    public CompanyRegistryService(HttpClient httpClient, ILogger<CompanyRegistryService> logger)
+    public CompanyRegistryService(
+        HttpClient httpClient, 
+        ITenantRepository tenantRepository,
+        ILogger<CompanyRegistryService> logger)
     {
         _httpClient = httpClient;
+        _tenantRepository = tenantRepository;
         _logger = logger;
     }
 
@@ -24,6 +30,24 @@ public class CompanyRegistryService : ICompanyRegistryService
 
         try
         {
+            // 1. RECHERCHE EN BASE LOCALE D'ABORD (Optimisation ressources)
+            _logger.LogDebug("Vérification en base locale pour le SIRET : {Siret}", siret);
+            var existingTenant = await _tenantRepository.GetBySiretAsync(siret);
+            
+            if (existingTenant != null)
+            {
+                _logger.LogInformation("Entreprise trouvée en base locale : {Name}", existingTenant.Name);
+                return new CompanyRegistrationResult
+                {
+                    Name = existingTenant.Name,
+                    Address = existingTenant.Address,
+                    Industry = existingTenant.Industry,
+                    CommercialIdentifier = existingTenant.Siret
+                };
+            }
+
+            // 2. FALLBACK : API EXTERNE SIRENE
+            _logger.LogDebug("Non trouvé en base, appel à l'API externe pour : {Siret}", siret);
             // L'API de recherche accepte SIREN ou SIRET dans le paramètre 'q'
             var url = $"https://recherche-entreprises.api.gouv.fr/search?q={siret}";
             

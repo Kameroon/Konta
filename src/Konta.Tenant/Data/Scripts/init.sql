@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS Tenants (
     Identifier TEXT NOT NULL UNIQUE, -- Domain or slug
     Industry TEXT,
     Address TEXT,
-    TaxId TEXT,
+    Siret TEXT,
     CreatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE,
     IsActive BOOLEAN DEFAULT TRUE

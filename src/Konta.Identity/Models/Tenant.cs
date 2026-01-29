@@ -28,9 +28,9 @@ public class Tenant : BaseEntity
     public string? Address { get; set; }
 
     /// <summary>
-    /// Identifiant fiscal.
+    /// Numéro SIRET de l'entreprise.
     /// </summary>
-    public string? TaxId { get; set; }
+    public string? Siret { get; set; }
 
     /// <summary>
     /// Plan d'abonnement actuel (version simplifiée).

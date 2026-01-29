@@ -17,6 +17,6 @@ public class Tier : BaseEntity
     public string Name { get; set; } = string.Empty;
     public TierType Type { get; set; }
     public string? Email { get; set; }
-    public string? TaxId { get; set; }
+    public string? Siret { get; set; }
     public string? Address { get; set; }
 }

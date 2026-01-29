@@ -55,5 +55,19 @@ public static class TenantEndpoints
         })
         .WithName("GetTenantById")
 ;
+
+        // GET : Recherche d'une entreprise par son identifiant (SIRET/slug) - endpoint PUBLIC
+        group.MapGet("/lookup/{identifier}", async (string identifier, ITenantService tenantService) =>
+        {
+            // Recherche du tenant par son identifiant unique
+            var tenant = await tenantService.GetTenantByIdentifierAsync(identifier);
+            // Gestion du code retour selon l'existence du tenant
+            return tenant == null 
+                ? Results.NotFound(ApiResponse<object>.Fail("Impossible de trouver l'entreprise. Vérifiez le SIRET."))
+                : Results.Ok(ApiResponse<TenantResponse>.Ok(tenant, "Entreprise trouvée."));
+        })
+        .WithName("LookupTenantByIdentifier")
+        .AllowAnonymous() // Endpoint public pour l'inscription
+;
     }
 }

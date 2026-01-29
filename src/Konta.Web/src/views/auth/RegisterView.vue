@@ -89,28 +89,50 @@
 
         <div class="form-group">
           <label for="password">Mot de passe</label>
-          <div class="input-with-icon">
+          <div class="input-with-icon password-field">
             <i class="fas fa-lock"></i>
             <input 
-              type="password" 
+              :type="showPassword ? 'text' : 'password'" 
               id="password" 
               v-model="form.password" 
               placeholder="••••••••" 
               required
               :disabled="loading || !companyFound"
             />
+            <button type="button" class="btn-toggle-password" @click="showPassword = !showPassword" tabindex="-1">
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer le mot de passe</label>
+          <div class="input-with-icon password-field">
+            <i class="fas fa-lock"></i>
+            <input 
+              :type="showConfirmPassword ? 'text' : 'password'" 
+              id="confirmPassword" 
+              v-model="form.confirmPassword" 
+              placeholder="••••••••" 
+              required
+              :disabled="loading || !companyFound"
+            />
+            <button type="button" class="btn-toggle-password" @click="showConfirmPassword = !showConfirmPassword" tabindex="-1">
+              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <small class="form-help" v-if="passwordMismatch">Les mots de passe ne correspondent pas</small>
         </div>
 
         <div class="form-footer">
           <label class="checkbox-container">
-            <input type="checkbox" required :disabled="loading || !companyFound">
+            <input type="checkbox" v-model="termsAccepted" :disabled="loading || !companyFound">
             <span class="checkmark"></span>
-            J'accepte les <a href="#">Conditions d'Utilisation</a>
+            <span class="checkbox-label">J'accepte les <a href="#">Conditions d'Utilisation</a></span>
           </label>
         </div>
 
-        <button type="submit" class="btn-auth" :disabled="loading || !companyFound">
+        <button type="submit" class="btn-auth" :disabled="loading || !companyFound || !isFormValid">
           <span v-if="!loading">Créer mon espace</span>
           <span v-else class="loader"></span>
         </button>
@@ -125,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { authApi } from '@/api/auth.api';
@@ -141,14 +163,30 @@ const loading = ref(false);
 const lookingUp = ref(false);
 const lookupError = ref('');
 const companyFound = ref(false);
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const form = reactive({
   firstName: '',
   lastName: '',
   email: '',
   password: '',
+  confirmPassword: '',
   tenantName: '',
   siret: ''
+});
+
+const termsAccepted = ref(false);
+
+// Computed pour la validation du formulaire
+const passwordMismatch = computed(() => {
+  return form.confirmPassword.length > 0 && form.password !== form.confirmPassword;
+});
+
+const isFormValid = computed(() => {
+  return form.password === form.confirmPassword && 
+         form.password.length >= 6 && 
+         termsAccepted.value;
 });
 
 onMounted(() => {
@@ -185,8 +223,8 @@ const handleRegister = async () => {
     });
     
     if (success) {
-      toast.success('Compte créé avec succès ! Bienvenue chez Konta.');
-      router.push({ name: 'Dashboard' });
+      toast.success('Compte créé avec succès ! Connectez-vous pour accéder à votre espace.');
+      router.push({ name: 'Login' });
     }
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Erreur lors de l\'inscription');
@@ -292,6 +330,10 @@ input:focus {
 .input-with-button {
   display: flex;
   gap: 8px;
+}
+
+.input-with-button .input-with-icon {
+  flex: 1;
 }
 
 .btn-lookup {
@@ -400,5 +442,87 @@ input:focus {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Checkbox styling */
+.form-footer {
+  margin-top: 8px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #4a5568;
+  user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #3182ce;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-label {
+  line-height: 1.4;
+}
+
+.checkbox-label a {
+  color: #3182ce;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.checkbox-label a:hover {
+  text-decoration: underline;
+}
+
+.checkmark {
+  display: none;
+}
+
+/* Password toggle button */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 48px;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #a0aec0;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+
+.btn-toggle-password:hover {
+  color: #3182ce;
+}
+
+.btn-toggle-password:focus {
+  outline: none;
+}
+
+.btn-toggle-password i {
+  font-size: 1rem;
 }
 </style>

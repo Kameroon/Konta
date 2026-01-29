@@ -44,7 +44,7 @@ public class TenantService : ITenantService
                 Identifier = request.Identifier, // Slug/Domaine unique
                 Industry = request.Industry, // Secteur d'activité
                 Address = request.Address, // Adresse physique
-                TaxId = request.TaxId // Identifiant fiscal
+                Siret = request.Siret // Numéro SIRET
             };
 
             // Persistance du tenant dans la base de données
@@ -113,5 +113,35 @@ public class TenantService : ITenantService
             IsActive = t.IsActive,
             Plan = t.Plan
         });
+    }
+
+    /// <inheritdoc />
+    public async Task<TenantResponse?> GetTenantByIdentifierAsync(string identifier)
+    {
+        // Recherche du tenant par son SIRET
+        _logger.LogDebug("Recherche du tenant par SIRET : {Siret}", identifier);
+        var tenant = await _tenantRepository.GetBySiretAsync(identifier);
+        
+        // Si non trouvé par SIRET, essayer par Identifier (slug)
+        if (tenant == null)
+        {
+            _logger.LogDebug("SIRET non trouvé, recherche par identifiant : {Identifier}", identifier);
+            tenant = await _tenantRepository.GetByIdentifierAsync(identifier);
+        }
+        
+        // Gestion du cas où le tenant n'existe pas
+        if (tenant == null) return null;
+        
+        // Conversion de l'entité vers le DTO de réponse
+        return new TenantResponse
+        {
+            Id = tenant.Id,
+            Name = tenant.Name,
+            Identifier = tenant.Identifier,
+            Industry = tenant.Industry ?? "",
+            CreatedAt = tenant.CreatedAt,
+            IsActive = tenant.IsActive,
+            Plan = tenant.Plan
+        };
     }
 }

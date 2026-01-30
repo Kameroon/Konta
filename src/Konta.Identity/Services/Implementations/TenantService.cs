@@ -67,29 +67,61 @@ public class TenantService : ITenantService
                 }
             }
 
-            // 1. Création du Tenant
-            _logger.LogDebug("Création du tenant : {TenantName}", tenantName);
-            var tenant = new Tenant
+            // 1. Vérifier si un tenant avec ce SIRET existe déjà
+            Guid tenantId;
+            var existingTenant = !string.IsNullOrWhiteSpace(request.Siret) 
+                ? await _tenantRepository.GetBySiretAsync(request.Siret) 
+                : null;
+            
+            if (existingTenant != null)
             {
-                Name = tenantName,
-                Identifier = taxId ?? string.Empty, // On peut stocker le SIRET ici aussi
-                Industry = industry,
-                Address = address,
-                Siret = taxId,
-                Plan = request.Plan
-            };
-            var tenantId = await _tenantRepository.CreateAsync(tenant);
+                // L'entreprise existe déjà, on rattache le nouvel utilisateur à ce tenant
+                _logger.LogInformation("Tenant existant trouvé pour le SIRET {Siret}, rattachement du nouvel utilisateur", request.Siret);
+                tenantId = existingTenant.Id;
+            }
+            else
+            {
+                // Création d'un nouveau Tenant
+                _logger.LogDebug("Création du tenant : {TenantName}", tenantName);
+                var tenant = new Tenant
+                {
+                    Name = tenantName,
+                    Identifier = taxId ?? string.Empty,
+                    Industry = industry,
+                    Address = address,
+                    Siret = taxId,
+                    Plan = request.Plan
+                };
+                tenantId = await _tenantRepository.CreateAsync(tenant);
+            }
 
-        // 3. Création du Rôle Admin par défaut
-        _logger.LogDebug("Création du rôle Admin pour le tenant ID : {TenantId}", tenantId);
-        var adminRole = new Role
+        // 3. Récupération ou création du Rôle Admin
+        _logger.LogDebug("Récupération du rôle Admin pour le tenant ID : {TenantId}", tenantId);
+        
+        // Chercher si un rôle Admin existe déjà pour ce tenant
+        var existingRoles = await _roleRepository.GetAllByTenantIdAsync(tenantId);
+        var adminRole = existingRoles.FirstOrDefault(r => r.Name == "Admin");
+        
+        Guid adminRoleId;
+        if (adminRole != null)
         {
-            TenantId = tenantId,
-            Name = "Admin",
-            Description = "Administrateur avec accès complet",
-            IsDefault = true
-        };
-        var adminRoleId = await _roleRepository.CreateAsync(adminRole);
+            // Le rôle Admin existe déjà (tenant existant)
+            _logger.LogDebug("Rôle Admin existant trouvé : {RoleId}", adminRole.Id);
+            adminRoleId = adminRole.Id;
+        }
+        else
+        {
+            // Créer un nouveau rôle Admin (nouveau tenant)
+            _logger.LogDebug("Création du rôle Admin pour le nouveau tenant");
+            var newAdminRole = new Role
+            {
+                TenantId = tenantId,
+                Name = "Admin",
+                Description = "Administrateur avec accès complet",
+                IsDefault = true
+            };
+            adminRoleId = await _roleRepository.CreateAsync(newAdminRole);
+        }
 
         // 4. Création de l'utilisateur Admin
         _logger.LogDebug("Création de l'utilisateur Admin : {Email}", request.Email);
@@ -111,15 +143,18 @@ public class TenantService : ITenantService
         _logger.LogDebug("Assignation du rôle Admin à l'utilisateur ID : {UserId}", userId);
         await _roleRepository.AssignRoleToUserAsync(userId, adminRoleId);
 
-        // 6. Assignation des Permissions par défaut
-        _logger.LogDebug("Attribution des permissions par défaut au rôle Admin");
-        var defaultPermissions = new[] { "users.read", "users.write", "roles.read", "roles.write" };
-        foreach (var permName in defaultPermissions)
+        // 6. Assignation des Permissions par défaut (uniquement pour les nouveaux rôles)
+        if (adminRole == null) // Si le rôle vient d'être créé
         {
-            var perm = await _permissionRepository.GetBySystemNameAsync(permName);
-            if (perm != null)
+            _logger.LogDebug("Attribution des permissions par défaut au rôle Admin");
+            var defaultPermissions = new[] { "users.read", "users.write", "roles.read", "roles.write" };
+            foreach (var permName in defaultPermissions)
             {
-                await _roleRepository.AddPermissionToRoleAsync(adminRoleId, perm.Id);
+                var perm = await _permissionRepository.GetBySystemNameAsync(permName);
+                if (perm != null)
+                {
+                    await _roleRepository.AddPermissionToRoleAsync(adminRoleId, perm.Id);
+                }
             }
         }
 

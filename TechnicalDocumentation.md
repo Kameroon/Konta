@@ -1,7 +1,7 @@
 # L'Encyclopédie Suprême de l'Architecture Konta ERP (Édition Architecte Master)
 
-**Dernière mise à jour**: 23 Janvier 2026
-**Version**: 50.0 (Networking Reliability & BCrypt Fix)
+**Dernière mise à jour**: 30 Janvier 2026
+**Version**: 51.0 (SIRET Uniqueness & Multi-User Registration)
 
 ---
 
@@ -23,6 +23,8 @@ L'interface a été entièrement repensée pour offrir une expérience premium :
 
 ### 1.3 Onboarding Intelligent & Gouvernance (Phase 6)
 - **SIRET Lookup Integration** : Intégration de l'API `recherche-entreprises.api.gouv.fr` pour une inscription simplifiée et fiabilisée.
+- **Contrainte SIRET UNIQUE** : La colonne `Siret` de la table `identity.Tenants` possède une contrainte SQL `UNIQUE` pour garantir qu'une même entreprise ne soit pas dupliquée.
+- **Multi-Utilisateurs par Tenant** : Le processus d'inscription détecte si un tenant avec le même SIRET existe déjà et rattache automatiquement le nouvel utilisateur à ce tenant existant au lieu de créer un doublon.
 - **SuperAdmin Support** : Introduction d'une couche de gestion "Plateforme" permettant aux administrateurs Konta de gérer l'ensemble des tenants depuis une interface unifiée.
 - **Isolation Dynamique** : Evolution du `TenantContext` pour supporter un mode `IsGlobalAdmin` permettant de lever l'isolation multi-tenant pour les besoins de maintenance et de support.
 
@@ -113,7 +115,7 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
     2. Le rôle Administrateur par défaut.
     3. Les permissions système initiales.
     4. L'utilisateur administrateur racine.
-- **`CompanyRegistryService.cs`** : Connecteur externe vers l'API Gouv (Siren/Siret). Gère le fallback en cas d'indisponibilité de l'API.
+- **`CompanyRegistryService.cs`** : Connecteur externe vers l'API Gouv (Siren/Siret). Intègre une vérification en base de données locale avant d'appeler l'API externe pour réduire la latence.
 - **`RoleService.cs`** : **[COMPLÉTÉ]** Gestion des rôles et assignation de permissions avec sécurité multi-tenant.
     - **`AssignPermissionAsync(roleId, request)`** : Assigne une permission à un rôle avec validations :
       1. **Vérification d'existence du rôle** : Récupère le rôle via `GetByIdAsync()`, lève une exception si inexistant
@@ -127,7 +129,7 @@ Le projet `Konta.Shared` est le cerveau technique de la solution. Il ne contient
 | Table | Colonne | Type SQL | Rôle et Contrainte |
 | :--- | :--- | :--- | :--- |
 | **Tenants** | `Plan` | TEXT | Niveau d'abonnement SaaS (Free, Premium, etc.). |
-| **Tenants** | `TaxId` | TEXT | Stockage du SIRET de l'entreprise. |
+| **Tenants** | `Siret` | TEXT UNIQUE | Numéro SIRET de l'entreprise (contrainte UNIQUE pour éviter les doublons). |
 | **Tenants** | `Industry` | TEXT | Secteur d'activité (Code APE récupéré via API). |
 | **Tenants** | `Address` | TEXT | Adresse officielle du siège social. |
 | **Users** | `Email` | TEXT UNIQUE | Identifiant de connexion indexé. |

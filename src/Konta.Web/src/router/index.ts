@@ -50,20 +50,29 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: 'download',
                 name: 'Download',
-                component: () => import('@/views/DocumentsView.vue'), // Shortcut to existing view for now
-                meta: { title: 'Téléchargement' }
+                component: () => import('@/views/DocumentsView.vue'),
+                meta: {
+                    title: 'Téléchargement',
+                    excludeRoles: ['SuperAdmin'] // Non accessible aux SuperAdmins
+                }
             },
             {
                 path: 'documents',
                 name: 'Documents',
                 component: () => import('@/views/ArchiveView.vue'),
-                meta: { title: 'Mes Documents' }
+                meta: {
+                    title: 'Mes Documents',
+                    excludeRoles: ['SuperAdmin']
+                }
             },
             {
                 path: 'extracted-data',
                 name: 'ExtractedData',
                 component: () => import('@/views/ExtractedDataView.vue'),
-                meta: { title: 'Données Extraites' }
+                meta: {
+                    title: 'Données Extraites',
+                    roles: ['SuperAdmin']
+                }
             },
             {
                 path: 'companies',
@@ -78,7 +87,10 @@ const routes: Array<RouteRecordRaw> = [
                 path: 'profile',
                 name: 'Profile',
                 component: () => import('@/views/ProfileView.vue'),
-                meta: { title: 'Mon Profil' }
+                meta: {
+                    title: 'Mon Profil',
+                    excludeRoles: ['SuperAdmin']
+                }
             },
             {
                 path: 'admin',
@@ -86,7 +98,16 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import('@/views/admin/AdminView.vue'),
                 meta: {
                     title: 'Utilisateurs',
-                    roles: ['Admin', 'SuperAdmin']
+                    roles: ['SuperAdmin']
+                }
+            },
+            {
+                path: 'settings',
+                name: 'Settings',
+                component: () => import('@/views/admin/SettingsView.vue'),
+                meta: {
+                    title: 'Paramètres',
+                    roles: ['SuperAdmin']
                 }
             }
         ]
@@ -129,7 +150,7 @@ router.beforeEach(async (to, from, next) => {
         return next({ name: 'Login', query: { redirect: to.fullPath } });
     }
 
-    // 2. Vérification des rôles (RBAC)
+    // 2. Vérification des rôles requis (RBAC)
     if (to.meta.roles) {
         const requiredRoles = to.meta.roles as string[];
         const userRole = authStore.user?.role || '';
@@ -144,9 +165,23 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-    // 3. Prévenir l'accès aux pages d'auth si déjà connecté
-    if (to.name === 'Login' && authStore.isAuthenticated) {
-        console.log('[Router] Utilisateur déjà connecté. Redirection vers le Dashboard.');
+    // 2b. Vérification des rôles exclus (certaines pages ne sont PAS accessibles à certains rôles)
+    if (to.meta.excludeRoles) {
+        const excludedRoles = to.meta.excludeRoles as string[];
+        const userRole = authStore.user?.role || '';
+
+        // Si l'utilisateur a un rôle exclu, on le redirige vers Dashboard
+        if (excludedRoles.includes(userRole)) {
+            console.warn(`[Router] Le rôle ${userRole} n'a pas accès à ${to.path}. Redirection.`);
+            return next({ name: 'Dashboard' });
+        }
+    }
+
+    // 3. Rediriger les utilisateurs déjà connectés vers le Dashboard
+    // Quand ils accèdent aux pages publiques (login, register, plans, home)
+    const publicPages = ['Login', 'Register', 'Plans', 'Home'];
+    if (publicPages.includes(to.name as string) && authStore.isAuthenticated) {
+        console.log('[Router] Utilisateur connecté. Redirection vers le Dashboard.');
         return next({ name: 'Dashboard' });
     }
 

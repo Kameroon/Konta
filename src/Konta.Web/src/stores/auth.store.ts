@@ -22,7 +22,8 @@ export const useAuthStore = defineStore('auth', () => {
     // --- Actions ---
 
     /**
-     * Enregistre un nouvel utilisateur et connecte automatiquement.
+     * Enregistre un nouvel utilisateur.
+     * NE connecte PAS automatiquement - redirige vers login.
      */
     async function register(data: import('@/types/auth.types').RegisterRequest) {
         loading.value = true;
@@ -30,8 +31,9 @@ export const useAuthStore = defineStore('auth', () => {
             console.log('[Auth Store] Inscription en cours...');
             await authApi.register(data);
 
-            // Après inscription, on connecte l'utilisateur
-            await login({ email: data.email, password: data.password });
+            // On ne connecte plus automatiquement après inscription
+            // L'utilisateur sera redirigé vers la page de login
+            console.log('[Auth Store] Inscription réussie, redirection vers login...');
             return true;
         } catch (error) {
             console.error('[Auth Store] Erreur lors de l\'inscription', error);

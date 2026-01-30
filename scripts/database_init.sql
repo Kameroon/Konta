@@ -1,7 +1,11 @@
 -- ==========================================================
 -- SCRIPT D'INITIALISATION DE LA BASE DE DONNÉES KONTA ERP
 -- Description: Schéma consolidé pour tous les microservices
--- Date: 22 Janvier 2026
+-- Date: 30 Janvier 2026
+-- Version: 51.0 (SIRET Uniqueness & Multi-User Registration)
+-- Notes:
+--   - La colonne Siret possède une contrainte UNIQUE
+--   - Le processus d'inscription permet plusieurs utilisateurs par tenant
 -- ==========================================================
 
 -- ----------------------------------------------------------
@@ -15,7 +19,7 @@ CREATE TABLE IF NOT EXISTS identity.Tenants (
     Identifier TEXT,
     Industry TEXT,
     Address TEXT,
-    Siret TEXT,
+    Siret TEXT UNIQUE,
     Plan TEXT NOT NULL DEFAULT 'Free',
     CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP WITH TIME ZONE,
@@ -25,6 +29,7 @@ CREATE TABLE IF NOT EXISTS identity.Tenants (
 COMMENT ON TABLE identity.Tenants IS 'Stocke les entreprises (tenants) utilisant la plateforme';
 COMMENT ON COLUMN identity.Tenants.Id IS 'Identifiant unique de l''entreprise (UUID)';
 COMMENT ON COLUMN identity.Tenants.Name IS 'Nom commercial officiel de l''entreprise';
+COMMENT ON COLUMN identity.Tenants.Siret IS 'Numéro SIRET unique de l''entreprise (contrainte UNIQUE pour éviter les doublons)';
 COMMENT ON COLUMN identity.Tenants.Plan IS 'Niveau d''abonnement SaaS (Free, Premium, Enterprise)';
 COMMENT ON COLUMN identity.Tenants.CreatedAt IS 'Horodatage de création du tenant';
 COMMENT ON COLUMN identity.Tenants.UpdatedAt IS 'Horodatage de la dernière modification du tenant';

@@ -15,6 +15,7 @@ const toast = useToast();
 
 const email = ref('admin@konta.com');
 const password = ref('password');
+const showPassword = ref(false);
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
 
@@ -91,13 +92,23 @@ const handleLogin = async () => {
 
         <div class="form-group">
           <label>Mot de passe</label>
-          <input 
-            v-model="password" 
-            type="password" 
-            placeholder="••••••••" 
-            required
-            :disabled="isSubmitting"
-          />
+          <div class="password-input-wrapper">
+            <input 
+              v-model="password" 
+              :type="showPassword ? 'text' : 'password'" 
+              placeholder="••••••••" 
+              required
+              :disabled="isSubmitting"
+            />
+            <button 
+              type="button" 
+              class="toggle-password" 
+              @click="showPassword = !showPassword"
+              tabindex="-1"
+            >
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
         </div>
 
         <button type="submit" class="login-btn" :disabled="isSubmitting">
@@ -221,6 +232,35 @@ input:focus {
   border-color: #42b883;
   background-color: white;
   box-shadow: 0 0 0 4px rgba(66, 184, 131, 0.1);
+}
+
+/* Password input wrapper */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 45px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #42b883;
 }
 
 .login-btn {

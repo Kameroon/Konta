@@ -227,7 +227,18 @@ const handleRegister = async () => {
       router.push({ name: 'Login' });
     }
   } catch (error: any) {
-    toast.error(error.response?.data?.message || 'Erreur lors de l\'inscription');
+    // Extraire les messages d'erreur du backend
+    let errorMessage = 'Erreur lors de l\'inscription';
+    
+    if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      // Si c'est un tableau d'erreurs, on les affiche toutes
+      errorMessage = error.response.data.errors.join(' ');
+    } else if (error.response?.data?.message) {
+      // Sinon on prend le message principal
+      errorMessage = error.response.data.message;
+    }
+    
+    toast.error(errorMessage);
   } finally {
     loading.value = false;
   }

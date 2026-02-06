@@ -206,7 +206,7 @@ const saveTenant = async () => {
   saving.value = true;
   try {
     if (tenantForm.id) {
-      await tenantApi.updateTenant(tenantForm.id, tenantForm);
+      await tenantApi.updateTenant(tenantForm.id as string, tenantForm);
       toast.success('Entreprise mise à jour.');
       await fetchTenants();
       showTenantModal.value = false;
@@ -384,10 +384,10 @@ const formatDate = (dateStr: string | null | undefined) => {
               </td>
               <td class="date-cell">{{ formatDate(comp.createdAt) }}</td>
               <td class="actions text-right">
-                <button v-if="!comp.isTenant" class="action-btn edit" @click="openEditModal(comp as any)" title="Editer">
+                <button v-if="!comp.isTenant" class="action-btn edit" @click="openEditModal(comp as unknown as Tier)" title="Editer">
                   <i class="fas fa-pen"></i>
                 </button>
-                <button v-if="!comp.isTenant" class="action-btn delete" @click="confirmDelete(comp as any)" title="Supprimer">
+                <button v-if="!comp.isTenant" class="action-btn delete" @click="confirmDelete(comp as unknown as Tier)" title="Supprimer">
                   <i class="fas fa-trash-alt"></i>
                 </button>
                 <button v-if="comp.isTenant" class="action-btn edit" @click="openTenantEditModal(tenants.find(t => t.id === comp.id)!)" title="Editer">

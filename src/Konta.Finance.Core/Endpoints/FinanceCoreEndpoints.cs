@@ -31,7 +31,11 @@ public static class FinanceCoreEndpoints
         group.MapGet("/tiers", async (ITenantContext tenantContext, TierType? type, ITierRepository repo) => 
         {
             if (!tenantContext.TenantId.HasValue) return Results.Unauthorized();
-            var tiers = await repo.GetByTenantIdAsync(tenantContext.TenantId.Value, type);
+            
+            // Si SuperAdmin, on peut voir TOUS les tiers de la plateforme
+            var idToFilter = tenantContext.IsGlobalAdmin ? Guid.Empty : tenantContext.TenantId.Value;
+            
+            var tiers = await repo.GetByTenantIdAsync(idToFilter, type);
             return Results.Ok(ApiResponse<object>.Ok(tiers));
         }).RequireAuthorization();
 

@@ -21,6 +21,21 @@ public record TenantResponse
     public string Plan { get; init; } = "Free";
 
     /// <summary>
+    /// Numéro SIRET de l'entreprise.
+    /// </summary>
+    public string? Siret { get; init; }
+
+    /// <summary>
+    /// Secteur d'activité.
+    /// </summary>
+    public string? Industry { get; init; }
+
+    /// <summary>
+    /// Adresse du siège social.
+    /// </summary>
+    public string? Address { get; init; }
+
+    /// <summary>
     /// Date de création de l'enregistrement.
     /// </summary>
     public DateTime CreatedAt { get; init; }

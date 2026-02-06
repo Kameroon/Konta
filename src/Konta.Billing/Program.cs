@@ -1,6 +1,7 @@
 using Konta.Billing.Extensions;
 using Konta.Billing.Endpoints;
 using Konta.Shared.Extensions;
+using Konta.Billing.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,13 @@ builder.Services
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
+
+// Initialisation de la base de données
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+    await initializer.InitializeAsync();
+}
 
 // 2. Pipeline HTTP
 app.UseExceptionHandler();

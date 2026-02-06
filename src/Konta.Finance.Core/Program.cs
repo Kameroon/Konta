@@ -24,6 +24,13 @@ builder.Services
 
 var app = builder.Build();
 
+// Initialisation de la base de données
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<Konta.Finance.Core.Data.DatabaseInitializer>();
+    await initializer.InitializeAsync();
+}
+
 // Configuration du pipeline de traitement des requêtes (Middleware)
 if (app.Environment.IsDevelopment())
 {

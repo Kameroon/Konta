@@ -1,0 +1,121 @@
+{
+    "Routes": [
+        {
+            "DownstreamPathTemplate": "/api/auth/register",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/auth/register",
+            "UpstreamHttpMethod": [
+                "Post"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/auth/login",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/auth/login",
+            "UpstreamHttpMethod": [
+                "Post"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/auth/refresh",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/auth/refresh",
+            "UpstreamHttpMethod": [
+                "Post"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/billing/plans",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-billing.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/billing/plans",
+            "UpstreamHttpMethod": [
+                "Get"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/billing/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-billing.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/billing/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/identity/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/identity/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/tenants/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/tenants/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        }
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "https://konta-gateway.redsky-dbe1f5d3.westeurope.azurecontainerapps.io"
+    }
+}

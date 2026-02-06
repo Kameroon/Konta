@@ -20,6 +20,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJournalRepository, JournalRepository>();
         services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
 
+        // Initialisation de la base de données
+        services.AddScoped<Konta.Finance.Data.DatabaseInitializer>();
+
         return services;
     }
 

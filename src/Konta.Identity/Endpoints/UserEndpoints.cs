@@ -17,6 +17,7 @@ public static class UserEndpoints
             .WithTags("Users")
             .RequireAuthorization();
 
+
         group.MapGet("/", async (ITenantContext tenantContext, IUserService userService) =>
         {
             if (!tenantContext.TenantId.HasValue) 

@@ -89,37 +89,38 @@ public class ReportingRepository : BaseRepository<ReportingRepository>, IReporti
         _logger.LogInformation("Génération du résumé complet du dashboard pour {Scope}", tenantId.HasValue ? $"Tenant {tenantId}" : "GLOBAL");
 
         string whereClause = tenantId.HasValue ? "WHERE TenantId = @TenantId" : "";
+        string tenantWhereClause = tenantId.HasValue ? "WHERE Id = @TenantId" : "";
         string revenueWhere = tenantId.HasValue 
             ? "WHERE JobId IN (SELECT Id FROM ocr.ExtractionJobs WHERE TenantId = @TenantId)" 
             : "";
 
         const string sqlSummary = @"
             SELECT 
-                (SELECT COUNT(*) FROM ocr.ExtractionJobs {0}) as TotalDocuments,
-                (SELECT COUNT(*) FROM finance_core.Tiers {1}) as TotalCompanies,
-                (SELECT COUNT(*) FROM identity.Users {2}) as TotalUsers,
-                (SELECT COALESCE(SUM(TotalAmountTtc), 0) FROM ocr.ExtractedInvoices {3}) as TotalRevenue";
+                (SELECT COUNT(*) FROM ocr.extractionjobs {0}) as TotalDocuments,
+                (SELECT COUNT(*) FROM identity.tenants {1}) as TotalCompanies,
+                (SELECT COUNT(*) FROM identity.users {2}) as TotalUsers,
+                (SELECT COALESCE(SUM(totalamountttc), 0) FROM ocr.extractedinvoices {3}) as TotalRevenue";
 
         const string sqlMonthlyDocs = @"
             SELECT to_char(CreatedAt, 'Mon') as Label, COUNT(*)::decimal as Value
-            FROM ocr.ExtractionJobs {0}
+            FROM ocr.extractionjobs {0}
             GROUP BY date_trunc('month', CreatedAt), to_char(CreatedAt, 'Mon')
             ORDER BY date_trunc('month', CreatedAt) DESC
             LIMIT 8";
 
         const string sqlMonthlyRev = @"
-            SELECT to_char(CreatedAt, 'Mon') as Label, SUM(TotalAmountTtc)::decimal as Value
-            FROM ocr.ExtractedInvoices {0}
+            SELECT to_char(CreatedAt, 'Mon') as Label, SUM(totalamountttc)::decimal as Value
+            FROM ocr.extractedinvoices {0}
             GROUP BY date_trunc('month', CreatedAt), to_char(CreatedAt, 'Mon')
             ORDER BY date_trunc('month', CreatedAt) DESC
             LIMIT 12";
 
         const string sqlTypes = @"
-            SELECT 'Factures' as Label, (SELECT COUNT(*)::decimal FROM ocr.ExtractedInvoices {0}) as Value
+            SELECT 'Factures' as Label, (SELECT COUNT(*)::decimal FROM ocr.extractedinvoices {0}) as Value
             UNION ALL
-            SELECT 'RIBs' as Label, (SELECT COUNT(*)::decimal FROM ocr.ExtractedRibs {1}) as Value";
+            SELECT 'RIBs' as Label, (SELECT COUNT(*)::decimal FROM ocr.extractedribs {1}) as Value";
 
-        var finalSqlSummary = string.Format(sqlSummary, whereClause, whereClause, whereClause, revenueWhere);
+        var finalSqlSummary = string.Format(sqlSummary, whereClause, tenantWhereClause, whereClause, revenueWhere);
         var finalSqlMonthlyDocs = string.Format(sqlMonthlyDocs, whereClause);
         var finalSqlMonthlyRev = string.Format(sqlMonthlyRev, revenueWhere);
         var finalSqlTypes = string.Format(sqlTypes, revenueWhere, revenueWhere);

@@ -1,8 +1,10 @@
 -- Database: Konta_Finance_Core
--- Description: Schéma pour le cœur opérationnel de la finance
+-- Schema: finance_core
+
+CREATE SCHEMA IF NOT EXISTS finance_core;
 
 -- Table des Tiers
-CREATE TABLE IF NOT EXISTS Tiers (
+CREATE TABLE IF NOT EXISTS finance_core.Tiers (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     Name TEXT NOT NULL,
@@ -16,10 +18,10 @@ CREATE TABLE IF NOT EXISTS Tiers (
 );
 
 -- Table des Factures Opérationnelles
-CREATE TABLE IF NOT EXISTS BusinessInvoices (
+CREATE TABLE IF NOT EXISTS finance_core.BusinessInvoices (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
-    TierId UUID NOT NULL REFERENCES Tiers(Id),
+    TierId UUID NOT NULL REFERENCES finance_core.Tiers(Id),
     Reference TEXT NOT NULL,
     AmountHt DECIMAL(18,2) NOT NULL,
     AmountTtc DECIMAL(18,2) NOT NULL,
@@ -34,7 +36,7 @@ CREATE TABLE IF NOT EXISTS BusinessInvoices (
 );
 
 -- Table de Trésorerie
-CREATE TABLE IF NOT EXISTS TreasuryAccounts (
+CREATE TABLE IF NOT EXISTS finance_core.TreasuryAccounts (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     Name TEXT NOT NULL,
@@ -47,7 +49,7 @@ CREATE TABLE IF NOT EXISTS TreasuryAccounts (
 );
 
 -- Table des Budgets
-CREATE TABLE IF NOT EXISTS Budgets (
+CREATE TABLE IF NOT EXISTS finance_core.Budgets (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     Category TEXT NOT NULL,
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Budgets (
 );
 
 -- Table des Alertes
-CREATE TABLE IF NOT EXISTS FinanceAlerts (
+CREATE TABLE IF NOT EXISTS finance_core.FinanceAlerts (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     Title TEXT NOT NULL,
@@ -76,8 +78,8 @@ CREATE TABLE IF NOT EXISTS FinanceAlerts (
 );
 
 -- Index
-CREATE INDEX IF NOT EXISTS idx_tiers_tenant ON Tiers(TenantId);
-CREATE INDEX IF NOT EXISTS idx_invoices_tenant ON BusinessInvoices(TenantId);
-CREATE INDEX IF NOT EXISTS idx_budgets_tenant ON Budgets(TenantId);
-CREATE INDEX IF NOT EXISTS idx_treasury_tenant ON TreasuryAccounts(TenantId);
-CREATE INDEX IF NOT EXISTS idx_alerts_tenant ON FinanceAlerts(TenantId, IsRead);
+CREATE INDEX IF NOT EXISTS idx_tiers_tenant ON finance_core.Tiers(TenantId);
+CREATE INDEX IF NOT EXISTS idx_invoices_tenant ON finance_core.BusinessInvoices(TenantId);
+CREATE INDEX IF NOT EXISTS idx_budgets_tenant ON finance_core.Budgets(TenantId);
+CREATE INDEX IF NOT EXISTS idx_treasury_tenant ON finance_core.TreasuryAccounts(TenantId);
+CREATE INDEX IF NOT EXISTS idx_alerts_tenant ON finance_core.FinanceAlerts(TenantId, IsRead);

@@ -14,15 +14,18 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly PostgresErrorService _errorService;
+    private readonly IPasswordHasher _passwordHasher;
     private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository userRepository, 
         PostgresErrorService errorService,
+        IPasswordHasher passwordHasher,
         ILogger<UserService> logger)
     {
         _userRepository = userRepository;
         _errorService = errorService;
+        _passwordHasher = passwordHasher;
         _logger = logger;
     }
 
@@ -33,6 +36,12 @@ public class UserService : IUserService
 
         try
         {
+            // Hachage du mot de passe avant insertion
+            if (!string.IsNullOrEmpty(user.PasswordHash))
+            {
+                user.PasswordHash = _passwordHasher.Hash(user.PasswordHash);
+            }
+
             // Création de l'utilisateur en base
             // La validation d'unicité est gérée par la base de données via les contraintes
             var userId = await _userRepository.CreateAsync(user);

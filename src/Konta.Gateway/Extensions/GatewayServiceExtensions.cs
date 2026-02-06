@@ -24,7 +24,8 @@ public static class GatewayServiceExtensions
             {
                 policy.WithOrigins(
                     "http://localhost:5173",
-                    "https://localhost:5173"
+                    "https://localhost:5173",
+                    "https://mango-plant-028033703.6.azurestaticapps.net"
                 )
                 .AllowAnyMethod()
                 .AllowAnyHeader()
@@ -44,8 +45,10 @@ public static class GatewayServiceExtensions
 
     public static IConfigurationBuilder AddOcelotConfig(this IConfigurationBuilder builder, IWebHostEnvironment environment)
     {
-        string folder = "Configuration/Ocelot";
-        builder.AddOcelot(folder, environment);
+        // Chargement depuis la racine pour plus de simplicité en production
+        builder.AddJsonFile("ocelot.json", optional: true, reloadOnChange: true);
+        builder.AddJsonFile($"ocelot.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+        
         return builder;
     }
 }

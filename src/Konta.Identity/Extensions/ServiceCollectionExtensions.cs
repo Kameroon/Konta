@@ -6,6 +6,7 @@ using Konta.Identity.Data.Repositories.Interfaces;
 using Konta.Shared.Data;
 using Konta.Shared.Extensions;
 using Konta.Shared.Middleware;
+using Konta.Identity.Data;
 
 namespace Konta.Identity.Extensions;
 
@@ -22,6 +23,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        // Initializer
+        services.AddScoped<DatabaseInitializer>();
 
         return services;
     }

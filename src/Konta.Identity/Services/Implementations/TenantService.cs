@@ -49,40 +49,44 @@ public class TenantService : ITenantService
 
         try
         {
-            // 0. Recherche SIRET si fourni
-            var tenantName = request.TenantName;
-            string? industry = null;
-            string? address = null;
-            string? taxId = request.Siret;
-
-            if (!string.IsNullOrWhiteSpace(request.Siret))
-            {
-                var registryData = await _registryService.LookupBySiretAsync(request.Siret);
-                if (registryData != null)
-                {
-                    _logger.LogInformation("Données SIRET récupérées pour {Siret} : {Name}", request.Siret, registryData.Name);
-                    tenantName = registryData.Name;
-                    industry = registryData.Industry;
-                    address = registryData.Address;
-                }
-            }
-
-            // 1. Vérifier si un tenant avec ce SIRET existe déjà
+            // 1. Vérifier d'abord si un tenant avec ce SIRET existe déjà localement
             Guid tenantId;
             var existingTenant = !string.IsNullOrWhiteSpace(request.Siret) 
                 ? await _tenantRepository.GetBySiretAsync(request.Siret) 
                 : null;
             
+            var tenantName = request.TenantName;
+            string? industry = null;
+            string? address = null;
+            string? taxId = request.Siret;
+
             if (existingTenant != null)
             {
-                // L'entreprise existe déjà, on rattache le nouvel utilisateur à ce tenant
-                _logger.LogInformation("Tenant existant trouvé pour le SIRET {Siret}, rattachement du nouvel utilisateur", request.Siret);
+                // L'entreprise existe déjà, on récupère ses infos
+                _logger.LogInformation("Tenant existant trouvé localement pour le SIRET {Siret}", request.Siret);
                 tenantId = existingTenant.Id;
+                tenantName = existingTenant.Name;
+                industry = existingTenant.Industry;
+                address = existingTenant.Address;
+                taxId = existingTenant.Siret;
             }
             else
             {
-                // Création d'un nouveau Tenant
-                _logger.LogDebug("Création du tenant : {TenantName}", tenantName);
+                // 2. Si non trouvé localement, on tente l'API gouvernementale
+                if (!string.IsNullOrWhiteSpace(request.Siret))
+                {
+                    var registryData = await _registryService.LookupBySiretAsync(request.Siret);
+                    if (registryData != null)
+                    {
+                        _logger.LogInformation("Données SIRET récupérées via API pour {Siret} : {Name}", request.Siret, registryData.Name);
+                        tenantName = registryData.Name;
+                        industry = registryData.Industry;
+                        address = registryData.Address;
+                    }
+                }
+
+                // 3. Création du nouveau Tenant
+                _logger.LogDebug("Création d'un nouveau tenant : {TenantName}", tenantName);
                 var tenant = new Tenant
                 {
                     Name = tenantName,
@@ -223,6 +227,9 @@ public class TenantService : ITenantService
             Id = tenant.Id,
             Name = tenant.Name,
             Plan = tenant.Plan,
+            Siret = tenant.Siret,
+            Industry = tenant.Industry,
+            Address = tenant.Address,
             CreatedAt = tenant.CreatedAt,
             UpdatedAt = tenant.UpdatedAt
         };

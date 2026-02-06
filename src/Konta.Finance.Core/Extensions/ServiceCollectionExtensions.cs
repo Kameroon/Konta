@@ -30,6 +30,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IFinanceAlertRepository, FinanceAlertRepository>();
 
+        // Initialisation de la base de données
+        services.AddScoped<Konta.Finance.Core.Data.DatabaseInitializer>();
+
         return services;
     }
 

@@ -16,35 +16,35 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
 
     public async Task<ExtractionJob?> GetByIdAsync(Guid id)
     {
-        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE Id = @Id";
+        const string sql = "SELECT * FROM ocr.extractionjobs WHERE Id = @Id";
         using var connection = CreateConnection(sql, new { Id = id });
         return await connection.QuerySingleOrDefaultAsync<ExtractionJob>(sql, new { Id = id });
     }
 
     public async Task<IEnumerable<ExtractionJob>> GetAllAsync()
     {
-        const string sql = "SELECT * FROM ocr.ExtractionJobs ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM ocr.extractionjobs ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql);
         return await connection.QueryAsync<ExtractionJob>(sql);
     }
 
     public async Task<IEnumerable<ExtractionJob>> GetByTenantIdAsync(Guid tenantId)
     {
-        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM ocr.extractionjobs WHERE TenantId = @TenantId ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql, new { TenantId = tenantId });
         return await connection.QueryAsync<ExtractionJob>(sql, new { TenantId = tenantId });
     }
 
     public async Task<IEnumerable<ExtractionJob>> GetByUserIdAsync(Guid userId)
     {
-        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE CreatedBy = @UserId ORDER BY CreatedAt DESC";
+        const string sql = "SELECT * FROM ocr.extractionjobs WHERE CreatedBy = @UserId ORDER BY CreatedAt DESC";
         using var connection = CreateConnection(sql, new { UserId = userId });
         return await connection.QueryAsync<ExtractionJob>(sql, new { UserId = userId });
     }
 
     public async Task<IEnumerable<ExtractionJob>> GetPendingJobsAsync()
     {
-        const string sql = "SELECT * FROM ocr.ExtractionJobs WHERE Status = @Status ORDER BY CreatedAt ASC";
+        const string sql = "SELECT * FROM ocr.extractionjobs WHERE Status = @Status ORDER BY CreatedAt ASC";
         using var connection = CreateConnection(sql, new { Status = JobStatus.Pending });
         return await connection.QueryAsync<ExtractionJob>(sql, new { Status = JobStatus.Pending });
     }
@@ -52,7 +52,7 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
     public async Task<Guid> CreateAsync(ExtractionJob job)
     {
         const string sql = @"
-            INSERT INTO ocr.ExtractionJobs (Id, TenantId, CreatedBy, FileName, FilePath, Status, CreatedAt)
+            INSERT INTO ocr.extractionjobs (Id, TenantId, CreatedBy, FileName, FilePath, Status, CreatedAt)
             VALUES (@Id, @TenantId, @CreatedBy, @FileName, @FilePath, @Status, @CreatedAt)
             RETURNING Id";
         using var connection = CreateConnection(sql, job);
@@ -62,7 +62,7 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
     public async Task<bool> UpdateStatusAsync(Guid id, JobStatus status, DocumentType type = DocumentType.Unknown, string? errorMessage = null)
     {
         const string sql = @"
-            UPDATE ocr.ExtractionJobs 
+            UPDATE ocr.extractionjobs 
             SET Status = @Status, DetectedType = @DetectedType, 
                 ErrorMessage = @ErrorMessage, ProcessedAt = @ProcessedAt, UpdatedAt = @UpdatedAt 
             WHERE Id = @Id";
@@ -103,14 +103,14 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
 
     public async Task<ExtractedInvoice?> GetInvoiceResultByJobIdAsync(Guid jobId)
     {
-        const string sql = "SELECT * FROM ocr.ExtractedInvoices WHERE JobId = @JobId";
+        const string sql = "SELECT * FROM ocr.extractedinvoices WHERE JobId = @JobId";
         using var connection = CreateConnection(sql, new { JobId = jobId });
         return await connection.QuerySingleOrDefaultAsync<ExtractedInvoice>(sql, new { JobId = jobId });
     }
 
     public async Task<ExtractedRib?> GetRibResultByJobIdAsync(Guid jobId)
     {
-        const string sql = "SELECT * FROM ocr.ExtractedRibs WHERE JobId = @JobId";
+        const string sql = "SELECT * FROM ocr.extractedribs WHERE JobId = @JobId";
         using var connection = CreateConnection(sql, new { JobId = jobId });
         return await connection.QuerySingleOrDefaultAsync<ExtractedRib>(sql, new { JobId = jobId });
     }
@@ -125,8 +125,8 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
         try
         {
             // On supprime d'abord les résultats potentiels (contraintes FK si existantes)
-            const string sqlDelResults = "DELETE FROM ocr.ExtractedInvoices WHERE JobId = @JobId; DELETE FROM ocr.ExtractedRibs WHERE JobId = @JobId;";
-            const string sqlDelJob = "DELETE FROM ocr.ExtractionJobs WHERE Id = @JobId";
+            const string sqlDelResults = "DELETE FROM ocr.extractedinvoices WHERE JobId = @JobId; DELETE FROM ocr.extractedribs WHERE JobId = @JobId;";
+            const string sqlDelJob = "DELETE FROM ocr.extractionjobs WHERE Id = @JobId";
             
             var parameters = new { JobId = job.Id };
             

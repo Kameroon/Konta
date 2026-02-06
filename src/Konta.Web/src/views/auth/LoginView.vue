@@ -41,12 +41,25 @@ const handleLogin = async () => {
     toast.success('Bienvenue sur Konta !');
     
     // Logique de redirection basée sur le rôle
-    if (authStore.user?.role === 'Admin' || authStore.user?.role === 'SuperAdmin') {
+    if (authStore.user?.role === 'SuperAdmin') {
       router.push({ name: 'Admin' });
     } else {
-      // Redirection vers la page demandée initialement ou vers le dashboard utilisateur
-      const redirectPath = route.query.redirect as string || '/app/dashboard';
-      router.push(redirectPath);
+      // Pour les autres rôles (Admin/Manager, Accountant, User)
+      // On vérifie si une redirection est demandée
+      let redirectPath = route.query.redirect as string;
+      
+      // Sécurité : On empêche explicitement la redirection vers /app/admin si on n'est pas SuperAdmin
+      // Même si elle est dans l'URL (ex: cache, bookmark, ancienne session)
+      if (redirectPath && (redirectPath.includes('/admin') || redirectPath.includes('/companies') || redirectPath.includes('/extracted-data'))) {
+        console.warn('[LoginView] Redirection vers page protégée bloquée, redirection vers Dashboard.');
+        redirectPath = ''; // On force le fallback
+      }
+
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
+        router.push({ name: 'Dashboard' });
+      }
     }
   } catch (err: any) {
     console.error('[LoginView] Erreur:', err);

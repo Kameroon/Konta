@@ -35,6 +35,17 @@ const isAdmin = computed(() => {
 const isSuperAdmin = computed(() => {
     return authStore.user?.role === 'SuperAdmin';
 });
+
+// Version dynamique basée sur le timestamp de build
+declare const __BUILD_TIME__: string;
+const buildVersion = computed(() => {
+    try {
+        const date = new Date(__BUILD_TIME__);
+        return `v${date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' })} - ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+    } catch {
+        return 'v1.0.0';
+    }
+});
 </script>
 
 <template>
@@ -84,6 +95,10 @@ const isSuperAdmin = computed(() => {
             <i class="fas fa-file-alt icon"></i> <span>Documents</span>
           </router-link>
 
+          <router-link to="/app/companies" class="nav-item" active-class="active">
+            <i class="fas fa-building icon"></i> <span>Partenaires</span>
+          </router-link>
+
           <router-link to="/app/profile" class="nav-item" active-class="active">
             <i class="fas fa-user-circle icon"></i> <span>Profil</span>
           </router-link>
@@ -114,6 +129,9 @@ const isSuperAdmin = computed(() => {
         <button @click="handleLogout" class="logout-btn">
           <i class="fas fa-sign-out-alt icon"></i> <span v-if="uiStore.isSidebarOpen">Déconnexion</span>
         </button>
+        <div class="version-info" v-if="uiStore.isSidebarOpen">
+          {{ buildVersion }}
+        </div>
       </div>
     </aside>
 
@@ -345,6 +363,15 @@ const isSuperAdmin = computed(() => {
 .sidebar-footer {
   padding: 1rem 0.8rem;
   border-top: 1px solid #f1f5f9;
+}
+
+.version-info {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
 }
 
 /* Top Bar Styling */

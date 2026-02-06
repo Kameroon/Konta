@@ -137,6 +137,28 @@ const openEditModal = (user: UserInfo) => {
 const saveUser = async () => {
   saving.value = true;
   try {
+    // Validation du formulaire
+    if (!userForm.firstName || !userForm.lastName || !userForm.email) {
+      toast.warning('Veuillez remplir tous les champs obligatoires (Prénom, Nom, Email).');
+      saving.value = false;
+      return;
+    }
+
+    // Validation email simple
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userForm.email)) {
+      toast.warning('Veuillez saisir une adresse email valide.');
+      saving.value = false;
+      return;
+    }
+
+    // Validation mot de passe en création
+    if (!isEditing.value && (!userForm.password || userForm.password.length < 6)) {
+      toast.warning('Le mot de passe doit contenir au moins 6 caractères.');
+      saving.value = false;
+      return;
+    }
+
     // Nettoyage de l'objet pour éviter les erreurs de binding Guid ("" n'est pas un Guid valide)
     const payload = { ...userForm };
     if (!isEditing.value || !payload.id) {
@@ -158,8 +180,9 @@ const saveUser = async () => {
     }
     await fetchUsers();
     showModal.value = false;
-  } catch (err) {
-    toast.error('Échec de l\'opération.');
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || 'Échec de l\'opération.';
+    toast.error(errorMsg);
   } finally {
     saving.value = false;
   }

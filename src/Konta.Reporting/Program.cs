@@ -22,6 +22,13 @@ builder.Services
 
 var app = builder.Build();
 
+// Initialisation de la base de données
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<Konta.Reporting.Data.DatabaseInitializer>();
+    await initializer.InitializeAsync();
+}
+
 // Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {

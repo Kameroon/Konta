@@ -24,7 +24,7 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         _logger.LogDebug("Accès DB : Recherche utilisateur par email: {Email}", email);
-        const string sql = "SELECT * FROM identity.Users WHERE Email = @Email";
+        const string sql = "SELECT * FROM identity.Users WHERE LOWER(Email) = LOWER(@Email)";
         using var connection = CreateConnection(sql, new { Email = email });
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
     }

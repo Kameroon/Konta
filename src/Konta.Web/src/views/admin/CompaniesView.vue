@@ -14,8 +14,21 @@ const toast = useToast();
 const authStore = useAuthStore();
 
 /**
- * CompaniesView : Gestion des Tiers (Clients & Fournisseurs).
+ * CompaniesView : Gestion polymorphe des Entreprises (Tenants) et des Tiers.
  */
+
+interface DisplayItem {
+  id: string;
+  name: string;
+  type: string;
+  taxId: string;
+  address: string;
+  tenantId: string;
+  isActive: boolean;
+  createdAt: string;
+  isTenant: boolean;
+  industry?: string;
+}
 
 const companies = ref<Tier[]>([]);
 const tenants = ref<TenantResponse[]>([]);
@@ -26,6 +39,44 @@ const saving = ref(false);
 
 const isSuperAdmin = computed(() => authStore.user?.role === 'SuperAdmin');
 
+// Ce que nous affichons réellement dans le tableau
+const displayItems = computed(() => {
+  if (isSuperAdmin.value && !selectedTenantFilter.value) {
+    // Mode "Gestion des SaaS Clients" (Tenants)
+    return tenants.value.map(t => ({
+      id: t.id,
+      name: t.name,
+      type: t.plan,
+      taxId: t.siret || '—',
+      address: t.address || '—',
+      tenantId: t.id,
+      isActive: true, // Les tenants sont actifs par défaut ici
+      createdAt: t.createdAt,
+      isTenant: true,
+      industry: t.industry
+    }));
+  }
+
+  // Mode "Gestion des Tiers" (Clients/Fournisseurs)
+  let source = companies.value;
+  if (isSuperAdmin.value && selectedTenantFilter.value) {
+    source = source.filter(c => c.tenantId === selectedTenantFilter.value);
+  }
+
+  return source.map(c => ({
+    id: c.id,
+    name: c.name,
+    type: c.type === TierType.Client ? 'Client' : 'Fournisseur',
+    taxId: c.taxId || '—',
+    address: c.address || '—',
+    tenantId: c.tenantId,
+    isActive: c.isActive,
+    createdAt: c.createdAt,
+    isTenant: false,
+    industry: ''
+  }));
+});
+
 // Modale & Formulaire
 const showModal = ref(false);
 const isEditing = ref(false);
@@ -33,6 +84,7 @@ const isEditing = ref(false);
 // Modern Deletion Confirmation
 const showDeleteConfirm = ref(false);
 const tierToDelete = ref<Tier | null>(null);
+const tenantToDelete = ref<TenantResponse | null>(null);
 const isDeleting = ref(false);
 const tierForm = reactive<Partial<Tier>>({
   id: '',
@@ -42,6 +94,17 @@ const tierForm = reactive<Partial<Tier>>({
   taxId: '',
   address: '',
   isActive: true
+});
+
+// Tenant Edit Form
+const showTenantModal = ref(false);
+const tenantForm = reactive<Partial<TenantResponse>>({
+  id: '',
+  name: '',
+  plan: '',
+  industry: '',
+  address: '',
+  siret: ''
 });
 
 // Pagination et Tri
@@ -80,11 +143,7 @@ const fetchCompanies = async () => {
 };
 
 const sortedAndFilteredCompanies = computed(() => {
-  let result = [...companies.value];
-
-  if (isSuperAdmin.value && selectedTenantFilter.value) {
-    result = result.filter(c => c.tenantId === selectedTenantFilter.value);
-  }
+  let result = [...displayItems.value];
 
   if (searchCompany.value) {
     const s = searchCompany.value.toLowerCase();
@@ -136,6 +195,30 @@ const openEditModal = (tier: Tier) => {
   showModal.value = true;
 };
 
+// Ouvrir la modale d'édition pour un Tenant
+const openTenantEditModal = (tenant: TenantResponse) => {
+  Object.assign(tenantForm, { ...tenant });
+  showTenantModal.value = true;
+};
+
+// Sauvegarder les modifications d'un Tenant
+const saveTenant = async () => {
+  saving.value = true;
+  try {
+    if (tenantForm.id) {
+      await tenantApi.updateTenant(tenantForm.id, tenantForm);
+      toast.success('Entreprise mise à jour.');
+      await fetchTenants();
+      showTenantModal.value = false;
+    }
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || 'Échec de la mise à jour.';
+    toast.error(errorMsg);
+  } finally {
+    saving.value = false;
+  }
+};
+
 const saveTier = async () => {
   saving.value = true;
   try {
@@ -165,23 +248,41 @@ const saveTier = async () => {
 
 const confirmDelete = (tier: Tier) => {
   tierToDelete.value = tier;
+  tenantToDelete.value = null;
+  showDeleteConfirm.value = true;
+};
+
+// Confirmation de suppression d'un Tenant
+const confirmDeleteTenant = (tenant: TenantResponse) => {
+  tenantToDelete.value = tenant;
+  tierToDelete.value = null;
   showDeleteConfirm.value = true;
 };
 
 const handleDelete = async () => {
-  if (!tierToDelete.value) return;
-  
   try {
     isDeleting.value = true;
-    await financeApi.deleteTier(tierToDelete.value.id);
-    companies.value = companies.value.filter(c => c.id !== tierToDelete.value!.id);
-    toast.success('Entreprise supprimée.');
+    
+    if (tierToDelete.value) {
+      // Suppression d'un Tier
+      await financeApi.deleteTier(tierToDelete.value.id);
+      companies.value = companies.value.filter(c => c.id !== tierToDelete.value!.id);
+      toast.success('Entreprise supprimée.');
+    } else if (tenantToDelete.value) {
+      // Suppression d'un Tenant
+      await tenantApi.deleteTenant(tenantToDelete.value.id);
+      tenants.value = tenants.value.filter(t => t.id !== tenantToDelete.value!.id);
+      toast.success('Tenant supprimé.');
+    }
+    
     showDeleteConfirm.value = false;
-  } catch (err) {
-    toast.error('Erreur lors de la suppression.');
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || 'Erreur lors de la suppression.';
+    toast.error(errorMsg);
   } finally {
     isDeleting.value = false;
     tierToDelete.value = null;
+    tenantToDelete.value = null;
   }
 };
 
@@ -208,10 +309,10 @@ const formatDate = (dateStr: string | null | undefined) => {
     </div>
 
     <div class="stats-grid">
-      <StatCard label="Total Tiers" :value="companies.length" icon="fas fa-building" color="#3182ce" />
-      <StatCard label="Clients" :value="companies.filter(c => c.type === TierType.Client).length" icon="fas fa-user-tie" color="#38a169" />
-      <StatCard label="Fournisseurs" :value="companies.filter(c => c.type === TierType.Supplier).length" icon="fas fa-truck" color="#805ad5" />
-      <StatCard label="Actifs" :value="companies.filter(c => c.isActive).length" icon="fas fa-check-circle" color="#3182ce" />
+      <StatCard :label="isSuperAdmin && !selectedTenantFilter ? 'Total Entreprises' : 'Total Tiers'" :value="sortedAndFilteredCompanies.length" icon="fas fa-building" color="#3182ce" />
+      <StatCard :label="isSuperAdmin && !selectedTenantFilter ? 'Plans Expertise' : 'Clients'" :value="sortedAndFilteredCompanies.filter(c => isSuperAdmin && !selectedTenantFilter ? c.type.toLowerCase().includes('expert') : c.type === 'Client').length" icon="fas fa-user-tie" color="#38a169" />
+      <StatCard :label="isSuperAdmin && !selectedTenantFilter ? 'Plans Avancés' : 'Fournisseurs'" :value="sortedAndFilteredCompanies.filter(c => isSuperAdmin && !selectedTenantFilter ? c.type.toLowerCase().includes('avan') : c.type === 'Fournisseur').length" icon="fas fa-truck" color="#805ad5" />
+      <StatCard label="Actifs" :value="sortedAndFilteredCompanies.filter(c => c.isActive).length" icon="fas fa-check-circle" color="#3182ce" />
     </div>
 
     <div class="toolbar">
@@ -255,21 +356,25 @@ const formatDate = (dateStr: string | null | undefined) => {
             <tr v-for="comp in paginatedCompanies" :key="comp.id">
               <td>
                 <div class="company-cell">
-                  <div class="logo-box">{{ comp.name.charAt(0) }}</div>
+                  <div class="logo-box">{{ comp.name?.charAt(0) || '?' }}</div>
                   <div class="company-details">
                     <span class="company-name">{{ comp.name }}</span>
+                    <span class="company-address" v-if="comp.isTenant && comp.industry">{{ comp.industry }}</span>
                   </div>
                 </div>
               </td>
               <td>
-                <span class="type-pill" :class="comp.type === TierType.Client ? 'client' : 'supplier'">
-                  {{ comp.type === TierType.Client ? 'Client' : 'Fournisseur' }}
+                <span class="type-pill" :class="{ 'client': comp.type === 'Client' || comp.isTenant, 'supplier': comp.type === 'Fournisseur' }">
+                  {{ comp.type }}
                 </span>
               </td>
               <td class="tax-cell">{{ comp.taxId || '—' }}</td>
               <td class="address-cell">{{ comp.address || '—' }}</td>
-              <td v-if="isSuperAdmin" class="tenant-cell">
+              <td v-if="isSuperAdmin && !comp.isTenant" class="tenant-cell">
                 <span class="t-badge">{{ tenants.find(t => t.id === comp.tenantId)?.name || '...' }}</span>
+              </td>
+              <td v-else-if="isSuperAdmin && comp.isTenant" class="tenant-cell">
+                <span class="t-badge system">Plateforme</span>
               </td>
               <td>
                 <div class="status-indicator" :class="{ active: comp.isActive }">
@@ -279,10 +384,16 @@ const formatDate = (dateStr: string | null | undefined) => {
               </td>
               <td class="date-cell">{{ formatDate(comp.createdAt) }}</td>
               <td class="actions text-right">
-                <button class="action-btn edit" @click="openEditModal(comp)" title="Editer">
-                  <i class="fas fa-edit"></i>
+                <button v-if="!comp.isTenant" class="action-btn edit" @click="openEditModal(comp as any)" title="Editer">
+                  <i class="fas fa-pen"></i>
                 </button>
-                <button class="action-btn delete" @click="confirmDelete(comp)" title="Supprimer">
+                <button v-if="!comp.isTenant" class="action-btn delete" @click="confirmDelete(comp as any)" title="Supprimer">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+                <button v-if="comp.isTenant" class="action-btn edit" @click="openTenantEditModal(tenants.find(t => t.id === comp.id)!)" title="Editer">
+                  <i class="fas fa-pen"></i>
+                </button>
+                <button v-if="comp.isTenant" class="action-btn delete" @click="confirmDeleteTenant(tenants.find(t => t.id === comp.id)!)" title="Supprimer">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </td>
@@ -313,8 +424,10 @@ const formatDate = (dateStr: string | null | undefined) => {
     <!-- Modale de confirmation moderne -->
     <ConfirmModal
       :show="showDeleteConfirm"
-      title="Supprimer la fiche"
-      :message="`Supprimer définitivement l'entreprise '${tierToDelete?.name}' ? Cette action effacera toutes les données liées à ce tiers.`"
+      :title="tenantToDelete ? 'Supprimer le Tenant' : 'Supprimer la fiche'"
+      :message="tenantToDelete 
+        ? `Supprimer définitivement le tenant '${tenantToDelete?.name}' ? Cette action est irréversible et supprimera toutes les données associées.`
+        : `Supprimer définitivement l'entreprise '${tierToDelete?.name}' ? Cette action effacera toutes les données liées à ce tiers.`"
       confirmText="Supprimer"
       type="danger"
       :loading="isDeleting"
@@ -364,6 +477,50 @@ const formatDate = (dateStr: string | null | undefined) => {
 
         <div class="modal-actions-inline">
           <button type="button" class="btn-cancel" @click="showModal = false">Annuler</button>
+          <button type="submit" class="btn-submit" :disabled="saving">
+            <i class="fas fa-save"></i> {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </BaseModal>
+
+    <!-- Tenant Edit Modal -->
+    <BaseModal :show="showTenantModal" title="Modifier l'entreprise" @close="showTenantModal = false">
+      <form @submit.prevent="saveTenant" class="konta-form">
+        <div class="form-group">
+          <label>Nom de l'entreprise</label>
+          <input v-model="tenantForm.name" required placeholder="Ex: Konta Platform" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Plan d'abonnement</label>
+            <select v-model="tenantForm.plan">
+              <option value="discovery">Découverte</option>
+              <option value="basic">Basique</option>
+              <option value="advanced">Avancé</option>
+              <option value="premium">Premium</option>
+              <option value="expertise">Expertise</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>SIRET</label>
+            <input v-model="tenantForm.siret" placeholder="Ex: 78467169500079" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Secteur d'activité</label>
+          <input v-model="tenantForm.industry" placeholder="Ex: Technologie, Santé, Finance..." />
+        </div>
+
+        <div class="form-group">
+          <label>Adresse du siège</label>
+          <input v-model="tenantForm.address" placeholder="Ex: 123 rue de la Paix, Paris" />
+        </div>
+
+        <div class="modal-actions-inline">
+          <button type="button" class="btn-cancel" @click="showTenantModal = false">Annuler</button>
           <button type="submit" class="btn-submit" :disabled="saving">
             <i class="fas fa-save"></i> {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
           </button>

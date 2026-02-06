@@ -7,6 +7,10 @@ export default defineConfig({
   plugins: [
     vue(),
   ],
+  define: {
+    // Inject build timestamp for dynamic versioning
+    '__BUILD_TIME__': JSON.stringify(new Date().toISOString()),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<IExtractionJobRepository, ExtractionJobRepository>();
 
+        // Initialisation de la base de données
+        services.AddScoped<Konta.Ocr.Data.DatabaseInitializer>();
+
         return services;
     }
 

@@ -23,8 +23,8 @@ public class DbConnectionFactory : IDbConnectionFactory
     {
         var connection = new NpgsqlConnection(_connectionString);
         
-        // Si un TenantId est présent, on le prépare pour la session
-        if (_tenantContext.TenantId.HasValue)
+        // Si un TenantId est présent (et qu'on n'est pas Admin Global), on le prépare pour la session
+        if (_tenantContext.TenantId.HasValue && !_tenantContext.IsGlobalAdmin)
         {
             connection.StateChange += (s, e) =>
             {

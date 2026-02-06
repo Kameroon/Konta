@@ -50,7 +50,11 @@ public class TenantMiddleware
                 tenantContext.TenantId = tenantId;
 
                 // Si le TenantId est celui du système (tout à zéro), c'est un administrateur global
-                if (tenantId == Guid.Empty)
+                // OU si l'utilisateur possède le rôle SuperAdmin
+                var roleClaim = context.User.FindFirst(ClaimTypes.Role)?.Value 
+                                ?? context.User.FindFirst("role")?.Value;
+
+                if (tenantId == Guid.Empty || roleClaim == "SuperAdmin")
                 {
                     tenantContext.IsGlobalAdmin = true;
                 }

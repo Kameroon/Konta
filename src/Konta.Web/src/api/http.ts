@@ -9,7 +9,7 @@ import { useToast } from 'vue-toastification';
 const http: AxiosInstance = axios.create({
     // URL de base récupérée depuis les variables d'environnement (Vite)
     baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
-    timeout: 30000, // Timeout de 30 secondes
+    timeout: 60000, // Timeout de 60 secondes pour les cold starts Azure
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

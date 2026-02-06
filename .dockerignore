@@ -1,0 +1,34 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+**/bin/
+**/obj/
+
+# Git
+.git/
+.gitignore
+
+# Node modules (frontend)
+**/node_modules/
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Test results
+**/TestResults/
+
+# Docker
+**/Dockerfile*
+docker-compose*.yml
+
+# Misc
+*.md
+*.log

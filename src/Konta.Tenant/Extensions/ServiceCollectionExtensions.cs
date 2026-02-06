@@ -19,6 +19,9 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<ITenantRepository, TenantRepository>();
 
+        // Initialisation de la base de données
+        services.AddScoped<Konta.Tenant.Data.DatabaseInitializer>();
+
         return services;
     }
 

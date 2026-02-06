@@ -1,8 +1,10 @@
 -- Database: Konta_Ocr
--- Description: Schéma pour le microservice OCR et extraction intelligente
+-- Schema: ocr
+
+CREATE SCHEMA IF NOT EXISTS ocr;
 
 -- Table des Jobs
-CREATE TABLE IF NOT EXISTS ExtractionJobs (
+CREATE TABLE IF NOT EXISTS ocr.extractionjobs (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     FileName TEXT NOT NULL,
@@ -17,9 +19,9 @@ CREATE TABLE IF NOT EXISTS ExtractionJobs (
 );
 
 -- Table des Factures Extraites
-CREATE TABLE IF NOT EXISTS ExtractedInvoices (
+CREATE TABLE IF NOT EXISTS ocr.extractedinvoices (
     Id UUID PRIMARY KEY,
-    JobId UUID NOT NULL REFERENCES ExtractionJobs(Id),
+    JobId UUID NOT NULL REFERENCES ocr.extractionjobs(Id),
     VendorName TEXT,
     InvoiceNumber TEXT,
     InvoiceDate DATE,
@@ -34,9 +36,9 @@ CREATE TABLE IF NOT EXISTS ExtractedInvoices (
 );
 
 -- Table des RIB Extraits
-CREATE TABLE IF NOT EXISTS ExtractedRibs (
+CREATE TABLE IF NOT EXISTS ocr.extractedribs (
     Id UUID PRIMARY KEY,
-    JobId UUID NOT NULL REFERENCES ExtractionJobs(Id),
+    JobId UUID NOT NULL REFERENCES ocr.extractionjobs(Id),
     BankName TEXT,
     Iban TEXT,
     Bic TEXT,
@@ -47,6 +49,6 @@ CREATE TABLE IF NOT EXISTS ExtractedRibs (
 );
 
 -- Index
-CREATE INDEX IF NOT EXISTS idx_ocr_jobs_tenant ON ExtractionJobs(TenantId);
-CREATE INDEX IF NOT EXISTS idx_ocr_jobs_status ON ExtractionJobs(Status);
-CREATE INDEX IF NOT EXISTS idx_extracted_invoices_job ON ExtractedInvoices(JobId);
+CREATE INDEX IF NOT EXISTS idx_ocr_jobs_tenant ON ocr.extractionjobs(TenantId);
+CREATE INDEX IF NOT EXISTS idx_ocr_jobs_status ON ocr.extractionjobs(Status);
+CREATE INDEX IF NOT EXISTS idx_extracted_invoices_job ON ocr.extractedinvoices(JobId);

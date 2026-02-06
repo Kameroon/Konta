@@ -1,8 +1,10 @@
 -- Database: Konta_Reporting
--- Description: Schéma pour le microservice de Reporting et Analytics
+-- Schema: reporting
+
+CREATE SCHEMA IF NOT EXISTS reporting;
 
 -- Table des Snapshots (Historisation des indicateurs pour performance)
-CREATE TABLE IF NOT EXISTS ReportingSnapshots (
+CREATE TABLE IF NOT EXISTS reporting.ReportingSnapshots (
     Id UUID PRIMARY KEY,
     TenantId UUID NOT NULL,
     SnapshotType TEXT NOT NULL, -- 'MonthlySummary', 'YearlySummary'
@@ -14,8 +16,5 @@ CREATE TABLE IF NOT EXISTS ReportingSnapshots (
 );
 
 -- Index pour les recherches analytiques rapides
-CREATE INDEX IF NOT EXISTS idx_reporting_tenant_date ON ReportingSnapshots(TenantId, ReferenceDate);
-CREATE INDEX IF NOT EXISTS idx_reporting_type ON ReportingSnapshots(SnapshotType);
-
--- Note: Ce microservice effectue également des requêtes cross-database (via DB Links ou agrégation applicative)
--- pour récupérer les données fraîches depuis Konta_Finance_Core et Konta_Finance.
+CREATE INDEX IF NOT EXISTS idx_reporting_tenant_date ON reporting.ReportingSnapshots(TenantId, ReferenceDate);
+CREATE INDEX IF NOT EXISTS idx_reporting_type ON reporting.ReportingSnapshots(SnapshotType);

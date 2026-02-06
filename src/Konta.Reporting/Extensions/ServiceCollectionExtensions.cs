@@ -24,6 +24,9 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<IReportingRepository, ReportingRepository>();
 
+        // Initialisation de la base de données
+        services.AddScoped<Konta.Reporting.Data.DatabaseInitializer>();
+
         return services;
     }
 

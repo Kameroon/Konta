@@ -46,5 +46,6 @@ export interface RegisterRequest {
     email: string;
     password: string;
     tenantName: string;
+    siret?: string;
     plan: string;
 }

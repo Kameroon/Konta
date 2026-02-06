@@ -218,7 +218,12 @@ const handleRegister = async () => {
   loading.value = true;
   try {
     const success = await authStore.register({
-      ...form,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      password: form.password,
+      tenantName: form.tenantName,
+      siret: form.siret,
       plan: selectedPlan.value || 'free'
     });
     

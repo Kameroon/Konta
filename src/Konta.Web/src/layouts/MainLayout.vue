@@ -37,7 +37,6 @@ const isSuperAdmin = computed(() => {
 });
 
 // Version dynamique basée sur le timestamp de build
-declare const __BUILD_TIME__: string;
 const buildVersion = computed(() => {
     try {
         const date = new Date(__BUILD_TIME__);

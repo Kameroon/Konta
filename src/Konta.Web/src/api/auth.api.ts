@@ -1,5 +1,5 @@
 import http from './http';
-import type { LoginRequest, TokenResponse, RefreshRequest, UserInfo, RegisterRequest } from '@/types/auth.types';
+import type { LoginRequest, TokenResponse, RefreshRequest, UserInfo, RegisterRequest, UpdateProfileRequest } from '@/types/auth.types';
 import type { ApiResponse } from '@/types/common.types';
 
 /**
@@ -81,7 +81,7 @@ export const authApi = {
      * Met à jour le profil de l'utilisateur.
      * @param data Prénom et nom.
      */
-    async updateProfile(data: import('@/types/auth.types').UpdateProfileRequest): Promise<UserInfo> {
+    async updateProfile(data: UpdateProfileRequest): Promise<UserInfo> {
         console.log('[Auth API] Mise à jour du profil utilisateur.');
         const response = await http.put<ApiResponse<UserInfo>>('/api/auth/profile', data);
 

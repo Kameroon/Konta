@@ -26,4 +26,9 @@ public interface ITenantService
     /// Recherche une entreprise par son identifiant unique (SIRET ou slug).
     /// </summary>
     Task<TenantResponse?> GetTenantByIdentifierAsync(string identifier);
+
+    /// <summary>
+    /// Met à jour les informations d'une entreprise existante.
+    /// </summary>
+    Task<bool> UpdateTenantAsync(Guid id, UpdateTenantRequest request);
 }

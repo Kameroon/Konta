@@ -69,5 +69,16 @@ public static class TenantEndpoints
         .WithName("LookupTenantByIdentifier")
         .AllowAnonymous() // Endpoint public pour l'inscription
 ;
+
+        // PUT : Mise à jour d'une entreprise existante
+        group.MapPut("/{id:guid}", async (Guid id, UpdateTenantRequest request, ITenantService tenantService) =>
+        {
+            var success = await tenantService.UpdateTenantAsync(id, request);
+            return success 
+                ? Results.Ok(ApiResponse<object>.Ok(null, "L'entreprise a été mise à jour avec succès."))
+                : Results.NotFound(ApiResponse<object>.Fail("Impossible de mettre à jour : entreprise introuvable."));
+        })
+        .WithName("UpdateTenant")
+        .AddEndpointFilter<ValidationFilter<UpdateTenantRequest>>();
     }
 }

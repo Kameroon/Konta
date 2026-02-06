@@ -144,4 +144,30 @@ public class TenantService : ITenantService
             Plan = tenant.Plan
         };
     }
+
+    /// <inheritdoc />
+    public async Task<bool> UpdateTenantAsync(Guid id, UpdateTenantRequest request)
+    {
+        _logger.LogInformation("Mise à jour du tenant {Id}", id);
+        
+        // 1. Récupération du tenant existant
+        var existing = await _tenantRepository.GetByIdAsync(id);
+        if (existing == null)
+        {
+            _logger.LogWarning("Tenant {Id} introuvable pour mise à jour.", id);
+            return false;
+        }
+
+        // 2. Mise à jour des propriétés
+        existing.Name = request.Name;
+        existing.Industry = request.Industry;
+        existing.Address = request.Address;
+        existing.Siret = request.Siret;
+        existing.Plan = request.Plan;
+        existing.IsActive = request.IsActive;
+        existing.UpdatedAt = DateTime.UtcNow;
+
+        // 3. Persistance
+        return await _tenantRepository.UpdateAsync(existing);
+    }
 }

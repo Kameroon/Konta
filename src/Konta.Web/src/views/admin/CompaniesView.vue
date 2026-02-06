@@ -149,8 +149,7 @@ const sortedAndFilteredCompanies = computed(() => {
     const s = searchCompany.value.toLowerCase();
     result = result.filter(c => 
       c.name.toLowerCase().includes(s) || 
-      (c.taxId && c.taxId.toLowerCase().includes(s)) ||
-      (c.address && c.address.toLowerCase().includes(s))
+      (c.taxId && c.taxId.toLowerCase().includes(s))
     );
   }
 
@@ -343,7 +342,6 @@ const formatDate = (dateStr: string | null | undefined) => {
               </th>
               <th>Type</th>
               <th>SIRET</th>
-              <th>Adresse</th>
               <th v-if="isSuperAdmin">Tenant</th>
               <th>Statut</th>
               <th @click="handleSort('createdAt')" class="sortable">
@@ -369,7 +367,6 @@ const formatDate = (dateStr: string | null | undefined) => {
                 </span>
               </td>
               <td class="tax-cell">{{ comp.taxId || '—' }}</td>
-              <td class="address-cell">{{ comp.address || '—' }}</td>
               <td v-if="isSuperAdmin && !comp.isTenant" class="tenant-cell">
                 <span class="t-badge">{{ tenants.find(t => t.id === comp.tenantId)?.name || '...' }}</span>
               </td>
@@ -399,7 +396,7 @@ const formatDate = (dateStr: string | null | undefined) => {
               </td>
             </tr>
             <tr v-if="paginatedCompanies.length === 0 && !loading">
-              <td colspan="6" class="empty-state">
+              <td colspan="5" class="empty-state">
                 <i class="fas fa-building"></i>
                 <p>Aucun tiers répertorié.</p>
               </td>

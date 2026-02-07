@@ -1,7 +1,7 @@
 # L'Encyclopédie Suprême de l'Architecture Konta ERP (Édition Architecte Master)
 
-**Dernière mise à jour**: 30 Janvier 2026
-**Version**: 51.0 (SIRET Uniqueness & Multi-User Registration)
+**Dernière mise à jour**: 07 Février 2026
+**Version**: 52.0 (Backend Update Support & UI Customization)
 
 ---
 
@@ -28,6 +28,11 @@ L'interface a été entièrement repensée pour offrir une expérience premium :
 - **SuperAdmin Support** : Introduction d'une couche de gestion "Plateforme" permettant aux administrateurs Konta de gérer l'ensemble des tenants depuis une interface unifiée.
 - **Isolation Dynamique** : Evolution du `TenantContext` pour supporter un mode `IsGlobalAdmin` permettant de lever l'isolation multi-tenant pour les besoins de maintenance et de support.
 
+### 1.4 Support Mise à Jour & Personnalisation UI (Phase 10)
+- **Backend support for Tenant Updates** : Implémentation de l'endpoint `PUT /api/tenants/{id}` et de la logique de service pour permettre la modification des entreprises.
+- **UI Bold Sidebar Version** : Mise en gras de la chaîne de version dans la sidebar pour une meilleure visibilité technique.
+- **Footer Simplification** : Redirection des liens Produit/Société vers la page des plans et retrait des liens obsolètes.
+
 ### 1.1 Les Quatre Piliers Fondamentaux de Konta
 ---
 
@@ -49,6 +54,7 @@ La passerelle **Ocelot** agit comme le gardien et l'aiguilleur unique de l'écos
 | `/gateway/reporting/*` | `Konta.Reporting` | 5007 |
 | `/api/users` | `Konta.Identity` | 5001 |
 | `/api/finance-core/tiers` | `Konta.Finance.Core` | 5006 |
+| `/api/tenants/{id}` | `Konta.Tenant` | 5002 |
 
 > [!IMPORTANT]
 > **Routes Administratives** : Les routes `/api/users` et `/api/finance-core/tiers` sont essentielles pour les opérations CRUD. Elles doivent impérativement être configurées dans `ocelot.json` pour permettre au frontend de gérer les utilisateurs et les entreprises. Une priorité élevée est appliquée pour éviter les conflits de routage.
@@ -367,6 +373,7 @@ En cas d'erreur de base de données suspectée :
 ### `ITenantService`
 - `RegisterTenantAsync(request)` : Orchestration de l'inscription (Identity + Tenant DB).
 - `GetTenantByIdAsync(id)` : Lecture unitaire des informations de l'entreprise.
+- `UpdateTenantAsync(id, request)` : **[NOUVEAU]** Mise à jour des informations d'une entreprise existante.
 
 ### `IQuotaService`
 - `CheckQuotaAsync(tenantId, metric)` : Le "gardien" des limites SaaS.

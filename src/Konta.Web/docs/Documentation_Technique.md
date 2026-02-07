@@ -149,3 +149,11 @@ L'isolation est garantie au niveau PostgreSQL via la fonction `current_tenant_id
 - **RLS Integration** : Consolidation du script `database_init.sql` avec les politiques d'isolation PostgreSQL.
 - **Support Multi-SuperAdmin** : Extension du script d'initialisation pour inclure plusieurs comptes administrateurs plateforme (`admin` et `support`).
 - **Idempotence** : Optimisation des scripts SQL pour permettre des ré-exécutions sans erreurs.
+### [2026-02-06] LOT 9 — Fixes UI & Déploiement Azure
+- **Déploiement Automatisé** : Mise en place d'un workflow GitHub Actions pour Azure Static Web Apps.
+- **Erreurs TypeScript** : Résolution des conflits de types sur `RegisterRequest` et déclaration globale de `__BUILD_TIME__`.
+- **UI Tweaks** : Correction du texte blanc invisible sur fond clair et masquage de la colonne adresse.
+
+### [2026-02-07] LOT 10 — Support Mise à Jour & Personnalisation UI
+- **Backend Support** : Implémentation de `PUT /api/tenants/{id}` dans `Konta.Tenant` pour permettre la modification des entreprises.
+- **UI Customization** : Mise en gras de la version de build dans la sidebar et simplification des liens du footer (redirection stratégique vers `/plans`).

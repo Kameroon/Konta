@@ -80,7 +80,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import('@/views/admin/CompaniesView.vue'),
                 meta: {
                     title: 'Entreprises',
-                    roles: ['SuperAdmin', 'Admin', 'Manager']
+                    roles: ['SuperAdmin']
                 }
             },
             {

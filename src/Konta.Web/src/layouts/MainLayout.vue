@@ -134,10 +134,6 @@ const buildVersion = computed(() => {
           <router-link to="/app/documents" class="nav-item" active-class="active">
             <i class="fas fa-file-alt icon"></i> <span>Documents</span>
           </router-link>
-
-          <router-link v-if="!isAdminOnly" to="/app/companies" class="nav-item" active-class="active">
-            <i class="fas fa-building icon"></i> <span>Partenaires</span>
-          </router-link>
         </template>
 
         <!-- Only for SuperAdmins -->
@@ -151,8 +147,8 @@ const buildVersion = computed(() => {
           </router-link>
         </template>
 
-        <!-- Management Access: SuperAdmin, Admin, Manager -->
-        <router-link v-if="isSuperAdmin || isAdminOrManager" to="/app/admin" class="nav-item" active-class="active">
+        <!-- Management Access: SuperAdmin, Admin -->
+        <router-link v-if="isSuperAdmin || isAdminOnly" to="/app/admin" class="nav-item" active-class="active">
           <i class="fas fa-users-cog icon"></i> <span>Utilisateurs</span>
         </router-link>
 
@@ -164,6 +160,10 @@ const buildVersion = computed(() => {
           <i class="fas fa-user-shield icon"></i> <span>Accès</span>
         </router-link>
 
+        <!-- Profil only for non-SuperAdmins -->
+        <router-link v-if="!isSuperAdmin" to="/app/profile" class="nav-item" active-class="active">
+          <i class="fas fa-user-circle icon"></i> <span>Profil</span>
+        </router-link>
       </nav>
 
       <div class="sidebar-footer">

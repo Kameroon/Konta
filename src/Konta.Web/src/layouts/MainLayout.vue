@@ -41,6 +41,10 @@ const isAdminOrManager = computed(() => {
     return ['Admin', 'Manager'].includes(authStore.user?.role || '');
 });
 
+const isAdminOnly = computed(() => {
+    return authStore.user?.role === 'Admin';
+});
+
 // Menu Dynamique
 const menuItems = ref<NavigationItem[]>([]);
 const loadingMenu = ref(true);
@@ -131,7 +135,7 @@ const buildVersion = computed(() => {
             <i class="fas fa-file-alt icon"></i> <span>Documents</span>
           </router-link>
 
-          <router-link to="/app/companies" class="nav-item" active-class="active">
+          <router-link v-if="!isAdminOnly" to="/app/companies" class="nav-item" active-class="active">
             <i class="fas fa-building icon"></i> <span>Partenaires</span>
           </router-link>
         </template>
@@ -160,9 +164,6 @@ const buildVersion = computed(() => {
           <i class="fas fa-user-shield icon"></i> <span>Accès</span>
         </router-link>
 
-        <router-link to="/app/profile" class="nav-item" active-class="active">
-          <i class="fas fa-user-circle icon"></i> <span>Profil</span>
-        </router-link>
       </nav>
 
       <div class="sidebar-footer">

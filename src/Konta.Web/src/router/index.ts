@@ -98,7 +98,7 @@ const routes: Array<RouteRecordRaw> = [
                 component: () => import('@/views/admin/AdminView.vue'),
                 meta: {
                     title: 'Utilisateurs',
-                    roles: ['SuperAdmin']
+                    roles: ['SuperAdmin', 'Admin']
                 }
             },
             {

@@ -149,11 +149,15 @@ const buildVersion = computed(() => {
 
         <!-- Management Access: SuperAdmin, Admin, Manager -->
         <router-link v-if="isSuperAdmin || isAdminOrManager" to="/app/admin" class="nav-item" active-class="active">
-          <i class="fas fa-users-cog icon"></i> <span>Accès & Utilisateurs</span>
+          <i class="fas fa-users-cog icon"></i> <span>Utilisateurs</span>
         </router-link>
 
         <router-link v-if="isSuperAdmin" to="/app/settings" class="nav-item" active-class="active">
           <i class="fas fa-sliders-h icon"></i> <span>Paramètres</span>
+        </router-link>
+
+        <router-link v-if="isSuperAdmin" to="/app/access" class="nav-item" active-class="active">
+          <i class="fas fa-user-shield icon"></i> <span>Accès</span>
         </router-link>
 
         <router-link to="/app/profile" class="nav-item" active-class="active">

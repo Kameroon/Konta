@@ -46,14 +46,6 @@ const userForm = reactive<Partial<UserInfo>>({
   canSeeAllTenantData: false
 });
 
-// Access Management Modal
-const showAccessModal = ref(false);
-const accessForm = reactive({
-  userId: '',
-  fullName: '',
-  canSeeAllTenantData: false,
-  role: ''
-});
 
 // Pagination et Tri
 const currentPage = ref(1);
@@ -142,30 +134,6 @@ const openEditModal = (user: UserInfo) => {
   isEditing.value = true;
   Object.assign(userForm, { ...user });
   showModal.value = true;
-};
-
-const openAccessModal = (user: UserInfo) => {
-  accessForm.userId = user.id;
-  accessForm.fullName = `${user.firstName} ${user.lastName}`;
-  accessForm.canSeeAllTenantData = user.canSeeAllTenantData;
-  accessForm.role = user.role;
-  showAccessModal.value = true;
-};
-
-const saveAccess = async () => {
-  saving.value = true;
-  try {
-    await userApi.updateUser(accessForm.userId, { 
-      canSeeAllTenantData: accessForm.canSeeAllTenantData 
-    } as any);
-    toast.success('Permissions mises à jour.');
-    await fetchUsers();
-    showAccessModal.value = false;
-  } catch (err) {
-    toast.error('Erreur lors de la mise à jour des accès.');
-  } finally {
-    saving.value = false;
-  }
 };
 
 const saveUser = async () => {
@@ -345,9 +313,6 @@ const formatDate = (dateStr: string | null | undefined) => {
                 {{ tenants.find(t => t.id === user.tenantId)?.name || 'Système' }}
               </td>
               <td class="actions text-right">
-                <button class="action-btn access" @click="openAccessModal(user)" title="Paramétrer l'accès" v-if="user.role !== 'User'">
-                  <i class="fas fa-key"></i>
-                </button>
                 <button class="action-btn edit" @click="openEditModal(user)" title="Modifier">
                   <i class="fas fa-pen"></i>
                 </button>
@@ -453,41 +418,6 @@ const formatDate = (dateStr: string | null | undefined) => {
         </div>
       </form>
     </BaseModal>
-    
-    <!-- Access Management Modal -->
-    <BaseModal :show="showAccessModal" title="Paramétrage des Accès" @close="showAccessModal = false">
-      <div class="access-modal-content">
-        <div class="user-info-summary">
-          <div class="avatar-box">
-            {{ accessForm.fullName.charAt(0) }}
-          </div>
-          <div>
-            <h3>{{ accessForm.fullName }}</h3>
-            <span class="role-pill" :class="getRoleClass(accessForm.role)">{{ accessForm.role }}</span>
-          </div>
-        </div>
-
-        <div class="access-settings">
-          <div class="setting-item">
-            <div class="setting-text">
-              <h4>Visibilité Globale</h4>
-              <p>Permettre à cet utilisateur de consulter toutes les données de l'entreprise (Factures, Clients, KPIs) et non uniquement les siennes.</p>
-            </div>
-            <label class="toggle-sm">
-              <input type="checkbox" v-model="accessForm.canSeeAllTenantData" />
-              <span class="slider"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="modal-actions-inline">
-          <button type="button" class="btn-cancel" @click="showAccessModal = false">Annuler</button>
-          <button type="button" class="btn-submit" @click="saveAccess" :disabled="saving">
-            <i class="fas fa-save"></i> {{ saving ? 'Mise à jour...' : 'Confirmer' }}
-          </button>
-        </div>
-      </div>
-    </BaseModal>
   </div>
 </template>
 
@@ -563,59 +493,6 @@ const formatDate = (dateStr: string | null | undefined) => {
 .action-btn:hover { transform: translateY(-1px); }
 .action-btn.edit:hover { color: #3182ce; border-color: #3182ce; background: #ebf8ff; }
 .action-btn.delete:hover { color: #e53e3e; border-color: #e53e3e; background: #fff5f5; }
-.action-btn.access:hover { color: #d69e2e; border-color: #d69e2e; background: #fefcbf; }
-
-/* Access Modal Styles */
-.user-info-summary {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  background: #f8fafc;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-}
-.user-info-summary h3 { margin: 0; font-size: 1.1rem; color: #1e293b; }
-
-.setting-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-.setting-text h4 { margin: 0; font-size: 0.95rem; color: #1e293b; }
-.setting-text p { margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #64748b; line-height: 1.4; }
-
-/* Toggle Slider */
-.toggle-sm {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  display: inline-block;
-  flex-shrink: 0;
-}
-.toggle-sm input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #e2e8f0;
-  transition: .4s;
-  border-radius: 34px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px; width: 18px;
-  left: 3px; bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider { background-color: #38a169; }
-input:checked + .slider:before { transform: translateX(20px); }
 
 .konta-form { display: flex; flex-direction: column; gap: 1.5rem; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }

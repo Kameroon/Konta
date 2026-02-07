@@ -109,6 +109,15 @@ const routes: Array<RouteRecordRaw> = [
                     title: 'Paramètres',
                     roles: ['SuperAdmin']
                 }
+            },
+            {
+                path: 'access',
+                name: 'Access',
+                component: () => import('@/views/admin/AccessView.vue'),
+                meta: {
+                    title: 'Gestion des Accès',
+                    roles: ['SuperAdmin']
+                }
             }
         ]
     },

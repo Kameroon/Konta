@@ -157,3 +157,8 @@ L'isolation est garantie au niveau PostgreSQL via la fonction `current_tenant_id
 ### [2026-02-07] LOT 10 — Support Mise à Jour & Personnalisation UI
 - **Backend Support** : Implémentation de `PUT /api/tenants/{id}` dans `Konta.Tenant` pour permettre la modification des entreprises.
 - **UI Customization** : Mise en gras de la version de build dans la sidebar et simplification des liens du footer (redirection stratégique vers `/plans` et suppression des liens Sécurité, API, Carrières et Blog).
+### [2026-02-07] LOT 11 — Menu de Navigation Dynamique
+- **Gestion Dynamique** : Migration du menu de navigation (sidebar) d'une structure statique vers une gestion dynamique pilotée par la base de données.
+- **Admin Interface** : Ajout d'une interface de gestion dans les Paramètres (Settings) permettant aux SuperAdmins d'activer/désactiver des boutons, changer les libellés, les icônes et restreindre l'accès par rôle.
+- **Architecture** : Création du microservice Navigation intégré à `Konta.Identity` (Models, Repository, Service, Endpoints) et routage via Ocelot.
+- **Frontend** : Implémentation de `navigation.api.ts` et mise à jour de `MainLayout.vue` avec état de chargement et filtrage des droits côté client.

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { onMounted, computed, watch } from 'vue';
+import { onMounted, computed, watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUiStore } from '@/stores/ui.store';
 import { useTenantStore } from '@/stores/tenant.store';
 import { useToast } from 'vue-toastification';
 import Footer from '@/components/layout/Footer.vue';
+import { navigationApi, type NavigationItem } from '@/api/navigation.api';
 
 const authStore = useAuthStore();
 const uiStore = useUiStore();
@@ -34,6 +35,39 @@ const isAdmin = computed(() => {
 
 const isSuperAdmin = computed(() => {
     return authStore.user?.role === 'SuperAdmin';
+});
+
+// Menu Dynamique
+const menuItems = ref<NavigationItem[]>([]);
+const loadingMenu = ref(true);
+
+onMounted(async () => {
+    try {
+        const items = await navigationApi.getNavigationItems();
+        menuItems.value = items.filter(i => i.isVisible);
+    } catch (err) {
+        console.error('Erreur chargement menu', err);
+    } finally {
+        loadingMenu.value = false;
+    }
+});
+
+const filteredMenu = computed(() => {
+    const userRole = authStore.user?.role || 'User';
+    
+    return menuItems.value.filter(item => {
+        // Si aucun rôle n'est requis, c'est public
+        if (!item.requiredRole) return true;
+        
+        // SuperAdmin voit tout ce qui est configuré
+        if (userRole === 'SuperAdmin') return true;
+
+        // Sinon, on vérifie la correspondance ou la hiérarchie simple
+        if (item.requiredRole === 'User') return true; // Tout le monde voit 'User'
+        if (item.requiredRole === 'Admin') return userRole === 'Admin';
+        
+        return userRole === item.requiredRole;
+    });
 });
 
 // Version dynamique basée sur le timestamp de build
@@ -79,49 +113,22 @@ const buildVersion = computed(() => {
       </div>
       
       <nav class="nav-menu">
-        <!-- Dashboard is common for everyone -->
-        <router-link to="/app/dashboard" class="nav-item" active-class="active">
-          <i class="fas fa-th-large icon"></i> <span>Tableau de bord</span>
-        </router-link>
-
-        <!-- Only for non-SuperAdmins -->
-        <template v-if="!isSuperAdmin">
-          <router-link to="/app/download" class="nav-item" active-class="active">
-            <i class="fas fa-upload icon"></i> <span>Téléchargement</span>
-          </router-link>
-
-          <router-link to="/app/documents" class="nav-item" active-class="active">
-            <i class="fas fa-file-alt icon"></i> <span>Documents</span>
-          </router-link>
-
-          <router-link to="/app/companies" class="nav-item" active-class="active">
-            <i class="fas fa-building icon"></i> <span>Partenaires</span>
-          </router-link>
-
-          <router-link to="/app/profile" class="nav-item" active-class="active">
-            <i class="fas fa-user-circle icon"></i> <span>Profil</span>
+        <div v-if="loadingMenu" class="nav-loading">
+          <i class="fas fa-circle-notch fa-spin"></i>
+        </div>
+        
+        <template v-else>
+          <router-link 
+            v-for="item in filteredMenu" 
+            :key="item.id" 
+            :to="item.path" 
+            class="nav-item" 
+            active-class="active"
+          >
+            <i :class="[item.icon, 'icon']"></i> 
+            <span>{{ item.label }}</span>
           </router-link>
         </template>
-
-        <!-- Only for SuperAdmins -->
-        <template v-if="isSuperAdmin">
-          <router-link to="/app/extracted-data" class="nav-item" active-class="active">
-            <i class="fas fa-database icon"></i> <span>Données extraites</span>
-          </router-link>
-
-          <router-link to="/app/companies" class="nav-item" active-class="active">
-            <i class="fas fa-building icon"></i> <span>Entreprises</span>
-          </router-link>
-
-          <router-link to="/app/admin" class="nav-item" active-class="active">
-            <i class="fas fa-users icon"></i> <span>Utilisateurs</span>
-          </router-link>
-        </template>
-
-        <!-- Settings is common (or only SuperAdmin? User said SuperAdmin sees it. Others? User didn't mention it for Others, but typically it's needed) -->
-        <router-link v-if="isSuperAdmin" to="/app/settings" class="nav-item" active-class="active">
-          <i class="fas fa-cog icon"></i> <span>Paramètres</span>
-        </router-link>
       </nav>
 
       <div class="sidebar-footer">
@@ -321,6 +328,14 @@ const buildVersion = computed(() => {
 .nav-menu {
   flex: 1;
   padding: 0 0.8rem;
+}
+
+.nav-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+  color: #94a3b8;
+  font-size: 1.2rem;
 }
 
 .nav-item {

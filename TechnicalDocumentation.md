@@ -33,6 +33,11 @@ L'interface a été entièrement repensée pour offrir une expérience premium :
 - **UI Bold Sidebar Version** : Mise en gras de la chaîne de version dans la sidebar pour une meilleure visibilité technique.
 - **Footer Simplification** : Redirection des liens Produit/Société vers la page des plans et retrait des liens obsolètes (Sécurité, API, Carrières et Blog).
 
+### 1.5 Menu de Navigation Dynamique (Phase 11)
+- **Database Driven Menu** : Les éléments de la barre latérale sont désormais stockés en base de données (`identity.NavigationItems`).
+- **SuperAdmin Management Interface** : Intégration dans `SettingsView.vue` d'un gestionnaire permettant de modifier les libellés, icônes, routes et visibilité par rôle en temps réel.
+- **Dynamic Filtering** : Le frontend filtre automatiquement les éléments en fonction du rôle de l'utilisateur connecté and de l'état "Visible" configuré.
+
 ### 1.1 Les Quatre Piliers Fondamentaux de Konta
 ---
 

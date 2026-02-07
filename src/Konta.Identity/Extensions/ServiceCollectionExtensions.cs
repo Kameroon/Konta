@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<INavigationRepository, NavigationRepository>();
 
         // Initializer
         services.AddScoped<DatabaseInitializer>();
@@ -39,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<INavigationService, NavigationService>();
         
         // External Services
         services.AddHttpClient<ICompanyRegistryService, CompanyRegistryService>();

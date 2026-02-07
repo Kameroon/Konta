@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { useToast } from 'vue-toastification';
+import { navigationApi, type NavigationItem } from '@/api/navigation.api';
 
 /**
  * Vue des paramètres système - Réservée aux SuperAdmins.
@@ -19,6 +20,44 @@ const settings = ref({
 });
 
 const plans = ['Free', 'Basique', 'Avancée', 'Premium', 'Expertise'];
+
+// Navigation Management
+const menuItems = ref<NavigationItem[]>([]);
+const loadingMenu = ref(false);
+
+onMounted(async () => {
+    await fetchMenuItems();
+});
+
+const fetchMenuItems = async () => {
+    loadingMenu.value = true;
+    try {
+        menuItems.value = await navigationApi.getNavigationItems();
+    } catch (err) {
+        toast.error('Erreur lors du chargement du menu.');
+    } finally {
+        loadingMenu.value = false;
+    }
+};
+
+const toggleVisibility = async (item: NavigationItem) => {
+    try {
+        await navigationApi.updateNavigationItem(item.id, { isVisible: item.isVisible });
+        toast.success(`Visibilité de "${item.label}" mise à jour.`);
+    } catch (err) {
+        item.isVisible = !item.isVisible; // Revert
+        toast.error('Échec de la mise à jour.');
+    }
+};
+
+const updateItem = async (item: NavigationItem) => {
+    try {
+        await navigationApi.updateNavigationItem(item.id, { ...item });
+        toast.success(`Élément "${item.label}" enregistré.`);
+    } catch (err) {
+        toast.error('Échec de l\'enregistrement.');
+    }
+};
 
 const saveSettings = () => {
   // TODO: Appeler l'API pour sauvegarder les paramètres
@@ -90,6 +129,64 @@ const saveSettings = () => {
             <option v-for="plan in plans" :key="plan" :value="plan">{{ plan }}</option>
           </select>
         </div>
+      </div>
+    </div>
+
+    <!-- Gestion du Menu de Navigation -->
+    <div class="settings-full-card">
+      <h2><i class="fas fa-bars"></i> Gestion du Menu de Navigation</h2>
+      <p class="hint">Activez/Désactivez les boutons du menu et configurez les accès par rôle.</p>
+      
+      <div v-if="loadingMenu" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i> Chargement du menu...
+      </div>
+      
+      <div v-else class="menu-manager">
+        <table class="menu-table">
+          <thead>
+            <tr>
+              <th>Élément</th>
+              <th>Chemin</th>
+              <th>Rôle Requis</th>
+              <th>Ordre</th>
+              <th>Visibilité</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in menuItems" :key="item.id">
+              <td>
+                <div class="item-label-cell">
+                  <i :class="item.icon" class="item-icon"></i>
+                  <input v-model="item.label" class="inline-input" />
+                </div>
+              </td>
+              <td><input v-model="item.path" class="inline-input" /></td>
+              <td>
+                <select v-model="item.requiredRole" class="inline-select">
+                  <option :value="null">Tout le monde</option>
+                  <option value="User">Utilisateur</option>
+                  <option value="Admin">Administrateur</option>
+                  <option value="SuperAdmin">Super Administrateur</option>
+                </select>
+              </td>
+              <td class="order-cell">
+                <input type="number" v-model="item.displayOrder" class="inline-input-sm" />
+              </td>
+              <td>
+                <label class="toggle-sm">
+                  <input type="checkbox" v-model="item.isVisible" @change="toggleVisibility(item)" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <button class="btn-icon-save" @click="updateItem(item)" title="Enregistrer">
+                  <i class="fas fa-save"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -282,5 +379,130 @@ input:checked + .slider:before {
 .btn-save:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Menu Manager Styles */
+.settings-full-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.settings-full-card h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.menu-manager {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.menu-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.menu-table th {
+  text-align: left;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #64748b;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.menu-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.item-label-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.item-icon {
+  width: 20px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.inline-input {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.inline-input-sm {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  width: 60px;
+  text-align: center;
+}
+
+.inline-select {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.toggle-sm {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  display: inline-block;
+}
+
+.toggle-sm input { display: none; }
+
+.toggle-sm .slider { border-radius: 22px; }
+.toggle-sm .slider:before {
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+}
+
+input:checked + .toggle-sm .slider:before {
+  transform: translateX(18px);
+}
+
+.btn-icon-save {
+  background: #f1f5f9;
+  color: #3b82f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon-save:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.loading-state {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
 }
 </style>

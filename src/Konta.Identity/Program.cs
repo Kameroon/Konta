@@ -52,5 +52,6 @@ app.MapAuthEndpoints();
 app.MapRoleEndpoints();
 app.MapTenantEndpoints();
 app.MapUserEndpoints();
+app.MapNavigationEndpoints();
 
 app.Run();

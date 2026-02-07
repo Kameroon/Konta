@@ -167,6 +167,23 @@
                 "Put",
                 "Delete"
             ]
+        },
+        {
+            "DownstreamPathTemplate": "/api/navigation/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/navigation/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ]
         }
     ],
     "GlobalConfiguration": {

@@ -22,18 +22,15 @@
           <h4>Produit</h4>
           <ul>
             <li><router-link to="/plans">Tarifs</router-link></li>
-            <li><a href="#">Fonctionnalités</a></li>
-            <li><a href="#">Sécurité</a></li>
-            <li><a href="#">API</a></li>
+            <li><router-link to="/plans">Fonctionnalités</router-link></li>
           </ul>
         </div>
 
         <div class="footer-links">
           <h4>Société</h4>
           <ul>
-            <li><a href="#">À propos</a></li>
+            <li><router-link to="/plans">À propos</router-link></li>
             <li><a href="#">Blog</a></li>
-            <li><a href="#">Carrières</a></li>
             <li><a href="#">Contact</a></li>
           </ul>
         </div>

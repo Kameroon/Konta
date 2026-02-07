@@ -129,7 +129,7 @@ const buildVersion = computed(() => {
           <i class="fas fa-sign-out-alt icon"></i> <span v-if="uiStore.isSidebarOpen">Déconnexion</span>
         </button>
         <div class="version-info" v-if="uiStore.isSidebarOpen">
-          {{ buildVersion }}
+          <strong>{{ buildVersion }}</strong>
         </div>
       </div>
     </aside>

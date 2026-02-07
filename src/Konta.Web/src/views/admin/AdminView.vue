@@ -447,7 +447,7 @@ const formatDate = (dateStr: string | null | undefined) => {
 
 .tenant-filter {
   padding: 0.7rem 1rem; border: 1px solid #e2e8f0; border-radius: 10px;
-  background-color: white; outline: none; min-width: 200px;
+  background-color: white; outline: none; min-width: 200px; color: #1a202c;
 }
 
 .content-card {
@@ -500,6 +500,7 @@ const formatDate = (dateStr: string | null | undefined) => {
 .form-group label { font-size: 0.85rem; font-weight: 700; color: #4a5568; }
 .form-group input, .form-group select {
   padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; outline: none; transition: all 0.2s;
+  color: #1a202c;
 }
 .form-group input:focus, .form-group select:focus { border-color: #3182ce; }
 

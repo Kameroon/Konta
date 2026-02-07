@@ -238,6 +238,7 @@ input {
   font-size: 1rem;
   transition: all 0.2s;
   background-color: #f8fafc;
+  color: #1e293b;
 }
 
 input:focus {

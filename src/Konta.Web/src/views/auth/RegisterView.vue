@@ -331,6 +331,7 @@ input {
   font-size: 1rem;
   transition: all 0.2s;
   background: white;
+  color: #1a202c;
 }
 
 .form-row input {

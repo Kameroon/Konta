@@ -235,6 +235,7 @@ h3 i { color: #3182ce; }
 .user-select {
   padding: 0.75rem; border: 1.5px solid #e2e8f0; border-radius: 12px; outline: none;
   font-size: 0.95rem; background: #f8fafc; cursor: pointer; transition: all 0.2s;
+  color: #1a202c;
 }
 .user-select:focus { border-color: #3182ce; background: white; }
 

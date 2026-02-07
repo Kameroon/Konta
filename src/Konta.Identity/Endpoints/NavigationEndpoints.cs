@@ -15,7 +15,7 @@ public static class NavigationEndpoints
             .WithTags("Navigation")
             .RequireAuthorization();
 
-        group.MapGet("/", async (INavigationService navigationService) =>
+        group.MapGet("", async (INavigationService navigationService) =>
         {
             var items = await navigationService.GetAllAsync();
             return Results.Ok(items);

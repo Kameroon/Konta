@@ -60,6 +60,13 @@ public class TenantMiddleware
                 }
             }
 
+            // Extract CanSeeAllTenantData
+            var canSeeAllClaim = context.User.FindFirst("CanSeeAllTenantData")?.Value;
+            if (bool.TryParse(canSeeAllClaim, out var canSeeAll))
+            {
+                tenantContext.CanSeeAllTenantData = canSeeAll;
+            }
+
             if (Guid.TryParse(userIdClaim, out var userId))
             {
                 tenantContext.UserId = userId;

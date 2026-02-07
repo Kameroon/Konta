@@ -44,6 +44,7 @@ public class TokenService : ITokenService
             new(JwtRegisteredClaimNames.FamilyName, user.LastName),
             new("TenantId", tenantId),
             new("role", user.Role), // Keep legacy role for simple checks
+            new("CanSeeAllTenantData", user.CanSeeAllTenantData.ToString().ToLower()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
         

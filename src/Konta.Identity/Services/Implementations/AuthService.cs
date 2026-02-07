@@ -107,7 +107,8 @@ public class AuthService : IAuthService
                 LastName = user.LastName,
                 Role = user.Role,
                 Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
-                TenantId = user.TenantId
+                TenantId = user.TenantId,
+                CanSeeAllTenantData = user.CanSeeAllTenantData
             }
         };
     }
@@ -182,7 +183,8 @@ public class AuthService : IAuthService
                 LastName = user.LastName,
                 Role = user.Role,
                 Roles = new List<string> { user.Role }.Concat(permissions).Distinct().ToList(),
-                TenantId = user.TenantId
+                TenantId = user.TenantId,
+                CanSeeAllTenantData = user.CanSeeAllTenantData
             }
         };
     }

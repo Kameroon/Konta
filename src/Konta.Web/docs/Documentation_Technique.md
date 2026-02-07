@@ -156,4 +156,4 @@ L'isolation est garantie au niveau PostgreSQL via la fonction `current_tenant_id
 
 ### [2026-02-07] LOT 10 — Support Mise à Jour & Personnalisation UI
 - **Backend Support** : Implémentation de `PUT /api/tenants/{id}` dans `Konta.Tenant` pour permettre la modification des entreprises.
-- **UI Customization** : Mise en gras de la version de build dans la sidebar et simplification des liens du footer (redirection stratégique vers `/plans`).
+- **UI Customization** : Mise en gras de la version de build dans la sidebar et simplification des liens du footer (redirection stratégique vers `/plans` et suppression des liens Sécurité, API, Carrières et Blog).

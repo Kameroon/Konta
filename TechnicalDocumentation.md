@@ -31,7 +31,7 @@ L'interface a été entièrement repensée pour offrir une expérience premium :
 ### 1.4 Support Mise à Jour & Personnalisation UI (Phase 10)
 - **Backend support for Tenant Updates** : Implémentation de l'endpoint `PUT /api/tenants/{id}` et de la logique de service pour permettre la modification des entreprises.
 - **UI Bold Sidebar Version** : Mise en gras de la chaîne de version dans la sidebar pour une meilleure visibilité technique.
-- **Footer Simplification** : Redirection des liens Produit/Société vers la page des plans et retrait des liens obsolètes.
+- **Footer Simplification** : Redirection des liens Produit/Société vers la page des plans et retrait des liens obsolètes (Sécurité, API, Carrières et Blog).
 
 ### 1.1 Les Quatre Piliers Fondamentaux de Konta
 ---

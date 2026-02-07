@@ -30,7 +30,6 @@
           <h4>Société</h4>
           <ul>
             <li><router-link to="/plans">À propos</router-link></li>
-            <li><a href="#">Blog</a></li>
             <li><a href="#">Contact</a></li>
           </ul>
         </div>

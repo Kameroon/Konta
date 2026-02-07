@@ -169,6 +169,21 @@
             ]
         },
         {
+            "DownstreamPathTemplate": "/api/navigation",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/navigation",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post"
+            ]
+        },
+        {
             "DownstreamPathTemplate": "/api/navigation/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [

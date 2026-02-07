@@ -12,4 +12,5 @@ public record UserInfoResponse
     public string Role { get; init; } = string.Empty;
     public List<string> Roles { get; init; } = new();
     public Guid TenantId { get; init; }
+    public bool CanSeeAllTenantData { get; init; }
 }

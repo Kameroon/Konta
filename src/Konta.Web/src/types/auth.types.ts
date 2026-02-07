@@ -11,6 +11,7 @@ export interface UserInfo {
     role: string;
     tenantId: string;
     isActive: boolean;
+    canSeeAllTenantData: boolean;
     createdAt: string;
     password?: string;
 }

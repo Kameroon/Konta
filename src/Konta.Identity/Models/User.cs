@@ -35,5 +35,10 @@ public class User : BaseEntity
     /// <summary>
     /// Rôle principal de l'utilisateur.
     /// </summary>
-    public string Role { get; set; } = "User"; 
+    public string Role { get; set; } = "User";
+
+    /// <summary>
+    /// Indique si l'utilisateur (hors rôle User) peut consulter toutes les données de son entreprise.
+    /// </summary>
+    public bool CanSeeAllTenantData { get; set; } = false;
 }

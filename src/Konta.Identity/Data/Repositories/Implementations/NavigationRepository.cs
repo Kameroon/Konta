@@ -2,18 +2,16 @@ using Dapper;
 using Konta.Identity.Data.Repositories.Interfaces;
 using Konta.Identity.Models;
 using Konta.Shared.Data;
+using Konta.Shared.Data.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace Konta.Identity.Data.Repositories.Implementations;
 
-public class NavigationRepository : BaseRepository, INavigationRepository
+public class NavigationRepository : BaseRepository<NavigationRepository>, INavigationRepository
 {
-    private readonly ILogger<NavigationRepository> _logger;
-
     public NavigationRepository(IDbConnectionFactory connectionFactory, ILogger<NavigationRepository> logger) 
-        : base(connectionFactory)
+        : base(connectionFactory, logger)
     {
-        _logger = logger;
     }
 
     public async Task<IEnumerable<NavigationItem>> GetAllAsync()

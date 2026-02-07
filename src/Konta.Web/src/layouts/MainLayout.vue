@@ -37,6 +37,10 @@ const isSuperAdmin = computed(() => {
     return authStore.user?.role === 'SuperAdmin';
 });
 
+const isAdminOrManager = computed(() => {
+    return ['Admin', 'Manager'].includes(authStore.user?.role || '');
+});
+
 // Menu Dynamique
 const menuItems = ref<NavigationItem[]>([]);
 const loadingMenu = ref(true);
@@ -113,22 +117,48 @@ const buildVersion = computed(() => {
       </div>
       
       <nav class="nav-menu">
-        <div v-if="loadingMenu" class="nav-loading">
-          <i class="fas fa-circle-notch fa-spin"></i>
-        </div>
-        
-        <template v-else>
-          <router-link 
-            v-for="item in filteredMenu" 
-            :key="item.id" 
-            :to="item.path" 
-            class="nav-item" 
-            active-class="active"
-          >
-            <i :class="[item.icon, 'icon']"></i> 
-            <span>{{ item.label }}</span>
+        <router-link to="/app/dashboard" class="nav-item" active-class="active">
+          <i class="fas fa-th-large icon"></i> <span>Tableau de bord</span>
+        </router-link>
+
+        <!-- Common items for non-SuperAdmins -->
+        <template v-if="!isSuperAdmin">
+          <router-link to="/app/download" class="nav-item" active-class="active">
+            <i class="fas fa-upload icon"></i> <span>Téléchargement</span>
+          </router-link>
+
+          <router-link to="/app/documents" class="nav-item" active-class="active">
+            <i class="fas fa-file-alt icon"></i> <span>Documents</span>
+          </router-link>
+
+          <router-link to="/app/companies" class="nav-item" active-class="active">
+            <i class="fas fa-building icon"></i> <span>Partenaires</span>
           </router-link>
         </template>
+
+        <!-- Only for SuperAdmins -->
+        <template v-if="isSuperAdmin">
+          <router-link to="/app/extracted-data" class="nav-item" active-class="active">
+            <i class="fas fa-database icon"></i> <span>Données extraites</span>
+          </router-link>
+
+          <router-link to="/app/companies" class="nav-item" active-class="active">
+            <i class="fas fa-building icon"></i> <span>Entreprises</span>
+          </router-link>
+        </template>
+
+        <!-- Management Access: SuperAdmin, Admin, Manager -->
+        <router-link v-if="isSuperAdmin || isAdminOrManager" to="/app/admin" class="nav-item" active-class="active">
+          <i class="fas fa-users-cog icon"></i> <span>Accès & Utilisateurs</span>
+        </router-link>
+
+        <router-link v-if="isSuperAdmin" to="/app/settings" class="nav-item" active-class="active">
+          <i class="fas fa-sliders-h icon"></i> <span>Paramètres</span>
+        </router-link>
+
+        <router-link to="/app/profile" class="nav-item" active-class="active">
+          <i class="fas fa-user-circle icon"></i> <span>Profil</span>
+        </router-link>
       </nav>
 
       <div class="sidebar-footer">

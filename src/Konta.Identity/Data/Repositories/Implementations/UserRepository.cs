@@ -43,8 +43,8 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
     {
         _logger.LogInformation("Accès DB : Création utilisateur: {Email}", user.Email);
         const string sql = @"
-            INSERT INTO identity.Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role, IsActive, CreatedAt) 
-            VALUES (@Id, @TenantId, @Email, @PasswordHash, @FirstName, @LastName, @Role, @IsActive, @CreatedAt)
+            INSERT INTO identity.Users (Id, TenantId, Email, PasswordHash, FirstName, LastName, Role, IsActive, CanSeeAllTenantData, CreatedAt) 
+            VALUES (@Id, @TenantId, @Email, @PasswordHash, @FirstName, @LastName, @Role, @IsActive, @CanSeeAllTenantData, @CreatedAt)
             RETURNING Id";
         
         using var connection = CreateConnection(sql, user);
@@ -74,7 +74,7 @@ public class UserRepository : BaseRepository<UserRepository>, IUserRepository
         const string sql = @"
             UPDATE identity.Users 
             SET FirstName = @FirstName, LastName = @LastName, Role = @Role, 
-                IsActive = @IsActive, UpdatedAt = @UpdatedAt
+                IsActive = @IsActive, CanSeeAllTenantData = @CanSeeAllTenantData, UpdatedAt = @UpdatedAt
             WHERE Id = @Id";
         
         user.UpdatedAt = DateTime.UtcNow;

@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         // Enregistrement des services domaine
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<ITreasuryService, TreasuryService>();
+        services.AddScoped<IExtractionPromotionService, ExtractionPromotionService>();
 
         // Configuration de la documentation Swagger
         services.AddEndpointsApiExplorer();

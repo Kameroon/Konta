@@ -67,7 +67,15 @@ const triggerFileInput = () => {
     />
     
     <div class="upload-content">
-      <div class="icon">📄</div>
+      <div class="icon-wrapper">
+        <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+      </div>
       <h3>Déposez votre facture ici</h3>
       <p>ou cliquez pour choisir un fichier PDF</p>
       <div class="file-info">Maximum 10 Mo • Format PDF uniquement</div>
@@ -77,53 +85,69 @@ const triggerFileInput = () => {
 
 <style scoped>
 .upload-zone {
-  border: 2px dashed #e2e8f0;
-  border-radius: 16px;
-  padding: 3rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 24px;
+  padding: 5rem 3rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   background: white;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .upload-zone:hover {
-  border-color: #42b883;
-  background-color: #f0fdf4;
+  border-color: #7c3aed;
+  background-color: #f8fafc;
   transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
 .upload-zone.is-dragging {
-  border-color: #42b883;
-  background-color: #dcfce7;
-  transform: scale(1.02);
+  border-color: #7c3aed;
+  background-color: #f5f3ff;
+  transform: scale(1.01);
 }
 
 .hidden {
   display: none;
 }
 
-.upload-content .icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+.icon-wrapper {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.file-icon {
+  width: 64px;
+  height: 64px;
+  color: #c4b5fd; /* Soft purple from POC */
+  background: #f5f3ff;
+  padding: 12px;
+  border-radius: 12px;
 }
 
 .upload-content h3 {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: #1e293b;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .upload-content p {
   color: #64748b;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .file-info {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #94a3b8;
-  background: #f8fafc;
+  background: #f1f5f9;
   display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 99px;
+  font-weight: 500;
 }
 </style>

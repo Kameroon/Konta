@@ -317,22 +317,51 @@ const handleDelete = async () => {
           <i class="fas fa-file-invoice detail-icon"></i>
           <div class="header-info">
             <span class="doc-title">{{ selectedJob?.fileName }}</span>
-            <span class="doc-type">Type: Facture / Devis</span>
+            <div class="doc-meta">
+              <span class="doc-type">Type: Facture / Devis</span>
+              <span class="conf-badge" v-if="invoiceData.confidenceScore">
+                Score: {{ invoiceData.confidenceScore }}%
+              </span>
+            </div>
           </div>
         </div>
 
         <div class="details-grid">
+          <div class="detail-item full">
+            <label>Numéro de Facture</label>
+            <p class="detail-value">{{ invoiceData.invoiceNumber || 'Non détecté' }}</p>
+          </div>
+          
+          <div class="detail-item">
+            <label>SIREN Émetteur</label>
+            <p class="detail-value">{{ invoiceData.vendorSiret || 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>SIREN Destinataire</label>
+            <p class="detail-value">{{ invoiceData.customerSiret || 'Non détecté' }}</p>
+          </div>
+
+          <div class="detail-item full">
+            <label>Numéro de TVA</label>
+            <p class="detail-value">{{ invoiceData.vendorVatNumber || 'Non détecté' }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Date d'Émission</label>
+            <p class="detail-value">{{ invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate).toLocaleDateString('fr-FR') : 'Non détecté' }}</p>
+          </div>
+          <div class="detail-item">
+            <label>Date d'Échéance</label>
+            <p class="detail-value text-primary">{{ invoiceData.dueDate ? new Date(invoiceData.dueDate).toLocaleDateString('fr-FR') : 'Non détecté' }}</p>
+          </div>
+
+          <div class="detail-item full section-divider">
+            <label>Informations Complémentaires</label>
+          </div>
+
           <div class="detail-item">
             <label>Entreprise / Fournisseur</label>
             <p class="detail-value">{{ invoiceData.vendorName || 'Non détecté' }}</p>
-          </div>
-          <div class="detail-item">
-            <label>N° de Facture</label>
-            <p class="detail-value">{{ invoiceData.invoiceNumber || 'Non détecté' }}</p>
-          </div>
-          <div class="detail-item">
-            <label>Date du document</label>
-            <p class="detail-value">{{ invoiceData.invoiceDate ? new Date(invoiceData.invoiceDate).toLocaleDateString('fr-FR') : 'Non détecté' }}</p>
           </div>
           <div class="detail-item">
             <label>Devise</label>
@@ -541,6 +570,13 @@ const handleDelete = async () => {
 }
 .amount-val { color: #2d3748; }
 .total .amount-val { color: #3182ce; }
+.text-primary { color: #3182ce; }
+.section-divider { margin-top: 1rem; border-top: 1px solid #edf2f7; padding-top: 1rem; }
+.doc-meta { display: flex; align-items: center; gap: 10px; }
+.conf-badge {
+  background: #f0fff4; color: #22543d; padding: 2px 8px; border-radius: 6px;
+  font-size: 0.7rem; font-weight: 800; border: 1px solid #c6f6d5;
+}
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 1rem; }
 .btn-close-modal { padding: 0.75rem 1.5rem; border-radius: 10px; background: #f7fafc; border: 1px solid #e2e8f0; font-weight: 700; cursor: pointer; }

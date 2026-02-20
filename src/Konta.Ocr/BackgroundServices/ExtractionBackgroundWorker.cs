@@ -26,6 +26,9 @@ public class ExtractionBackgroundWorker : BackgroundService
             try
             {
                 using var scope = _serviceProvider.CreateScope();
+                var tenantContext = scope.ServiceProvider.GetRequiredService<Konta.Shared.Data.ITenantContext>();
+                tenantContext.IsGlobalAdmin = true; // Permettre au worker de voir tous les jobs (Bypass RLS)
+
                 var jobRepository = scope.ServiceProvider.GetRequiredService<IExtractionJobRepository>();
                 var extractionService = scope.ServiceProvider.GetRequiredService<IExtractionService>();
 

@@ -38,12 +38,17 @@ export interface ExtractedInvoice {
     id: string;
     jobId: string;
     vendorName?: string;
+    vendorSiret?: string;
+    customerSiret?: string;
+    vendorVatNumber?: string;
     invoiceNumber?: string;
     invoiceDate?: string;
+    dueDate?: string;
     totalAmountHt?: number;
     totalAmountTtc?: number;
     vatAmount?: number;
     currency?: string;
+    confidenceScore?: number;
     rawJson?: string;
 }
 

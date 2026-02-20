@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Konta.Shared\Konta.Shared.csproj" />
+    <ProjectReference Include="..\Konta.Ocr\Konta.Ocr.csproj" />
   </ItemGroup>
 
   <ItemGroup>

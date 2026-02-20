@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
         services.AddSharedInfrastructure(configuration);
         services.AddAuthenticationConfig(configuration);
 
+        // Configuration Azure AI
+        services.Configure<AzureAiOptions>(configuration.GetSection("AzureAI"));
+
         // Repositories
         services.AddScoped<IExtractionJobRepository, ExtractionJobRepository>();
 
@@ -28,13 +31,13 @@ public static class ServiceCollectionExtensions
     {
         // Extraction Services
         services.AddScoped<IPdfService, PdfService>();
-        services.AddScoped<IAiParsingService, AiParsingService>();
+        services.AddScoped<IAzureAiExtractionService, AzureAiExtractionService>();
         services.AddScoped<IExtractionService, ExtractionService>();
 
         // Background Worker
         services.AddHostedService<ExtractionBackgroundWorker>();
 
-        // HTTP Client pour l'IA
+        // HTTP Client pour l'IA (enregistre aussi IAiParsingService)
         services.AddHttpClient<IAiParsingService, AiParsingService>();
 
         // Swagger

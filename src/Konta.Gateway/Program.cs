@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddSerilogLogging("Konta.Gateway");
 
 // Configuration Ocelot
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+builder.Configuration.AddOcelotConfig(builder.Environment);
 
 builder.Services.AddGatewayServices(builder.Configuration);
 

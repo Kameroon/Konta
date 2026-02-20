@@ -84,8 +84,8 @@ public class ExtractionJobRepository : BaseRepository<ExtractionJobRepository>, 
     public async Task<bool> SaveInvoiceResultAsync(ExtractedInvoice invoice)
     {
         const string sql = @"
-            INSERT INTO ocr.ExtractedInvoices (Id, JobId, VendorName, InvoiceNumber, InvoiceDate, TotalAmountHt, TotalAmountTtc, VatAmount, Currency, RawJson, CreatedAt)
-            VALUES (@Id, @JobId, @VendorName, @InvoiceNumber, @InvoiceDate, @TotalAmountHt, @TotalAmountTtc, @VatAmount, @Currency, @RawJson::jsonb, @CreatedAt)";
+            INSERT INTO ocr.ExtractedInvoices (Id, JobId, VendorName, VendorSiret, CustomerSiret, VendorVatNumber, InvoiceNumber, InvoiceDate, DueDate, TotalAmountHt, TotalAmountTtc, VatAmount, Currency, ConfidenceScore, RawJson, CreatedAt)
+            VALUES (@Id, @JobId, @VendorName, @VendorSiret, @CustomerSiret, @VendorVatNumber, @InvoiceNumber, @InvoiceDate, @DueDate, @TotalAmountHt, @TotalAmountTtc, @VatAmount, @Currency, @ConfidenceScore, @RawJson::jsonb, @CreatedAt)";
         using var connection = CreateConnection(sql, invoice);
         var rows = await connection.ExecuteAsync(sql, invoice);
         return rows > 0;

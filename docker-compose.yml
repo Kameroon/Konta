@@ -13,15 +13,23 @@ services:
       - postgres
       - identity
       - finance
+    networks:
+      - konta-network
 
   identity:
     build:
       context: .
       dockerfile: src/Konta.Identity/Dockerfile
+    ports:
+      - "5001:8080"
     environment:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=konta_db;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - konta-network
 
   finance:
     build:
@@ -31,6 +39,10 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=konta_db;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - konta-network
 
   reporting:
     build:
@@ -40,6 +52,10 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=konta_db;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - konta-network
 
   ocr:
     build:
@@ -49,9 +65,13 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=konta_db;Username=postgres;Password=postgres
+    depends_on:
+      - postgres
+    networks:
+      - konta-network
 
   postgres:
-    image: postgres:latest
+    image: postgres:15-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -60,6 +80,12 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - konta-network
+
+networks:
+  konta-network:
+    driver: bridge
 
 volumes:
   postgres_data:

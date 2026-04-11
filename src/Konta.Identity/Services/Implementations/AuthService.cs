@@ -3,6 +3,9 @@ using Konta.Identity.DTOs;
 using Konta.Identity.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Konta.Tenant.Services.Interfaces;
+using Konta.Tenant.DTOs;
+using Konta.Identity.Models;
 
 namespace Konta.Identity.Services.Implementations;
 
@@ -16,6 +19,7 @@ public class AuthService : IAuthService
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
+    private readonly ITenantService _tenantService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
@@ -24,6 +28,7 @@ public class AuthService : IAuthService
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
+        ITenantService tenantService,
         ILogger<AuthService> logger)
     {
         _userService = userService;
@@ -31,7 +36,45 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
+        _tenantService = tenantService;
         _logger = logger;
+    }
+
+    /// <inheritdoc />
+    public async Task<Guid> RegisterAsync(RegisterRequest request)
+    {
+        _logger.LogInformation("Début de l'enregistrement global (Registration) : {Email} pour {TenantName}", request.Email, request.TenantName);
+
+        // 1. Création du Tenant via le module Tenant
+        var tenantRequest = new CreateTenantRequest
+        {
+            Name = request.TenantName,
+            Siret = request.Siret,
+            Identifier = request.TenantName.ToLower().Replace(" ", "-"), // Slug basique
+            Industry = "Inconnu"
+        };
+
+        var tenantResponse = await _tenantService.CreateTenantAsync(tenantRequest);
+        _logger.LogInformation("Tenant créé avec succès : {TenantId}", tenantResponse.Id);
+
+        // 2. Création de l'utilisateur Admin via le module Identity
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantResponse.Id,
+            Email = request.Email,
+            PasswordHash = request.Password, // Sera haché par UserService
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Role = "Admin",
+            CanSeeAllTenantData = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var userId = await _userService.CreateUserAsync(user);
+        _logger.LogInformation("Administrateur créé avec succès : {UserId}", userId);
+
+        return userId;
     }
 
     /// <inheritdoc />

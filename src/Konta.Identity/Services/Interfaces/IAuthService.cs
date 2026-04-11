@@ -8,6 +8,11 @@ namespace Konta.Identity.Services.Interfaces;
 public interface IAuthService
 {
     /// <summary>
+    /// Enregistre une nouvelle entreprise et son premier administrateur.
+    /// </summary>
+    Task<Guid> RegisterAsync(RegisterRequest request);
+
+    /// <summary>
     /// Authentifie un utilisateur et retourne les tokens.
     /// </summary>
     Task<TokenResponse> LoginAsync(LoginRequest request);

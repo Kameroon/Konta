@@ -14,9 +14,9 @@ public static class AuthEndpoints
         var group = app.MapGroup("/api/auth")
             .WithTags("Authentification");
 
-        group.MapPost("/register", async (RegisterRequest request, ITenantService tenantService) =>
+        group.MapPost("/register", async (RegisterRequest request, IAuthService authService) =>
         {
-            var userId = await tenantService.RegisterTenantAsync(request);
+            var userId = await authService.RegisterAsync(request);
             return Results.Ok(ApiResponse<object>.Ok(new { UserId = userId }, "Tenant et utilisateur créés avec succès"));
         })
         .WithName("RegisterTenant")

@@ -5,7 +5,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -22,7 +22,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -39,7 +39,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -56,7 +56,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -73,7 +73,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -90,7 +90,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "identity",
+                    "Host": "konta-identity",
                     "Port": 8080
                 }
             ],
@@ -107,7 +107,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "finance",
+                    "Host": "konta-finance",
                     "Port": 8080
                 }
             ],
@@ -124,7 +124,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "finance",
+                    "Host": "konta-finance",
                     "Port": 8080
                 }
             ],
@@ -141,7 +141,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "ocr",
+                    "Host": "konta-ocr",
                     "Port": 8080
                 }
             ],
@@ -158,7 +158,7 @@
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "reporting",
+                    "Host": "konta-reporting",
                     "Port": 8080
                 }
             ],

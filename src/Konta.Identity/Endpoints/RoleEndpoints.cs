@@ -1,6 +1,7 @@
 using Konta.Identity.DTOs;
 using Konta.Identity.Filters;
 using Konta.Identity.Services.Interfaces;
+using Konta.Tenant.Services.Interfaces;
 using Konta.Shared.Responses;
 using Microsoft.AspNetCore.Mvc;
 

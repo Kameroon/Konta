@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using Konta.Identity.Data.Repositories.Interfaces;
+using Konta.Tenant.Data.Repositories.Interfaces;
 using Konta.Identity.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 

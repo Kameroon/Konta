@@ -153,7 +153,7 @@ onMounted(fetchPlans);
 
 const selectPlan = async (planCode: string) => {
   if (planCode === 'expertise') {
-    window.location.href = 'mailto:contact@konta.com?subject=Demande Plan Expertise';
+    window.location.href = 'mailto:contact@konta.fr?subject=Demande Plan Expertise';
     return;
   }
 

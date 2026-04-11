@@ -13,8 +13,8 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 
-const email = ref('admin@konta.com');
-const password = ref('password');
+const email = ref('');
+const password = ref('');
 const showPassword = ref(false);
 const isSubmitting = ref(false);
 const errorMessage = ref<string | null>(null);
@@ -97,7 +97,7 @@ const handleLogin = async () => {
           <input 
             v-model="email" 
             type="email" 
-            placeholder="jean.dupont@konta.com" 
+            placeholder="jean.dupont@konta.fr" 
             required
             :disabled="isSubmitting"
           />

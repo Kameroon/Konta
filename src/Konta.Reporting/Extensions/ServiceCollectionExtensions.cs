@@ -14,10 +14,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddReportingInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Infrastructure commune et sécurité
-        services.AddSharedInfrastructure(configuration);
-        services.AddAuthenticationConfig(configuration);
-
         // Mise en cache
         services.AddMemoryCache();
 
@@ -35,14 +31,6 @@ public static class ServiceCollectionExtensions
         // Services métier analytiques
         services.AddScoped<IKpiService, KpiService>();
         services.AddScoped<IExportService, ExportService>();
-
-        // Documentation API
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Gestion d'erreurs
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

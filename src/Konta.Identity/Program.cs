@@ -20,13 +20,18 @@ builder.Services
         options.UniqueViolations.Add("refreshtokens_token_key", "Ce jeton de rafraîchissement est déjà utilisé.");
         options.UniqueViolations.Add("tenants_name_key", "Ce nom d'entreprise est déjà utilisée.");
     })
+    .AddSharedInfrastructure(builder.Configuration)
+    .AddAuthenticationConfig(builder.Configuration)
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen()
+    .AddExceptionHandler<Konta.Shared.Middleware.GlobalExceptionHandler>()
+    .AddProblemDetails()
     .AddIdentityInfrastructure(builder.Configuration)
     .AddIdentityServices()
     .AddTenantInfrastructure(builder.Configuration)
     .AddTenantServices()
     .AddBillingInfrastructure(builder.Configuration)
-    .AddBillingServices()
-    .AddAuthenticationConfig(builder.Configuration);
+    .AddBillingServices();
 
 var app = builder.Build();
 

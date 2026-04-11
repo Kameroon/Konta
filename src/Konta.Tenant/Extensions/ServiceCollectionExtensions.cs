@@ -13,9 +13,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddTenantInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Shared Core & Database
-        services.AddSharedInfrastructure(configuration);
-        
         // Repositories
         services.AddScoped<ITenantRepository, TenantRepository>();
 
@@ -32,14 +29,6 @@ public static class ServiceCollectionExtensions
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<ITenantService>();
-
-        // Swagger & OpenApi
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Exception Handling
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

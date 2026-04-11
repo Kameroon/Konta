@@ -7,15 +7,9 @@ public static class GatewayServiceExtensions
 {
     public static IServiceCollection AddGatewayServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Infrastructure partagée (Db, logging, etc.)
-        services.AddSharedInfrastructure(configuration);
-
         // Blindage : Observabilité & Résilience
         services.AddObservability("Konta.Gateway", configuration);
         services.AddResilience();
-
-        // Authentification JWT
-        services.AddAuthenticationConfig(configuration);
 
         // CORS pour le frontend
         services.AddCors(options =>
@@ -35,10 +29,6 @@ public static class GatewayServiceExtensions
 
         // Ocelot
         services.AddOcelot(configuration);
-
-        // Swagger/Explorer
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
 
         return services;
     }

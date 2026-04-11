@@ -18,6 +18,12 @@ builder.Services
         options.UniqueViolations.Add("budgets_category_key", "Un budget pour cette catégorie existe déjà sur cette période.");
         options.UniqueViolations.Add("tiers_taxid_key", "Ce numéro d'identifiant fiscal est déjà enregistré pour un autre tiers.");
     })
+    .AddSharedInfrastructure(builder.Configuration)
+    .AddAuthenticationConfig(builder.Configuration)
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen()
+    .AddExceptionHandler<Konta.Shared.Middleware.GlobalExceptionHandler>()
+    .AddProblemDetails()
     .AddFinanceInfrastructure(builder.Configuration)
     .AddFinanceServices()
     .AddFinanceCoreInfrastructure(builder.Configuration)

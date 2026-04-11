@@ -14,9 +14,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Shared Infrastructure (Includes DbConnectionFactory)
-        services.AddSharedInfrastructure(configuration);
-        
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
@@ -45,14 +42,6 @@ public static class ServiceCollectionExtensions
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<Program>();
-
-        // Swagger & OpenApi
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Exception Handling
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

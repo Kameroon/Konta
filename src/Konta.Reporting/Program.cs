@@ -15,6 +15,12 @@ builder.Services
     {
         // Pas de violations de contraintes spécifiques pour le reporting pour l'instant
     })
+    .AddSharedInfrastructure(builder.Configuration)
+    .AddAuthenticationConfig(builder.Configuration)
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen()
+    .AddExceptionHandler<Konta.Shared.Middleware.GlobalExceptionHandler>()
+    .AddProblemDetails()
     .AddReportingInfrastructure(builder.Configuration)
     .AddReportingServices()
     .AddObservability("Konta.Reporting", builder.Configuration)

@@ -17,12 +17,6 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddFinanceCoreInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Enregistre l'infrastructure partagée (DbConnectionFactory)
-        services.AddSharedInfrastructure(configuration);
-        
-        // Configure l'authentification JWT avec les secrets synchronisés
-        services.AddAuthenticationConfig(configuration);
-
         // Enregistrement des dépôts de données (Scoped pour la durée de la requête)
         services.AddScoped<ITierRepository, TierRepository>();
         services.AddScoped<IBudgetRepository, BudgetRepository>();
@@ -45,14 +39,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBudgetService, BudgetService>();
         services.AddScoped<ITreasuryService, TreasuryService>();
         services.AddScoped<IExtractionPromotionService, ExtractionPromotionService>();
-
-        // Configuration de la documentation Swagger
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Gestion globale des exceptions (Middleware partagé)
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

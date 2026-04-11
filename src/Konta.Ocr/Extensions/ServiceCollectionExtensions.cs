@@ -12,9 +12,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddOcrInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSharedInfrastructure(configuration);
-        services.AddAuthenticationConfig(configuration);
-
         // Configuration Azure AI
         services.Configure<AzureAiOptions>(configuration.GetSection("AzureAI"));
 
@@ -39,14 +36,6 @@ public static class ServiceCollectionExtensions
 
         // HTTP Client pour l'IA (enregistre aussi IAiParsingService)
         services.AddHttpClient<IAiParsingService, AiParsingService>();
-
-        // Swagger
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Exception Handling
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

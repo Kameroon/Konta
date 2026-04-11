@@ -11,10 +11,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddFinanceInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Shared Infrastructure & Authentication
-        services.AddSharedInfrastructure(configuration);
-        services.AddAuthenticationConfig(configuration);
-
         // Repositories
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IJournalRepository, JournalRepository>();
@@ -30,14 +26,6 @@ public static class ServiceCollectionExtensions
     {
         // Domain Services
         services.AddScoped<IAccountingService, AccountingService>();
-
-        // Swagger
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Exception Handling
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

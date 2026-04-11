@@ -13,9 +13,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddBillingInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Shared Core & Database
-        services.AddSharedInfrastructure(configuration);
-        
         // Repositories
         services.AddScoped<IStripeCustomerRepository, StripeCustomerRepository>();
         services.AddScoped<IBillingInvoiceRepository, BillingInvoiceRepository>();
@@ -34,14 +31,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStripeService, StripeService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<WebhookHandler>();
-
-        // Swagger
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
-
-        // Exception Handling
-        services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddProblemDetails();
 
         return services;
     }

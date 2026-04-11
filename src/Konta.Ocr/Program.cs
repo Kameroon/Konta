@@ -16,6 +16,12 @@ builder.Services
     {
         options.UniqueViolations.Add("webhookevents_stripeeventid_key", "Cet événement a déjà été traité.");
     })
+    .AddSharedInfrastructure(builder.Configuration)
+    .AddAuthenticationConfig(builder.Configuration)
+    .AddEndpointsApiExplorer()
+    .AddSwaggerGen()
+    .AddExceptionHandler<Konta.Shared.Middleware.GlobalExceptionHandler>()
+    .AddProblemDetails()
     .AddOcrInfrastructure(builder.Configuration)
     .AddOcrServices()
     .AddObservability("Konta.Ocr", builder.Configuration)

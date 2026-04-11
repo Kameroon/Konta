@@ -70,7 +70,7 @@ public class DatabaseInitializer
         }
 
         // 2. Exécution du script principal
-        var scriptPath = Path.Combine(_environment.ContentRootPath, "Data", "Scripts", "init.sql");
+        var scriptPath = Path.Combine(_environment.ContentRootPath, "Data", "Scripts", "identity_init.sql");
         if (!File.Exists(scriptPath))
         {
             _logger.LogWarning("Script d'initialisation introuvable : {Path}", scriptPath);

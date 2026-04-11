@@ -42,7 +42,7 @@ public class DatabaseInitializer
 
     private async Task ExecuteSqlScriptAsync()
     {
-        var scriptPath = Path.Combine(_environment.ContentRootPath, "Data", "Scripts", "init.sql");
+        var scriptPath = Path.Combine(_environment.ContentRootPath, "Data", "Scripts", "tenant_init.sql");
         
         if (!File.Exists(scriptPath))
         {

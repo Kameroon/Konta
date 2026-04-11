@@ -50,7 +50,7 @@
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "konta-billing.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
                     "Port": 443
                 }
             ],
@@ -65,7 +65,7 @@
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
                 {
-                    "Host": "konta-billing.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Host": "konta-identity.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
                     "Port": 443
                 }
             ],
@@ -106,6 +106,78 @@
                 }
             ],
             "UpstreamPathTemplate": "/api/tenants/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/finance/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-finance.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/finance/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/finance-core/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-finance.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/finance-core/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/ocr/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-ocr.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/ocr/{everything}",
+            "UpstreamHttpMethod": [
+                "Get",
+                "Post",
+                "Put",
+                "Delete"
+            ],
+            "DangerousAcceptAnyServerCertificateValidator": true
+        },
+        {
+            "DownstreamPathTemplate": "/api/reporting/{everything}",
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "konta-reporting.internal.redsky-dbe1f5d3.westeurope.azurecontainerapps.io",
+                    "Port": 443
+                }
+            ],
+            "UpstreamPathTemplate": "/api/reporting/{everything}",
             "UpstreamHttpMethod": [
                 "Get",
                 "Post",

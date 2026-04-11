@@ -1,9 +1,10 @@
 # src/Konta.Finance/Dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ["src/Konta.Finance/Konta.Finance.csproj", "src/Konta.Finance/"]
+COPY ["src/Konta.Finance/Konta.API.Finance.csproj", "src/Konta.Finance/"]
+COPY ["src/Konta.Finance.Core/Konta.Finance.Core.csproj", "src/Konta.Finance.Core/"]
 COPY ["src/Konta.Shared/Konta.Shared.csproj", "src/Konta.Shared/"]
-RUN dotnet restore "src/Konta.Finance/Konta.Finance.csproj"
+RUN dotnet restore "src/Konta.Finance/Konta.API.Finance.csproj"
 COPY . .
 WORKDIR "/src/src/Konta.Finance"
 RUN dotnet publish -c Release -o /app/publish
@@ -13,4 +14,4 @@ WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
 ENV ASPNETCORE_HTTP_PORTS=8080
-ENTRYPOINT ["dotnet", "Konta.Finance.dll"]
+ENTRYPOINT ["dotnet", "Konta.API.Finance.dll"]

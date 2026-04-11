@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using Konta.Billing.Data.Repositories.Interfaces;
 using Konta.Billing.Models;
 using Konta.Billing.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace Konta.Billing.Services.Implementations;
 

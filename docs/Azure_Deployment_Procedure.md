@@ -21,17 +21,14 @@
 | Container Apps Env | `konta-env` | West Europe | Consumption |
 | PostgreSQL (prévu) | `konta-postgres` | West Europe | B1ms |
 
-### Container Apps Déployés
-| Service | URL | Ingress | Replicas |
+### Container Apps Déployés (Architecture Consolidée)
+| Service | Rôle | URL / Ingress | Replicas |
 | :--- | :--- | :--- | :--- |
-| Gateway | konta-gateway.redsky-dbe1f5d3.westeurope.azurecontainerapps.io | External | 0-1 |
-| Identity | konta-identity.internal.(...) | Internal | 0-1 |
-| Tenant | konta-tenant.internal.(...) | Internal | 0-1 |
-| Billing | konta-billing.internal.(...) | Internal | 0-1 |
-| Finance | konta-finance.internal.(...) | Internal | 0-1 |
-| Finance.Core | konta-finance-core.internal.(...) | Internal | 0-1 |
-| Reporting | konta-reporting.internal.(...) | Internal | 0-1 |
-| OCR | konta-ocr.internal.(...) | Internal | 0-1 |
+| **Gateway** | Ocelot Gateway | konta-gateway.(...) - External | 0-1 |
+| **Identity** | Core API (Auth, Tenant, Billing) | konta-identity.internal - Internal | 0-1 |
+| **Finance** | Finance API (Accounting, Core) | konta-finance.internal - Internal | 0-1 |
+| **Reporting** | Reporting & Analytics | konta-reporting.internal - Internal | 0-1 |
+| **OCR** | OCR Document Processing | konta-ocr.internal - Internal | 0-1 |
 
 ---
 
@@ -68,9 +65,19 @@ az containerapp env create --name konta-env --resource-group konta-rg --location
 az acr login --name kontaacr
 
 # Build et push (pour chaque service)
+# Build et push (5 Services)
 docker build -f src/Konta.Gateway/Dockerfile -t kontaacr.azurecr.io/konta-gateway:latest .
+docker build -f src/Konta.Identity/Dockerfile -t kontaacr.azurecr.io/konta-identity:latest .
+docker build -f src/Konta.Finance/Dockerfile -t kontaacr.azurecr.io/konta-finance:latest .
+docker build -f src/Konta.Reporting/Dockerfile -t kontaacr.azurecr.io/konta-reporting:latest .
+docker build -f src/Konta.Ocr/Dockerfile -t kontaacr.azurecr.io/konta-ocr:latest .
+
+# Push vers Azure
 docker push kontaacr.azurecr.io/konta-gateway:latest
-# ... répéter pour les 7 autres services
+docker push kontaacr.azurecr.io/konta-identity:latest
+docker push kontaacr.azurecr.io/konta-finance:latest
+docker push kontaacr.azurecr.io/konta-reporting:latest
+docker push kontaacr.azurecr.io/konta-ocr:latest
 ```
 
 ### 3. Déployer les Container Apps

@@ -4,6 +4,7 @@ using Konta.Shared.Data; // Utilisation de l'interface factory partagée
 using Konta.Shared.Data.Repositories; // Classe de base des dépôts
 using Konta.Tenant.Models; // Modèles de données
 using System.Data; // Manipulation de données SQL
+using Microsoft.Extensions.Logging;
 
 namespace Konta.Tenant.Data.Repositories.Implementations; // Couche implémentation
 

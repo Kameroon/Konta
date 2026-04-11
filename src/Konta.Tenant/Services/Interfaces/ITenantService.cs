@@ -31,4 +31,14 @@ public interface ITenantService
     /// Met à jour les informations d'une entreprise existante.
     /// </summary>
     Task<bool> UpdateTenantAsync(Guid id, UpdateTenantRequest request);
+
+    /// <summary>
+    /// Active l'accès d'un tenant suite à un paiement.
+    /// </summary>
+    Task<bool> ActivateAccessAsync(Guid tenantId);
+
+    /// <summary>
+    /// Désactive l'accès d'un tenant (impayé, résiliation).
+    /// </summary>
+    Task<bool> DeactivateAccessAsync(Guid tenantId);
 }

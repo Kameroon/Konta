@@ -3,6 +3,7 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using Konta.Billing.Models;
 using Konta.Billing.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Konta.Billing.Services.Implementations;
 

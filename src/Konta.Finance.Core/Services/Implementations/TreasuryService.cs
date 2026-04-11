@@ -1,6 +1,7 @@
 using Konta.Finance.Core.Data.Repositories.Interfaces;
 using Konta.Finance.Core.Models;
 using Konta.Finance.Core.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Konta.Finance.Core.Services.Implementations;
 

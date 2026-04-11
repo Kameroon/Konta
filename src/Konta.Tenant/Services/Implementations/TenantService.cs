@@ -4,6 +4,7 @@ using Konta.Tenant.Models; // Modèles du domaine
 using Konta.Tenant.Services.Interfaces; // Définition du service
 using Konta.Shared.Services.Postgres; // Service d'erreur partagé
 using Npgsql; // Client Postgres
+using Microsoft.Extensions.Logging;
 
 namespace Konta.Tenant.Services.Implementations; // Couche de logique métier
 
@@ -169,5 +170,29 @@ public class TenantService : ITenantService
 
         // 3. Persistance
         return await _tenantRepository.UpdateAsync(existing);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ActivateAccessAsync(Guid tenantId)
+    {
+        _logger.LogInformation("Activation de l'accès pour le tenant {Id}", tenantId);
+        var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+        if (tenant == null) return false;
+
+        tenant.IsActive = true;
+        tenant.UpdatedAt = DateTime.UtcNow;
+        return await _tenantRepository.UpdateAsync(tenant);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> DeactivateAccessAsync(Guid tenantId)
+    {
+        _logger.LogWarning("Désactivation de l'accès pour le tenant {Id}", tenantId);
+        var tenant = await _tenantRepository.GetByIdAsync(tenantId);
+        if (tenant == null) return false;
+
+        tenant.IsActive = false;
+        tenant.UpdatedAt = DateTime.UtcNow;
+        return await _tenantRepository.UpdateAsync(tenant);
     }
 }

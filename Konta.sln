@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Shared", "src\Konta.Shared\Konta.Shared.csproj", "{CC9DC06F-BBF5-4BDF-99C2-880914E70F75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Identity", "src\Konta.Identity\Konta.Identity.csproj", "{75DF9A74-8615-4368-B4BE-DE4A42D46BD2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Core.API", "src\Konta.Identity\Konta.Core.API.csproj", "{75DF9A74-8615-4368-B4BE-DE4A42D46BD2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Tenant", "src\Konta.Tenant\Konta.Tenant.csproj", "{3A44C624-ED05-4A82-86B9-C8A3724D2E52}"
 EndProject
@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helpers", "Helpers", "{02EA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Billing", "src\Konta.Billing\Konta.Billing.csproj", "{F9E80943-8101-496A-9AA2-AB1F04FF6504}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Finance", "src\Konta.Finance\Konta.Finance.csproj", "{DA613EC9-0C50-4240-ACE0-4E63C3DC882F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.API.Finance", "src\Konta.Finance\Konta.API.Finance.csproj", "{DA613EC9-0C50-4240-ACE0-4E63C3DC882F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Konta.Ocr", "src\Konta.Ocr\Konta.Ocr.csproj", "{23958585-D9F1-4331-BDBD-6C2F7279B8F3}"
 EndProject

@@ -1,5 +1,9 @@
 using Konta.Identity.Endpoints;
 using Konta.Identity.Extensions;
+using Konta.Tenant.Extensions;
+using Konta.Tenant.Endpoints;
+using Konta.Billing.Extensions;
+using Konta.Billing.Endpoints;
 using Konta.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +20,12 @@ builder.Services
         options.UniqueViolations.Add("refreshtokens_token_key", "Ce jeton de rafraîchissement est déjà utilisé.");
         options.UniqueViolations.Add("tenants_name_key", "Ce nom d'entreprise est déjà utilisée.");
     })
-    .AddInfrastructure(builder.Configuration)
-    .AddApplicationServices()
+    .AddIdentityInfrastructure(builder.Configuration)
+    .AddIdentityServices()
+    .AddTenantInfrastructure(builder.Configuration)
+    .AddTenantServices()
+    .AddBillingInfrastructure(builder.Configuration)
+    .AddBillingServices()
     .AddAuthenticationConfig(builder.Configuration);
 
 var app = builder.Build();
@@ -25,8 +33,17 @@ var app = builder.Build();
 // Database Initialization
 using (var scope = app.Services.CreateScope())
 {
-    var initializer = scope.ServiceProvider.GetRequiredService<Konta.Identity.Data.DatabaseInitializer>();
-    await initializer.InitializeAsync();
+    // Initialize Identity
+    var identityInitializer = scope.ServiceProvider.GetRequiredService<Konta.Identity.Data.DatabaseInitializer>();
+    await identityInitializer.InitializeAsync();
+
+    // Initialize Tenant
+    var tenantInitializer = scope.ServiceProvider.GetRequiredService<Konta.Tenant.Data.DatabaseInitializer>();
+    await tenantInitializer.InitializeAsync();
+
+    // Initialize Billing
+    var billingInitializer = scope.ServiceProvider.GetRequiredService<Konta.Billing.Data.DatabaseInitializer>();
+    await billingInitializer.InitializeAsync();
 }
 
 // 2. Configure Pipeline
@@ -50,8 +67,9 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 // 3. Map Endpoints
 app.MapAuthEndpoints();
 app.MapRoleEndpoints();
-app.MapTenantEndpoints();
+app.MapTenantEndpoints(); // Now maps the unified ITenantService
 app.MapUserEndpoints();
 app.MapNavigationEndpoints();
+app.MapBillingEndpoints();
 
 app.Run();

@@ -1,6 +1,9 @@
 using Stripe;
 using Konta.Billing.Data.Repositories.Interfaces;
 using Konta.Billing.Models;
+using Konta.Tenant.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace Konta.Billing.Services.Implementations;
 
@@ -12,7 +15,7 @@ public class WebhookHandler
     private readonly IWebhookEventRepository _eventRepository;
     private readonly IBillingInvoiceRepository _invoiceRepository;
     private readonly IStripeCustomerRepository _customerRepository;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ITenantService _tenantService;
     private readonly ILogger<WebhookHandler> _logger;
     private readonly IConfiguration _configuration;
 
@@ -20,14 +23,14 @@ public class WebhookHandler
         IWebhookEventRepository eventRepository,
         IBillingInvoiceRepository invoiceRepository,
         IStripeCustomerRepository customerRepository,
-        IHttpClientFactory httpClientFactory,
+        ITenantService tenantService,
         ILogger<WebhookHandler> logger,
         IConfiguration configuration)
     {
         _eventRepository = eventRepository;
         _invoiceRepository = invoiceRepository;
         _customerRepository = customerRepository;
-        _httpClientFactory = httpClientFactory;
+        _tenantService = tenantService;
         _logger = logger;
         _configuration = configuration;
     }
@@ -100,37 +103,18 @@ public class WebhookHandler
                 return false;
             }
 
-            // 3. Appel HTTP vers Konta.Tenant pour activer l'accès
-            // NOTE: Dans une architecture event-driven mature, ceci serait un événement publié sur RabbitMQ/Kafka
-            // Publication de l'événement de permission accordée
+            // 3. Appel direct au service Tenant pour activer l'accès
+            var successActivation = await _tenantService.ActivateAccessAsync(stripeCustomer.TenantId);
 
-            
-            var tenantServiceUrl = _configuration["Services:Tenant:BaseUrl"] ?? "https://localhost:5002";
-            var httpClient = _httpClientFactory.CreateClient();
-            
-            var activateRequest = new
-            {
-                TenantId = stripeCustomer.TenantId,
-                Reason = "Paiement reçu",
-                InvoiceId = invoice.Id,
-                Amount = invoice.AmountPaid / 100.0 // Conversion centimes → euros
-            };
-
-            var response = await httpClient.PostAsJsonAsync(
-                $"{tenantServiceUrl}/api/tenant/activate-access", 
-                activateRequest
-            );
-
-            if (response.IsSuccessStatusCode)
+            if (successActivation)
             {
                 _logger.LogInformation("Accès activé avec succès pour le tenant {TenantId} suite au paiement de {Amount}€", 
-                    stripeCustomer.TenantId, activateRequest.Amount);
+                    stripeCustomer.TenantId, invoice.AmountPaid / 100.0);
                 return true;
             }
             else
             {
-                _logger.LogError("Échec de l'activation de l'accès pour le tenant {TenantId}. Status: {StatusCode}", 
-                    stripeCustomer.TenantId, response.StatusCode);
+                _logger.LogError("Échec de l'activation de l'accès pour le tenant {TenantId}.", stripeCustomer.TenantId);
                 return false;
             }
         }
@@ -162,28 +146,10 @@ public class WebhookHandler
                 return false;
             }
 
-            // 2. Appel HTTP vers Konta.Tenant pour désactiver l'accès
-            // NOTE: Dans une architecture event-driven, ceci serait un événement publié
-            // Publication de l'événement de permission révoquée
+            // 2. Appel direct au service Tenant pour désactiver l'accès
+            var successDeactivation = await _tenantService.DeactivateAccessAsync(stripeCustomer.TenantId);
 
-            
-            var tenantServiceUrl = _configuration["Services:Tenant:BaseUrl"] ?? "https://localhost:5002";
-            var httpClient = _httpClientFactory.CreateClient();
-            
-            var deactivateRequest = new
-            {
-                TenantId = stripeCustomer.TenantId,
-                Reason = "Abonnement supprimé",
-                SubscriptionId = subscription.Id,
-                CanceledAt = subscription.CanceledAt ?? DateTime.UtcNow
-            };
-
-            var response = await httpClient.PostAsJsonAsync(
-                $"{tenantServiceUrl}/api/tenant/deactivate-access", 
-                deactivateRequest
-            );
-
-            if (response.IsSuccessStatusCode)
+            if (successDeactivation)
             {
                 _logger.LogWarning("Accès désactivé avec succès pour le tenant {TenantId} suite à la suppression de l'abonnement", 
                     stripeCustomer.TenantId);
@@ -191,8 +157,7 @@ public class WebhookHandler
             }
             else
             {
-                _logger.LogError("Échec de la désactivation de l'accès pour le tenant {TenantId}. Status: {StatusCode}", 
-                    stripeCustomer.TenantId, response.StatusCode);
+                _logger.LogError("Échec de la désactivation de l'accès pour le tenant {TenantId}.", stripeCustomer.TenantId);
                 return false;
             }
         }

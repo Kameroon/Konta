@@ -12,13 +12,12 @@ namespace Konta.Identity.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // Shared Infrastructure (Includes DbConnectionFactory)
         services.AddSharedInfrastructure(configuration);
         
         // Repositories
-        services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
@@ -31,14 +30,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services)
     {
         // Domain Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
-        services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<INavigationService, NavigationService>();
         

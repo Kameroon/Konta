@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Konta.Core.API</AssemblyName>
+    <RootNamespace>Konta.Core.API</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,10 +15,15 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
     <PackageReference Include="Npgsql" Version="10.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Stripe.net" Version="43.20.0" />
+    <PackageReference Include="QuestPDF" Version="2024.12.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Konta.Shared\Konta.Shared.csproj" />
+    <ProjectReference Include="..\Konta.Billing\Konta.Billing.csproj" />
+    <ProjectReference Include="..\Konta.Tenant\Konta.Tenant.csproj" />
   </ItemGroup>
 
   <ItemGroup>

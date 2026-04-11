@@ -11,7 +11,7 @@ namespace Konta.Tenant.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddTenantInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // Shared Core & Database
         services.AddSharedInfrastructure(configuration);
@@ -25,13 +25,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddTenantServices(this IServiceCollection services)
     {
         // Domain Services
         services.AddScoped<ITenantService, TenantService>();
 
         // Validators
-        services.AddValidatorsFromAssemblyContaining<Program>();
+        services.AddValidatorsFromAssemblyContaining<ITenantService>();
 
         // Swagger & OpenApi
         services.AddEndpointsApiExplorer();

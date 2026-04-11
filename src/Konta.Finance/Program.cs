@@ -1,5 +1,7 @@
 using Konta.Finance.Endpoints;
 using Konta.Finance.Extensions;
+using Konta.Finance.Core.Endpoints;
+using Konta.Finance.Core.Extensions;
 using Konta.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,10 +15,14 @@ builder.Services
     {
         options.UniqueViolations.Add("accounts_tenantid_code_key", "Ce code de compte existe déjà pour votre entreprise.");
         options.UniqueViolations.Add("journals_tenantid_code_key", "Ce code de journal existe déjà.");
+        options.UniqueViolations.Add("budgets_category_key", "Un budget pour cette catégorie existe déjà sur cette période.");
+        options.UniqueViolations.Add("tiers_taxid_key", "Ce numéro d'identifiant fiscal est déjà enregistré pour un autre tiers.");
     })
     .AddFinanceInfrastructure(builder.Configuration)
     .AddFinanceServices()
-    .AddObservability("Konta.Finance", builder.Configuration)
+    .AddFinanceCoreInfrastructure(builder.Configuration)
+    .AddFinanceCoreServices()
+    .AddObservability("Konta.API.Finance", builder.Configuration)
     .AddResilience();
 
 var app = builder.Build();
@@ -24,8 +30,13 @@ var app = builder.Build();
 // Initialisation de la base de données
 using (var scope = app.Services.CreateScope())
 {
-    var initializer = scope.ServiceProvider.GetRequiredService<Konta.Finance.Data.DatabaseInitializer>();
-    await initializer.InitializeAsync();
+    // Initialize Finance (Accounting)
+    var financeInitializer = scope.ServiceProvider.GetRequiredService<Konta.Finance.Data.DatabaseInitializer>();
+    await financeInitializer.InitializeAsync();
+
+    // Initialize Finance Core (Budgets, Treasury)
+    var financeCoreInitializer = scope.ServiceProvider.GetRequiredService<Konta.Finance.Core.Data.DatabaseInitializer>();
+    await financeCoreInitializer.InitializeAsync();
 }
 
 // Configure the HTTP request pipeline.
@@ -45,5 +56,6 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // Map Endpoints
 app.MapFinanceEndpoints();
+app.MapFinanceCoreEndpoints();
 
 app.Run();

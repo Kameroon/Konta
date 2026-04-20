@@ -1,0 +1,9 @@
+{
+  "tenantName": "Demo Corp",
+  "siret": "12345678901234",
+  "email": "admin@democorp.local",
+  "password": "Password123!",
+  "firstName": "Admin",
+  "lastName": "Demo",
+  "plan": "discovery"
+}

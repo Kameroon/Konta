@@ -16,6 +16,7 @@ using Polly.CircuitBreaker;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
+using MediatR;
 
 namespace Konta.Shared.Extensions;
 
@@ -50,6 +51,12 @@ public static class ServiceCollectionExtensions
         // Enregistrement du handler d'exceptions PostgreSQL
         services.AddExceptionHandler<PostgresExceptionHandler>();
         
+        // Enregistrement de MediatR pour le découplage inter-modules (Modular Monolith)
+        services.AddMediatR(cfg => {
+            // On scanne les assemblies chargés pour trouver les handlers
+            cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+        });
+
         // Configuration JSON (Enums en chaînes de caractères par défaut)
         services.ConfigureHttpJsonOptions(options =>
         {

@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using Konta.Tenant.Services.Interfaces;
 using Konta.Tenant.DTOs;
 using Konta.Identity.Models;
+using MediatR;
+using Konta.Shared.Events.Identity;
 
 namespace Konta.Identity.Services.Implementations;
 
@@ -19,7 +21,7 @@ public class AuthService : IAuthService
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
-    private readonly ITenantService _tenantService;
+    private readonly IMediator _mediator;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
@@ -28,7 +30,7 @@ public class AuthService : IAuthService
         IRefreshTokenRepository refreshTokenRepository,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
-        ITenantService tenantService,
+        IMediator mediator,
         ILogger<AuthService> logger)
     {
         _userService = userService;
@@ -36,7 +38,7 @@ public class AuthService : IAuthService
         _refreshTokenRepository = refreshTokenRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
-        _tenantService = tenantService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -45,25 +47,36 @@ public class AuthService : IAuthService
     {
         _logger.LogInformation("Début de l'enregistrement global (Registration) : {Email} pour {TenantName}", request.Email, request.TenantName);
 
-        // 1. Création du Tenant via le module Tenant
-        var tenantRequest = new CreateTenantRequest
-        {
-            Name = request.TenantName,
-            Siret = request.Siret,
-            Identifier = request.TenantName.ToLower().Replace(" ", "-"), // Slug basique
-            Industry = "Inconnu"
-        };
+        // 1. Déclenchement de la création du Tenant via MediatR (Découplage)
+        _logger.LogInformation("Publication de la demande d'enregistrement de tenant via MediatR");
+        
+        var registrationEvent = new TenantRegistrationRequestedEvent(
+            request.TenantName,
+            request.TenantName.ToLower().Replace(" ", "-"),
+            "Inconnu",
+            "Non spécifiée",
+            request.Siret,
+            request.Email,
+            request.Password
+        );
 
-        var tenantResponse = await _tenantService.CreateTenantAsync(tenantRequest);
-        _logger.LogInformation("Tenant créé avec succès : {TenantId}", tenantResponse.Id);
-
+        await _mediator.Publish(registrationEvent);
+        
+        _logger.LogWarning("Flux d'onboarding asynchrone initié. La création de l'utilisateur dépend désormais de l'événement TenantCreated.");
+        
+        return Guid.Empty; 
+        
+        /* 
+        NOTE: Le code ci-dessous est mis en commentaire car dans une architecture découplée, 
+        l'utilisateur administrateur doit être créé en réaction à l'événement de création du tenant réussi.
+        
         // 2. Création de l'utilisateur Admin via le module Identity
         var user = new User
         {
             Id = Guid.NewGuid(),
-            TenantId = tenantResponse.Id,
+            TenantId = Guid.Empty, // A RÉCUPÉRER VIA ÉVÉNEMENT
             Email = request.Email,
-            PasswordHash = request.Password, // Sera haché par UserService
+            PasswordHash = request.Password, 
             FirstName = request.FirstName,
             LastName = request.LastName,
             Role = "Admin",
@@ -75,6 +88,7 @@ public class AuthService : IAuthService
         _logger.LogInformation("Administrateur créé avec succès : {UserId}", userId);
 
         return userId;
+        */
     }
 
     /// <inheritdoc />
